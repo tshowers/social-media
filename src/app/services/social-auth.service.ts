@@ -108,6 +108,13 @@ export class SocialAuthService {
     return this.auth.currentUser?.uid || '';
   }
 
+  /** Sync read of the current Firebase user, for callers (e.g. the command
+   * screen's context resolution) that need email/uid together without
+   * waiting on the getUser() observable. */
+  getCurrentUserSync (): User | null {
+    return this.auth.currentUser;
+  }
+
   /**
    * Leaves the app entirely for TODD's hosted login
    * (todd.taliferro.tech/login?client=social-web&state=...), the same page

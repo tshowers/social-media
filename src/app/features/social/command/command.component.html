@@ -1,0 +1,183 @@
+<app-back-to-top></app-back-to-top>
+<div class="container-fluid social-command-center-page">
+  <div class="social-outreach-shell mt-5">
+    <nav class="social-route-nav" aria-label="Social outreach sections">
+      <a routerLink="/command" [queryParams]="currentQueryParams" class="social-route-nav__link social-route-nav__link--active">Command</a>
+      <a routerLink="/queue" [queryParams]="currentQueryParams" class="social-route-nav__link">Approved</a>
+      <a routerLink="/strategy" [queryParams]="currentQueryParams" class="social-route-nav__link">Strategy</a>
+      <a [routerLink]="accountsRouteLink" [queryParams]="currentQueryParams" class="social-route-nav__link">Accounts</a>
+      <a routerLink="/calendar" [queryParams]="currentQueryParams" class="social-route-nav__link">Calendar</a>
+    </nav>
+    <span class="social-hero__eyebrow">Outreach / Social / Command</span>
+    <section class="social-overview-summary">
+      <div class="social-hero__panel social-overview-summary__metrics">
+        <article class="social-stat-card social-stat-card--feature social-stat-card--cockpit">
+          <span class="social-stat-card__label">Visibility This Week</span>
+          <div class="social-stat-card__body">
+            <div class="mc-instrument-slot">
+              <app-arc-gauge [value]="publishedThisWeekCount" [max]="weeklyVisibilityTarget || 1" [tone]="publishedThisWeekCount >= weeklyVisibilityTarget ? 'positive' : publishedThisWeekCount >= weeklyVisibilityTarget * 0.5 ? 'info' : 'attention'">
+              </app-arc-gauge>
+            </div>
+            <div class="mc-instrument-text">
+              <strong>{{ publishedThisWeekCount }}/{{ weeklyVisibilityTarget }}</strong>
+              <div class="social-stat-card__copy">
+                <p>Across {{ connectedAccountsCount }} connected accounts</p>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="social-stat-card social-stat-card--cockpit">
+          <span class="social-stat-card__label">Follow-Up Candidates</span>
+          <div class="social-stat-card__body">
+            <div class="mc-instrument-slot">
+              <app-status-led [tone]="followUpCandidatesCount > 0 ? 'attention' : 'idle'"></app-status-led>
+            </div>
+            <div class="mc-instrument-text">
+              <strong>{{ followUpCandidatesCount }}</strong>
+            </div>
+          </div>
+        </article>
+        <article class="social-stat-card social-stat-card--cockpit">
+          <span class="social-stat-card__label">Posts Still Needed</span>
+          <div class="social-stat-card__body">
+            <div class="mc-instrument-slot">
+              <app-status-led [tone]="postsToddCanCreateCount > 0 ? 'positive' : 'idle'"></app-status-led>
+            </div>
+            <div class="mc-instrument-text">
+              <strong>{{ postsToddCanCreateCount }}</strong>
+            </div>
+          </div>
+        </article>
+        <article class="social-stat-card social-stat-card--cockpit">
+          <span class="social-stat-card__label">Approved</span>
+          <div class="social-stat-card__body">
+            <div class="mc-instrument-slot">
+              <app-status-led [tone]="approvedQueueCount > 0 ? 'positive' : 'idle'"></app-status-led>
+            </div>
+            <div class="mc-instrument-text">
+              <strong>{{ approvedQueueCount }}</strong>
+            </div>
+          </div>
+        </article>
+        <article class="social-stat-card social-stat-card--cockpit">
+          <span class="social-stat-card__label">Drafts In Review</span>
+          <div class="social-stat-card__body">
+            <div class="mc-instrument-slot">
+              <app-status-led [tone]="draftsInReviewCount > 0 ? 'info' : 'idle'"></app-status-led>
+            </div>
+            <div class="mc-instrument-text">
+              <strong>{{ draftsInReviewCount }}</strong>
+            </div>
+          </div>
+        </article>
+      </div>
+      <section class="social-card social-overview-summary__accounts" *ngIf="accounts.length">
+        <div class="social-section-heading">
+          <div>
+            <span class="social-card__eyebrow">Connected Accounts</span>
+            <h2>Your connected social accounts</h2>
+          </div>
+        </div>
+        <div class="social-overview-accounts-grid">
+          <div class="social-post-card social-overview-account-card" *ngFor="let account of accounts">
+            <div class="social-post-card__header">
+              <div class="social-account-card-status">
+                <div class="social-account-led">
+                  <app-status-led [tone]="accountHealthTone(account) === 'on' ? 'positive' : accountHealthTone(account) === 'warning' ? 'attention' : 'warn'" [pulse]="accountHealthTone(account) !== 'on'">
+                  </app-status-led>
+                </div>
+                <span class="social-chip">{{ platformLabel(account.provider) }}</span>
+                <span class="social-status-pill todd-status-pill" [attr.data-tone]="accountHealthTone(account)">{{ accountHealthLabel(account) }}</span>
+              </div>
+            </div>
+            <strong>{{ account.displayName || account.username || account.email || account.providerUserId || account.accountId }}</strong>
+            <p>{{ accountHealthSummaryText(account) }}</p>
+          </div>
+        </div>
+      </section>
+    </section>
+    <div class="social-grid">
+      <section class="social-card social-live-feed-layout">
+        <div class="social-card social-live-feed-layout__lights social-cockpit-panel">
+          <div class="social-cockpit-panel__topline">
+            <div>
+              <span class="social-card__eyebrow">Social Outreach Status</span>
+              <h2>Live Social movement</h2>
+            </div>
+          </div>
+          <div class="social-source__summary">
+            <div>{{ approvedQueueCount }} approved</div>
+            <div>{{ draftsInReviewCount }} drafts</div>
+            <div>{{ followUpCandidatesCount }} follow-ups</div>
+          </div>
+          <div class="social-cockpit-lights">
+            <button type="button" class="social-cockpit-light-group" *ngFor="let light of activityLights; trackBy: trackByActivityLight">
+              <span class="social-cockpit-light" [ngClass]="activityLightClass(light)"></span>
+              <span class="social-cockpit-light-label">{{ light.label }}</span>
+            </button>
+          </div>
+          <div class="social-cockpit-last-label">Last thing that happened</div>
+          <div class="social-cockpit-last-message">{{ lightState('account_problem') !== 'idle' ? liveAccountProblemSummary : latestActivityMessage }}</div>
+          <div class="social-cockpit-last-detail">{{ lightState('account_problem') !== 'idle' ? liveAccountProblemDetail : latestActivityDetail }}</div>
+          <div class="social-cockpit-actions">
+            <a class="btn-todd" routerLink="/queue" [queryParams]="currentQueryParams">Open Approved</a>
+            <a class="btn-todd btn-todd-secondary" [routerLink]="sourceRouteLink" [queryParams]="currentQueryParams">Open Calendar</a>
+          </div>
+        </div>
+        <div class="social-card social-backend-activity-stream">
+          <div class="social-backend-stream-header">
+            <div>
+              <span class="social-card__eyebrow">Social Backend Activity Stream</span>
+              <h2>Last 100 Social events</h2>
+              <p>Showing {{ socialBackendActivityStreamRows.length }} retained Social Outreach backend events.</p>
+            </div>
+          </div>
+          <div class="social-backend-stream-shell">
+            <button class="btn-todd btn-todd-secondary" type="button" (click)="toggleSocialBackendActivityStream()">
+              {{ showSocialBackendActivityStream ? 'Hide Log' : 'Show Log' }}
+            </button>
+            <div class="social-backend-stream-meta">
+              <span>{{ retainedEventSummary }}</span>
+              <span>Newest first</span>
+              <span>Scroll to inspect the full buffer</span>
+            </div>
+            <div class="social-backend-stream-empty" *ngIf="!showSocialBackendActivityStream"> Social backend log is hidden. </div>
+            <div class="social-backend-stream-empty" *ngIf="showSocialBackendActivityStream && !socialBackendActivityStreamRows.length && !activityLoading"> No Social backend events are retained yet. </div>
+            <div class="social-backend-stream-empty" *ngIf="showSocialBackendActivityStream && activityLoading">
+              <app-preloader [isLoading]="true" [inline]="true" message="Loading Social backend activity…" [autoHideAfterMs]="null"></app-preloader>
+            </div>
+            <div class="social-backend-stream-empty" *ngIf="showSocialBackendActivityStream && activityErrorMessage">
+              {{ activityErrorMessage }}
+            </div>
+            <div class="social-backend-stream-table" *ngIf="showSocialBackendActivityStream && socialBackendActivityStreamRows.length">
+              <div class="social-backend-stream-row social-backend-stream-row--header">
+                <span>Time</span>
+                <span>Domain</span>
+                <span>Surface</span>
+                <span>Source</span>
+                <span>Status</span>
+                <span>Message</span>
+              </div>
+              <div class="social-backend-stream-row" [ngClass]="backendRowClass(item)" *ngFor="let item of socialBackendActivityStreamRows; trackBy: trackByActivityRow">
+                <span>{{ (item.occurredAt || item.createdAt) | date:'h:mm:ss a' }}</span>
+                <span>{{ item.domain || 'social_media' }}</span>
+                <span>{{ item.surface || 'social-outreach' }}</span>
+                <span>
+                  <strong>{{ activitySourceLabel(item) }}</strong>
+                </span>
+                <span>
+                  <strong>{{ item.status || 'observed' }}</strong>
+                  <small>{{ item.type || 'social_event' }}</small>
+                </span>
+                <span>
+                  <strong>{{ item.message || 'Social event recorded.' }}</strong>
+                  <small>{{ activityStatusDetail(item) }}</small>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

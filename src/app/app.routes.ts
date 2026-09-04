@@ -10,6 +10,13 @@ export const routes: Routes = [
     redirectTo: 'command',
   },
   {
+    path: 'command',
+    loadComponent: () =>
+      import( './features/social/command/command.component' ).then( ( m ) => m.SocialOutreachComponent ),
+    canActivate: [authGuard],
+    title: environment.COMPANY_NAME + ' – Command',
+  },
+  {
     path: 'calendar',
     loadComponent: () =>
       import( './features/social/calendar/calendar.component' ).then( ( m ) => m.SocialOutreachCalendarComponent ),
