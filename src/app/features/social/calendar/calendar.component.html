@@ -1,0 +1,77 @@
+<app-back-to-top></app-back-to-top>
+<div class="todd-page">
+    <div class="social-outreach-shell mt-5">
+        <nav class="social-route-nav" aria-label="Social outreach sections">
+            <a routerLink="/command" [queryParams]="currentQueryParams" class="social-route-nav__link">Command</a>
+            <a routerLink="/queue" [queryParams]="currentQueryParams" class="social-route-nav__link">Approved</a>
+            <a routerLink="/strategy" [queryParams]="currentQueryParams" class="social-route-nav__link">Strategy</a>
+            <a routerLink="/accounts" [queryParams]="currentQueryParams" class="social-route-nav__link">Accounts</a>
+            <a routerLink="/calendar" [queryParams]="currentQueryParams" class="social-route-nav__link social-route-nav__link--active">Calendar</a>
+        </nav>
+        <span class="social-hero__eyebrow">Outreach / Social / Calendar</span>
+
+        <section class="social-posts social-calendar" id="social-calendar">
+            <div class="social-section-heading social-calendar__heading">
+                <div>
+                    <span class="social-card__eyebrow">Content Calendar</span>
+                    <h2>{{ monthLabel }}</h2>
+                    <p>Every post lives here: drafts, approved posts, published posts, and their engagement. Hover over a post for the full record.</p>
+                </div>
+                <div class="social-calendar__nav">
+                    <label class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" [checked]="showRejected" (change)="toggleShowRejected()">
+                        <span class="form-check-label ms-2">Show rejected</span>
+                    </label>
+                    <button class="btn-todd btn-todd-secondary btn-todd-icon" type="button" (click)="previousMonth()" aria-label="Previous month" title="Previous month"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                    <button class="btn-todd btn-todd-secondary btn-todd-icon" type="button" (click)="goToToday()" aria-label="Jump to today" title="Jump to today"><i class="fa-solid fa-calendar-day" aria-hidden="true"></i></button>
+                    <button class="btn-todd btn-todd-secondary btn-todd-icon" type="button" (click)="nextMonth()" aria-label="Next month" title="Next month"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                </div>
+            </div>
+
+            <div class="social-calendar__grid">
+                <div class="social-calendar__day-name" *ngFor="let name of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']">{{ name }}</div>
+
+                <ng-container *ngFor="let week of weeks">
+                    <div
+                        class="social-calendar__cell"
+                        *ngFor="let day of week"
+                        [class.social-calendar__cell--outside]="!day.isCurrentMonth"
+                        [class.social-calendar__cell--today]="day.isToday"
+                    >
+                        <div class="social-calendar__cell-date">{{ day.date.getDate() }}</div>
+                        <div class="social-calendar__post" *ngFor="let post of day.posts" tabindex="0">
+                            <div class="social-calendar__post-header">
+                                <span class="social-chip">{{ platformLabel(post.platform) }}</span>
+                                <span class="social-status-pill todd-status-pill" [attr.data-tone]="statusTone(post)">
+                                    {{ statusLabel(post) }}
+                                </span>
+                            </div>
+                            <p class="social-calendar__post-content">{{ post.content }}</p>
+                            <div class="social-calendar__post-time" *ngIf="post.scheduledFor || post.publishedTimestamp">
+                                {{ (post.publishedTimestamp || post.scheduledFor) | date:'h:mm a' }}
+                            </div>
+                            <div class="social-calendar__post-details" role="dialog" aria-label="Post details">
+                                <div class="social-calendar__post-details-media" *ngIf="post.mediaAttachment?.url">
+                                    <img *ngIf="post.mediaAttachment?.type !== 'video'" [src]="post.mediaAttachment?.url" [alt]="post.mediaAttachment?.altText || 'Post media'">
+                                    <video *ngIf="post.mediaAttachment?.type === 'video'" [src]="post.mediaAttachment?.url" controls></video>
+                                </div>
+                                <strong>{{ platformLabel(post.platform) }} · {{ statusLabel(post) }}</strong>
+                                <p>{{ post.content }}</p>
+                                <div class="social-calendar__post-details-stats" *ngIf="post.engagementSignal as signal">
+                                    <span>♥ {{ signal.likes || 0 }}</span><span>Comments {{ signal.comments || 0 }}</span><span>Clicks {{ signal.clicks || 0 }}</span>
+                                </div>
+                                <small *ngIf="post.engagementSignal?.notes">{{ post.engagementSignal?.notes }}</small>
+                                <small *ngIf="post.publishedTimestamp">Published {{ post.publishedTimestamp | date:'MMM d, y, h:mm a' }}</small>
+                            </div>
+                            <div class="social-calendar__post-actions" *ngIf="post.status === 'draft'">
+                                <button class="btn-todd btn-todd-secondary btn-todd-icon" type="button" (click)="rejectPost(post)" [disabled]="isDraftActionBusy(post)" aria-label="Reject" title="Reject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                                <button class="btn-todd btn-todd-icon" type="button" (click)="approvePost(post)" [disabled]="isDraftActionBusy(post)" aria-label="Approve" title="Approve"><i class="fa-solid fa-check" aria-hidden="true"></i></button>
+                            </div>
+                            <div class="social-post-card__hint" *ngIf="isDraftActionBusy(post)">{{ draftBusyLabel(post) }}</div>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </section>
+    </div>
+</div>

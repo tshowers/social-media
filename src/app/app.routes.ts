@@ -1,10 +1,20 @@
 import { Routes } from '@angular/router';
 
+import { environment } from '../environments/environment';
+import { authGuard } from './services/auth.guard';
+
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
     redirectTo: 'command',
+  },
+  {
+    path: 'calendar',
+    loadComponent: () =>
+      import( './features/social/calendar/calendar.component' ).then( ( m ) => m.SocialOutreachCalendarComponent ),
+    canActivate: [authGuard],
+    title: environment.COMPANY_NAME + ' – Calendar',
   },
   {
     path: 'login',

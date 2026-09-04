@@ -1,0 +1,372 @@
+/* Design tokens + base classes below are duplicated from
+   social-outreach-source.component.css - each social page's stylesheet is
+   view-encapsulated, so the shared "chip"/"pill"/"nav"/"empty state" look
+   is copied per-component the same way it already is across the other
+   social pages (source/queue/accounts/strategy/signals). */
+:host {
+    display: block;
+    min-height: 100vh;
+    color: var(--source-text, #0f172a);
+    --source-text: #0f172a;
+    --source-muted: #475569;
+    --source-border: rgba(15, 23, 42, 0.1);
+    --source-border-strong: rgba(15, 23, 42, 0.18);
+    --source-shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+    --source-shadow-soft: 0 14px 36px rgba(15, 23, 42, 0.08);
+}
+
+.social-outreach-shell {
+    width: min(1720px, calc(100vw - 2rem));
+    margin: 0 auto 6rem;
+}
+
+.social-route-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    width: fit-content;
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 0.45rem;
+    border: 1px solid var(--source-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: var(--source-shadow-soft);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.social-route-nav__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0.55rem 0.95rem;
+    border-radius: 999px;
+    color: var(--source-muted);
+    font-size: 0.78rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.social-route-nav__link:hover {
+    transform: translateY(-1px);
+    color: var(--source-text);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.social-route-nav__link--active {
+    color: #fff;
+    background: #000000;
+    box-shadow: 0 10px 24px rgba(0, 149, 204, 0.24);
+}
+
+.social-hero__eyebrow,
+.social-card__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 0.85rem;
+    padding: 0.42rem 0.68rem;
+    border: 1px solid var(--source-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--source-muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.social-section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.social-section-heading h2 {
+    margin: 0.25rem 0 0;
+    color: var(--source-text);
+    font-size: clamp(1.35rem, 2.2vw, 2rem);
+    font-weight: 950;
+    letter-spacing: -0.045em;
+    line-height: 1.08;
+}
+
+.social-section-heading p {
+    margin: 0.45rem 0 0;
+    color: var(--source-muted);
+    font-size: 0.92rem;
+    font-weight: 650;
+    line-height: 1.55;
+}
+
+.social-chip,
+.social-status-pill,
+.todd-status-pill {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.32rem 0.55rem;
+    border: 1px solid var(--source-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--source-muted);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.social-status-pill[data-tone='positive'],
+.todd-status-pill[data-tone='positive'] {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+}
+
+.social-status-pill[data-tone='waiting'],
+.todd-status-pill[data-tone='waiting'] {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+}
+
+.social-empty {
+    padding: clamp(1.2rem, 2vw, 1.7rem);
+    border: 1px dashed var(--source-border-strong);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--source-muted);
+    margin-bottom: 1.5rem;
+}
+
+.social-empty h3 {
+    margin: 0.35rem 0 0;
+    color: var(--source-text);
+    font-size: 1.45rem;
+    font-weight: 950;
+    letter-spacing: -0.035em;
+}
+
+.social-empty p {
+    margin: 0.6rem 0 0;
+    font-weight: 650;
+    line-height: 1.55;
+}
+
+.social-post-card__hint {
+    margin: 0.4rem 0 0;
+    color: var(--source-muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+    line-height: 1.4;
+}
+
+/* Calendar-specific layout */
+.social-calendar__nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-todd-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    font-size: 0.95rem;
+}
+
+
+.social-calendar__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.social-calendar__day-name {
+    padding: 0.35rem 0.2rem;
+    color: var(--source-muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.social-calendar__cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 120px;
+    padding: 0.6rem;
+    border: 1px solid var(--source-border);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.social-calendar__cell--outside {
+    opacity: 0.45;
+}
+
+.social-calendar__cell--today {
+    border-color: rgba(0, 149, 204, 0.5);
+    box-shadow: 0 0 0 1px rgba(0, 149, 204, 0.25) inset;
+}
+
+.social-calendar__cell-date {
+    color: var(--source-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.social-calendar__post {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.55rem;
+    border: 1px solid var(--source-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.social-calendar__post:hover,
+.social-calendar__post:focus,
+.social-calendar__post:focus-within {
+    z-index: 100;
+}
+
+.social-calendar__post-details {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 0.45rem);
+    left: 0;
+    width: min(360px, 32vw);
+    min-width: 250px;
+    padding: 0.8rem;
+    border: 1px solid var(--source-border-strong);
+    border-radius: 14px;
+    background: #1d222b !important;
+    color: #f8fafc;
+    opacity: 1;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.2);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.social-calendar__post:hover .social-calendar__post-details,
+.social-calendar__post:focus-within .social-calendar__post-details,
+.social-calendar__post:focus .social-calendar__post-details {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.social-calendar__post-details p { margin: 0.45rem 0; white-space: normal; }
+.social-calendar__post-details-media img,
+.social-calendar__post-details-media video { display: block; width: 100%; max-height: 280px; object-fit: contain; background: #000; border-radius: 9px; margin-bottom: 0.55rem; }
+.social-calendar__post-details strong,
+.social-calendar__post-details p { color: #f8fafc; }
+.social-calendar__post-details-stats { display: flex; flex-wrap: wrap; gap: 0.55rem; color: var(--source-muted); font-size: 0.72rem; font-weight: 800; }
+.social-calendar__post-details small { display: block; margin-top: 0.45rem; color: var(--source-muted); }
+
+.social-calendar__post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+}
+
+.social-calendar__post-content {
+    margin: 0;
+    color: var(--source-text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.social-calendar__post-time {
+    color: var(--source-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.social-calendar__post-actions {
+    display: flex;
+    gap: 0.4rem;
+}
+
+/* Matches social-outreach-source.component.css's dark-mode block exactly
+   (this file's own header comment notes everything above is duplicated from
+   there) - that block was missing here, which is why Calendar didn't match
+   the other social tabs in dark mode: day numbers/borders/chips were the
+   light-mode-only hardcoded colors above with no override, and the post
+   cards stayed a fixed near-white card instead of the same dark glass
+   surface every other tab uses. */
+@media (prefers-color-scheme: dark) {
+    :host {
+        --source-text: #f8fafc;
+        --source-muted: #cbd5e1;
+        --source-border: rgba(226, 232, 240, 0.12);
+        --source-border-strong: rgba(226, 232, 240, 0.2);
+    }
+
+    .social-route-nav,
+    .social-calendar__cell {
+        background: rgba(2, 6, 23, 0.18);
+        border-color: var(--source-border);
+    }
+
+    .social-calendar__post,
+    .social-calendar__post-details {
+        background: rgba(226, 232, 240, 0.08);
+        border-color: var(--source-border);
+    }
+
+    .social-hero__eyebrow,
+    .social-card__eyebrow,
+    .social-chip,
+    .social-status-pill,
+    .todd-status-pill {
+        background: rgba(226, 232, 240, 0.08);
+        color: #93c5fd;
+        border-color: var(--source-border);
+    }
+
+    .btn-todd,
+    .btn-todd-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--source-text);
+        border-color: var(--source-border);
+    }
+
+    .btn-todd:hover,
+    .btn-todd-secondary:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: var(--source-border-strong);
+    }
+}
+
+@media (max-width: 900px) {
+    .social-calendar__grid {
+        grid-template-columns: repeat(7, minmax(90px, 1fr));
+        overflow-x: auto;
+    }
+}
