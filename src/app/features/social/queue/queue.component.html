@@ -1,0 +1,257 @@
+<app-back-to-top></app-back-to-top>
+<app-preloader [isLoading]="socialPreloaderActive" [message]="socialPreloaderMessage" [autoHideAfterMs]="null"></app-preloader>
+<div class="social-outreach-shell mt-5">
+    <nav class="social-route-nav" aria-label="Social outreach sections">
+        <a routerLink="/command" [queryParams]="currentQueryParams" class="social-route-nav__link">Command</a>
+        <a routerLink="/queue" [queryParams]="currentQueryParams" class="social-route-nav__link social-route-nav__link--active">Approved</a>
+        <a routerLink="/strategy" [queryParams]="currentQueryParams" class="social-route-nav__link">Strategy</a>
+        <a [routerLink]="accountsRouteLink" [queryParams]="currentQueryParams" class="social-route-nav__link">Accounts</a>
+        <a routerLink="/calendar" [queryParams]="currentQueryParams" class="social-route-nav__link">Calendar</a>
+    </nav>
+    <div class="container d-flex justify-content-center">
+        <app-section-jump [items]="anchorItems" label="On this page"></app-section-jump>
+    </div>
+    <section class="social-queue-ownership" [attr.data-tone]="queueOwnershipTone">
+        <div class="social-queue-ownership__header">
+            <span class="social-card__eyebrow">Queue Ownership</span>
+            <span class="social-queue-ownership__badge">{{ queueOwnershipBadgeLabel }}</span>
+        </div>
+        <strong>{{ queueOwnershipHeadline }}</strong>
+        <p>{{ queueOwnershipSummary }}</p>
+    </section>
+    <section class="social-queue-visibility">
+        <div class="social-queue-visibility__header">
+            <span class="social-card__eyebrow">Approved Visibility</span>
+        </div>
+        <strong>Approved shows all approved posts across Social.</strong>
+        <p>The Calendar is now the single review surface for Maya's drafts. This page is the full approved queue for posts that are ready to publish.</p>
+    </section>
+    <section class="social-posts" id="drafts-needing-approval">
+        <div class="social-empty social-empty--guided">
+            <span class="social-card__eyebrow">Drafts Needing Approval</span>
+            <h3>Drafts that still need approval live in the Calendar</h3>
+            <p>This page controls what is approved and ready to publish. If a post still needs review, approve it in the Calendar first, then it will appear here.</p>
+            <ol class="social-empty__steps">
+                <li>Open the Calendar.</li>
+                <li>Review the Maya-created post.</li>
+                <li>Approve the post for publishing.</li>
+                <li>Return here to publish, copy, retry, or send it back.</li>
+            </ol>
+            <div class="social-empty__actions">
+                <a class="btn-todd" [routerLink]="sourceRouteLink" [queryParams]="currentQueryParams">Open Calendar</a>
+                <a class="btn-todd btn-todd-secondary" routerLink="/command" [queryParams]="currentQueryParams">Back to Command</a>
+            </div>
+        </div>
+    </section>
+    <section class="social-posts" id="approved-posts">
+        <div class="social-scope-banner" *ngIf="focusedPostId && queuePlatformSections.length">
+            <div>
+                <span class="social-card__eyebrow">Focused Post</span>
+                <strong>TODD brought you here for one publish-ready item.</strong>
+                <p>Handle this approved post first, then return to the full queue when you are done.</p>
+            </div>
+            <button class="btn-todd btn-todd-secondary" type="button" (click)="showAllApprovedPosts()">Show all approved posts</button>
+        </div>
+        <div class="social-empty social-empty--guided" *ngIf="!queuePlatformSections.length">
+            <span class="social-card__eyebrow">Approved</span>
+            <h3>{{ focusedPostId ? 'That post is not waiting in Approved right now' : 'No approved posts are waiting' }}</h3>
+            <p>{{ focusedPostId ? 'The post TODD pointed to may already be published, moved back to draft, or no longer be in the queue. You can open the full Approved view or go to Calendar.' : 'No publish-ready posts are waiting. Drafts that still need approval stay in the Calendar. Once approved, they show here for publishing, copying, retrying, or routing back to draft.' }}</p>
+            <ol class="social-empty__steps">
+                <li>Wait for Maya to create the draft batch.</li>
+                <li>Review and approve it in the Calendar.</li>
+                <li>Return here when the post becomes publish-ready.</li>
+                <li>Publish, copy, retry, or move it back to draft.</li>
+            </ol>
+            <div class="social-empty__actions">
+                <a class="btn-todd" [routerLink]="sourceRouteLink" [queryParams]="currentQueryParams">Open Calendar</a>
+                <button *ngIf="focusedPostId" class="btn-todd btn-todd-secondary" type="button" (click)="showAllApprovedPosts()">Show all approved posts</button>
+                <a class="btn-todd btn-todd-secondary" routerLink="/command" [queryParams]="currentQueryParams">Back to Command</a>
+            </div>
+        </div>
+        <div class="social-platform-sections" *ngIf="queuePlatformSections.length">
+            <section class="social-platform-section" *ngFor="let section of queuePlatformSections">
+                <div class="social-section-header social-section-header--platform">
+                    <div>
+                        <span class="social-card__eyebrow">{{ section.label }}</span>
+                        <h3>{{ section.totalCount }} item{{ section.totalCount === 1 ? '' : 's' }} in {{ section.label }}</h3>
+                        <p>{{ section.approvedPosts.length }} approved and {{ section.blockedPosts.length }} blocked or retrying.</p>
+                    </div>
+                </div>
+                <div class="social-post-card" *ngFor="let post of section.approvedPosts">
+                    <div class="social-post-card__header">
+                        <div>
+                            <span class="social-chip">{{ post.platformLabel }}</span>
+                            <span class="social-status-pill todd-status-pill" data-tone="active">Approved</span>
+                        </div>
+                        <small>{{ post.estimatedPublishLabel }} {{ post.estimatedPublishDetail }}</small>
+                    </div>
+                    <p class="social-post-card__hint social-post-card__hint--ownership"><strong>{{ post.approvedQueueStateLabel }}</strong></p>
+                    <p class="social-post-card__hint">{{ post.approvedQueueOwnershipHint }}</p>
+                    <p class="social-post-card__hint">{{ post.queueReasonDetail }}</p>
+                    <p class="social-post-card__hint" *ngIf="post.hasMissingSocialAccount">Choose a connected account before publishing.</p>
+                    <p class="social-post-card__hint" *ngIf="post.hasDisconnectedSocialAccount">Reconnect the missing account or move this post back to draft and choose a live account.</p>
+                    <p class="social-post-card__hint" *ngIf="post.hasMissingSubreddit">Select a subreddit before publishing to Reddit.</p>
+                    <p class="social-post-card__hint" *ngIf="post.profileUrl as url">
+                        <a [href]="url" target="_blank" rel="noopener noreferrer">Open profile</a>
+                    </p>
+                    <div class="social-approved-preview">
+                        <ng-container *ngIf="post.mediaAttachment as media">
+                            <div class="social-draft-media-thumb social-approved-preview__media">
+                                <img *ngIf="media.type === 'image'" [src]="media.url" [alt]="media.altText || media.title || 'Attached media'" />
+                                <video *ngIf="media.type === 'video'" [src]="media.url" controls playsinline preload="metadata"></video>
+                                <p class="social-post-card__hint">Attached media will publish with this post.</p>
+                            </div>
+                        </ng-container>
+                        <div class="social-approved-preview__copy">
+                            <span class="social-post-diagnostics__eyebrow">Post copy</span>
+                            <p class="social-published-copy">{{ post.content }}</p>
+                        </div>
+                    </div>
+                    <div class="social-post-diagnostics" *ngIf="post.hasDiagnostics">
+                        <div class="social-post-diagnostics__card" *ngIf="post.qualitySummary || post.qualityScore !== null || post.qualityStrengths.length || post.qualityImprovements.length || post.qualityPublishReady || post.qualityContextThin || post.qualityGenericRisk || post.qualityOffBrandRisk">
+                            <span class="social-post-diagnostics__eyebrow">Social diagnostics</span>
+                            <strong>{{ post.qualityVerdictLabel | titlecase }}</strong>
+                            <p>{{ post.qualitySummary }}</p>
+                            <div class="social-post-diagnostics__chips">
+                                <div class="social-quality-gauge" *ngIf="post.qualityScore !== null">
+                                    <app-arc-gauge [value]="post.qualityScore" [max]="10" [tone]="(post.qualityScore) >= 7 ? 'positive' : (post.qualityScore) >= 4 ? 'attention' : 'warn'">
+                                    </app-arc-gauge>
+                                    <span class="social-post-chip">Score {{ post.qualityScore }}/10</span>
+                                </div>
+                                <span class="social-post-chip" *ngIf="post.qualityPublishReady">Publish-ready</span>
+                                <span class="social-post-chip" *ngIf="post.qualityContextThin">Context thin</span>
+                                <span class="social-post-chip" *ngIf="post.qualityGenericRisk">Generic risk</span>
+                                <span class="social-post-chip" *ngIf="post.qualityOffBrandRisk">Off-brand risk</span>
+                            </div>
+                            <ul class="social-post-diagnostics__list" *ngIf="post.qualityStrengths.length">
+                                <li *ngFor="let strength of post.qualityStrengths">{{ strength }}</li>
+                            </ul>
+                            <ul class="social-post-diagnostics__list social-post-diagnostics__list--attention" *ngIf="post.qualityImprovements.length">
+                                <li *ngFor="let improvement of post.qualityImprovements">{{ improvement }}</li>
+                            </ul>
+                        </div>
+                        <div class="social-post-diagnostics__card" *ngIf="post.followThroughPlan as followThroughPlan">
+                            <span class="social-post-diagnostics__eyebrow">After it lands</span>
+                            <strong>How TODD plans the follow-through</strong>
+                            <dl class="social-post-diagnostics__plan">
+                                <div *ngIf="followThroughPlan.followUpAngle">
+                                    <dt>Next angle</dt>
+                                    <dd>{{ followThroughPlan.followUpAngle }}</dd>
+                                </div>
+                                <div *ngIf="followThroughPlan.commentHook">
+                                    <dt>Comment hook</dt>
+                                    <dd>{{ followThroughPlan.commentHook }}</dd>
+                                </div>
+                                <div *ngIf="followThroughPlan.replyTone">
+                                    <dt>Reply tone</dt>
+                                    <dd>{{ followThroughPlan.replyToneLabel }}</dd>
+                                </div>
+                                <div *ngIf="followThroughPlan.distributionIntent">
+                                    <dt>Distribution intent</dt>
+                                    <dd>{{ followThroughPlan.distributionIntentLabel }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                    <p class="social-post-card__id">ID: {{ post.postId }}</p>
+                    <div class="social-post-card__actions">
+                        <button class="btn-todd" type="button" (click)="publishPost(post.source)" [disabled]="!canPublishPost || post.hasMissingSubreddit || post.isBusy">{{ queueOwnershipMode === 'auto' ? 'Publish Now Override' : 'Publish Now' }}</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="moveApprovedPostToDraft(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Move to draft</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="copyPostContent(post.source)" [disabled]="post.isBusy">Copy Post</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="deleteQueuedPost(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Delete</button>
+                    </div>
+                    <div class="social-post-card__hint" *ngIf="post.isBusy">
+                        {{ post.busyLabel }}
+                    </div>
+                    <div class="social-first-comment" *ngIf="firstCommentDrafts[post.postId]">
+                        <div class="social-first-comment__header">
+                            <strong>Post this as your first comment</strong>
+                            <button class="social-first-comment__dismiss" type="button" (click)="dismissFirstComment(post.postId)" aria-label="Dismiss">✕</button>
+                        </div>
+                        <p class="social-first-comment__tip">Posting immediately after publishing pushes your post higher in the feed. For LinkedIn and Threads, move any links here instead of the post body.</p>
+                        <pre class="social-first-comment__text">{{ firstCommentDrafts[post.postId] }}</pre>
+                        <div class="social-first-comment__actions">
+                            <button class="btn-todd" type="button" (click)="copyFirstComment(post.postId)">Copy First Comment</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="social-post-card social-post-card--blocked" *ngFor="let post of section.blockedPosts">
+                    <div class="social-post-card__header">
+                        <div>
+                            <span class="social-chip">{{ post.platformLabel }}</span>
+                            <span class="social-status-pill todd-status-pill" [attr.data-tone]="post.blockedTone">
+                                {{ post.statusLabel }}
+                            </span>
+                        </div>
+                        <small *ngIf="post.lastPublishAttemptAt">Last attempt {{ post.lastPublishAttemptAt | date:'MMM d, h:mm a' }}</small>
+                    </div>
+                    <p class="social-post-card__hint social-post-card__hint--warning">{{ post.retryMessage }}</p>
+                    <div class="social-quality-gauge" *ngIf="post.retryAttemptCount">
+                        <app-arc-gauge [value]="post.retryAttemptCount" [max]="post.maxRetryAttempts" tone="warn">
+                        </app-arc-gauge>
+                        <p class="social-post-card__hint" style="margin:0">Attempted {{ post.retryAttemptCount }} of {{ post.maxRetryAttempts }} times.</p>
+                    </div>
+                    <p class="social-post-card__hint" *ngIf="post.profileUrl as url">
+                        <a [href]="url" target="_blank" rel="noopener noreferrer">Open profile</a>
+                    </p>
+                    <p class="social-published-copy">{{ post.content }}</p>
+                    <div class="social-post-diagnostics" *ngIf="post.hasDiagnostics">
+                        <div class="social-post-diagnostics__card" *ngIf="post.qualitySummary || post.qualityScore !== null || post.qualityStrengths.length || post.qualityImprovements.length || post.qualityPublishReady || post.qualityContextThin || post.qualityGenericRisk || post.qualityOffBrandRisk">
+                            <span class="social-post-diagnostics__eyebrow">Social diagnostics</span>
+                            <strong>{{ post.qualityVerdictLabel | titlecase }}</strong>
+                            <p>{{ post.qualitySummary }}</p>
+                            <div class="social-post-diagnostics__chips">
+                                <div class="social-quality-gauge" *ngIf="post.qualityScore !== null">
+                                    <app-arc-gauge [value]="post.qualityScore" [max]="10" [tone]="(post.qualityScore) >= 7 ? 'positive' : (post.qualityScore) >= 4 ? 'attention' : 'warn'">
+                                    </app-arc-gauge>
+                                    <span class="social-post-chip">Score {{ post.qualityScore }}/10</span>
+                                </div>
+                                <span class="social-post-chip" *ngIf="post.qualityPublishReady">Publish-ready</span>
+                                <span class="social-post-chip" *ngIf="post.qualityContextThin">Context thin</span>
+                                <span class="social-post-chip" *ngIf="post.qualityGenericRisk">Generic risk</span>
+                                <span class="social-post-chip" *ngIf="post.qualityOffBrandRisk">Off-brand risk</span>
+                            </div>
+                            <ul class="social-post-diagnostics__list" *ngIf="post.qualityStrengths.length">
+                                <li *ngFor="let strength of post.qualityStrengths">{{ strength }}</li>
+                            </ul>
+                            <ul class="social-post-diagnostics__list social-post-diagnostics__list--attention" *ngIf="post.qualityImprovements.length">
+                                <li *ngFor="let improvement of post.qualityImprovements">{{ improvement }}</li>
+                            </ul>
+                        </div>
+                        <div class="social-post-diagnostics__card" *ngIf="post.followThroughPlan as followThroughPlan">
+                            <span class="social-post-diagnostics__eyebrow">After it lands</span>
+                            <strong>How TODD plans the follow-through</strong>
+                            <dl class="social-post-diagnostics__plan">
+                                <div *ngIf="followThroughPlan.followUpAngle">
+                                    <dt>Next angle</dt>
+                                    <dd>{{ followThroughPlan.followUpAngle }}</dd>
+                                </div>
+                                <div *ngIf="followThroughPlan.commentHook">
+                                    <dt>Comment hook</dt>
+                                    <dd>{{ followThroughPlan.commentHook }}</dd>
+                                </div>
+                                <div *ngIf="followThroughPlan.replyTone">
+                                    <dt>Reply tone</dt>
+                                    <dd>{{ followThroughPlan.replyToneLabel }}</dd>
+                                </div>
+                                <div *ngIf="followThroughPlan.distributionIntent">
+                                    <dt>Distribution intent</dt>
+                                    <dd>{{ followThroughPlan.distributionIntentLabel }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="social-post-card__actions">
+                        <button class="btn-todd" type="button" (click)="resetToApproved(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Reset &amp; Retry</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="moveApprovedPostToDraft(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Move to draft</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="copyPostContent(post.source)" [disabled]="post.isBusy">Copy Post</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="deleteQueuedPost(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Delete</button>
+                    </div>
+                    <div class="social-post-card__hint" *ngIf="post.isBusy">
+                        {{ post.busyLabel }}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+</div>

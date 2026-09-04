@@ -31,6 +31,13 @@ export const routes: Routes = [
     title: environment.COMPANY_NAME + ' – Strategy',
   },
   {
+    path: 'queue',
+    loadComponent: () =>
+      import( './features/social/queue/queue.component' ).then( ( m ) => m.SocialOutreachQueueComponent ),
+    canActivate: [authGuard],
+    title: environment.COMPANY_NAME + ' – Approved',
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import( './features/sign-in/sign-in.component' ).then( ( m ) => m.SignInComponent ),
