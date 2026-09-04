@@ -1,0 +1,415 @@
+<app-back-to-top></app-back-to-top>
+<app-preloader [isLoading]="socialPreloaderActive" [message]="socialPreloaderMessage" [autoHideAfterMs]="null"></app-preloader>
+<div class="social-outreach-shell mt-5">
+    <nav class="social-route-nav" aria-label="Social outreach sections">
+        <a routerLink="/command" [queryParams]="currentQueryParams" class="social-route-nav__link">Command</a>
+        <a routerLink="/queue" [queryParams]="currentQueryParams" class="social-route-nav__link">Approved</a>
+        <a routerLink="/strategy" [queryParams]="currentQueryParams" class="social-route-nav__link">Strategy</a>
+        <a [routerLink]="accountsRouteLink" [queryParams]="currentQueryParams" class="social-route-nav__link social-route-nav__link--active">Accounts</a>
+        <a routerLink="/calendar" [queryParams]="currentQueryParams" class="social-route-nav__link">Calendar</a>
+    </nav>
+    <section class="social-posts">
+        <!-- ── Connected Accounts ────────────────────────────────────────── -->
+        <div class="social-card">
+            <div class="social-card__header">
+                <div>
+                    <span class="social-card__eyebrow">Connected Accounts</span>
+                    <h2>Connect accounts TODD can use</h2>
+                </div>
+            </div>
+            <p>Start here to connect publishing destinations. Once an account is connected, TODD can use it in Social views, queue work, and respect your cadence settings.</p>
+            <div class="social-provider-health-summary" *ngIf="accounts.length">
+                <app-arc-gauge [value]="accountHealthSummary?.healthyCount || accounts.length" [max]="accountHealthSummary?.totalAccounts || accounts.length" [tone]="(accountHealthSummary?.problemCount || 0) > 0 ? 'warn' : 'positive'">
+                </app-arc-gauge>
+                <span class="todd-status-pill" [attr.data-tone]="(accountHealthSummary?.problemCount || 0) > 0 ? 'warning' : 'on'">
+                    {{ accountHealthSummary?.healthyCount || 0 }}/{{ accountHealthSummary?.totalAccounts || accounts.length }} healthy </span>
+                <span class="social-provider-note" *ngIf="accountHealthLoading">Checking live account health…</span>
+                <span class="social-provider-note" *ngIf="!accountHealthLoading && accountHealthErrorMessage">{{ accountHealthErrorMessage }}</span>
+                <span class="social-provider-note" *ngIf="!accountHealthLoading && !accountHealthErrorMessage && (accountHealthSummary?.problemCount || 0) > 0">
+                    {{ accountHealthSummary?.problemCount }} account{{ (accountHealthSummary?.problemCount || 0) === 1 ? '' : 's' }} need attention. </span>
+                <span class="social-provider-note" *ngIf="!accountHealthLoading && !accountHealthErrorMessage && !(accountHealthSummary?.problemCount || 0)"> Every connected account is currently testing healthy. </span>
+            </div>
+            <div class="social-platform">
+                <div>
+                    <strong>YouTube</strong>
+                    <p>Use it for video-first posts and channel descriptions. This is its own publishing destination even though auth uses Google.</p>
+                    <div class="social-provider-actions">
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="connectProvider('youtube')" [disabled]="providerConnectionsDisabled || !providerSummary['youtube'].configured">
+                            {{ youtubeAccountsList.length ? 'Reconnect YouTube' : 'Connect YouTube' }}
+                        </button>
+                        <span class="social-provider-status todd-status-pill" *ngIf="youtubeAccountsList.length" data-tone="on">{{ youtubeAccountsList.length }} connected</span>
+                    </div>
+                    <p class="social-provider-note" *ngIf="providerSummary['youtube'].connectNote">{{ providerSummary['youtube'].connectNote }}</p>
+                    <ul class="social-provider-links" *ngIf="youtubeAccountsList.length">
+                        <li *ngFor="let acct of youtubeAccountsList">
+                            <div class="social-account-led">
+                                <app-status-led [tone]="acct.healthTone === 'on' ? 'positive' : acct.healthTone === 'warning' ? 'attention' : 'warn'" [pulse]="acct.healthTone !== 'on'">
+                                </app-status-led>
+                            </div>
+                            <span class="todd-status-pill" [attr.data-tone]="acct.healthTone">{{ acct.healthLabel }}</span>
+                            <ng-container *ngIf="acct.profileUrl; else ytNoUrl">
+                                <a [href]="acct.profileUrl" target="_blank" rel="noopener noreferrer">{{ acct.displayLabel }}</a>
+                            </ng-container>
+                            <ng-template #ytNoUrl><span>{{ acct.displayLabel }}</span></ng-template>
+                            <button class="social-provider-help-toggle" type="button" (click)="testAccountConnection(acct)" [disabled]="accountConnectionTestState[acct.accountId]?.busy">Test</button>
+                            <button class="social-provider-help-toggle" type="button" (click)="disconnectAccount(acct)">Disconnect</button>
+                            <small>{{ accountConnectionTestState[acct.accountId]?.result || acct.healthSummaryText }}</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="social-platform">
+                <div>
+                    <strong>Google Business Profile</strong>
+                    <p>Use it for customer-facing business updates. It can be connected with a different Google account than YouTube.</p>
+                    <div class="social-provider-actions">
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="connectProvider('google_business_profile')" [disabled]="providerConnectionsDisabled || !providerSummary['google_business_profile'].configured">
+                            {{ googleBusinessProfileAccountsList.length ? 'Reconnect Google Business Profile' : 'Connect Google Business Profile' }}
+                        </button>
+                        <span class="social-provider-status todd-status-pill" *ngIf="googleBusinessProfileAccountsList.length" data-tone="on">{{ googleBusinessProfileAccountsList.length }} connected</span>
+                    </div>
+                    <p class="social-provider-note" *ngIf="providerSummary['google_business_profile'].connectNote">{{ providerSummary['google_business_profile'].connectNote }}</p>
+                    <ul class="social-provider-links" *ngIf="googleBusinessProfileAccountsList.length">
+                        <li *ngFor="let acct of googleBusinessProfileAccountsList">
+                            <div class="social-account-led">
+                                <app-status-led [tone]="acct.healthTone === 'on' ? 'positive' : acct.healthTone === 'warning' ? 'attention' : 'warn'" [pulse]="acct.healthTone !== 'on'">
+                                </app-status-led>
+                            </div>
+                            <span class="todd-status-pill" [attr.data-tone]="acct.healthTone">{{ acct.healthLabel }}</span>
+                            <div class="social-provider-account-row">
+                                <ng-container *ngIf="acct.profileUrl; else gbpNoUrl">
+                                    <a [href]="acct.profileUrl" target="_blank" rel="noopener noreferrer">{{ acct.displayLabel }}</a>
+                                </ng-container>
+                                <ng-template #gbpNoUrl><span>{{ acct.displayLabel }}</span></ng-template>
+                                <button class="social-provider-help-toggle" type="button" (click)="testAccountConnection(acct)" [disabled]="accountConnectionTestState[acct.accountId]?.busy">Test</button>
+                                <button class="social-provider-help-toggle" type="button" (click)="disconnectAccount(acct)">Disconnect</button>
+                            </div>
+                            <small>{{ accountConnectionTestState[acct.accountId]?.result || acct.healthSummaryText }}</small>
+                            <div class="social-provider-location" *ngIf="acct.googleBusinessProfileLocationLabelValue; else gbpMissingLocation">
+                                <span class="todd-status-pill" data-tone="on">Location selected</span>
+                                <small>{{ acct.googleBusinessProfileLocationLabelValue }}</small>
+                            </div>
+                            <ng-template #gbpMissingLocation>
+                                <div class="social-provider-location social-provider-location--warning">
+                                    <span class="todd-status-pill" data-tone="warning">Location required</span>
+                                    <small *ngIf="acct.locationDiscoveryError">{{ acct.locationDiscoveryError }}</small>
+                                    <small *ngIf="!acct.locationDiscoveryError">Reconnect Google Business Profile and choose a business location before publishing.</small>
+                                </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="social-provider-panel" *ngIf="showGoogleConnectPanel">
+                <div class="social-provider-panel__header">
+                    <div>
+                        <span class="social-card__eyebrow">Google Connect</span>
+                        <h3>Connect {{ platformLabel(googleDestination) }}</h3>
+                    </div>
+                    <button class="social-draft-control social-draft-control--ghost" type="button" (click)="closeGoogleConnectPanel()">Close</button>
+                </div>
+                <p class="social-provider-panel__intro">TODD will use Google auth for this destination only. YouTube and Google Business Profile remain separate publishing destinations and can use different Google accounts.</p>
+                <div class="social-provider-panel__actions">
+                    <button class="btn-todd" type="button" (click)="submitGoogleConnection()" [disabled]="googleConnecting">
+                        {{ googleConnecting ? 'Connecting…' : 'Continue with Google' }}
+                    </button>
+                    <button class="btn-todd btn-todd-secondary" type="button" (click)="closeGoogleConnectPanel()" [disabled]="googleConnecting">Cancel</button>
+                </div>
+            </div>
+            <div class="social-platform">
+                <div>
+                    <strong>LinkedIn</strong>
+                    <p>Use it for immediate outreach posts that can spark comments, clicks, and direct follow-up.</p>
+                    <div class="social-provider-actions">
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="connectProvider('linkedin')" [disabled]="providerConnectionsDisabled || !providerSummary['linkedin'].configured">
+                            {{ providerSummary['linkedin'].connectButtonLabel }}
+                        </button>
+                        <span class="social-provider-status todd-status-pill" *ngIf="providerSummary['linkedin'].hasConnected" data-tone="on">{{ providerSummary['linkedin'].connectedCount }} connected</span>
+                    </div>
+                    <p class="social-provider-note" *ngIf="providerSummary['linkedin'].connectNote">{{ providerSummary['linkedin'].connectNote }}</p>
+                    <ul class="social-provider-links" *ngIf="providerSummary['linkedin'].hasConnected">
+                        <li *ngFor="let acct of linkedinAccounts">
+                            <div class="social-account-led">
+                                <app-status-led [tone]="acct.healthTone === 'on' ? 'positive' : acct.healthTone === 'warning' ? 'attention' : 'warn'" [pulse]="acct.healthTone !== 'on'">
+                                </app-status-led>
+                            </div>
+                            <span class="todd-status-pill" [attr.data-tone]="acct.healthTone">{{ acct.healthLabel }}</span>
+                            <ng-container *ngIf="acct.profileUrl; else liNoUrl">
+                                <a class="btn-todd me-2" [href]="acct.profileUrl" target="_blank" rel="noopener noreferrer">{{ acct.displayLabel }}</a>
+                            </ng-container>
+                            <ng-template #liNoUrl><span>{{ acct.displayLabel }}</span></ng-template>
+                            <button class="social-provider-help-toggle" type="button" (click)="testAccountConnection(acct)" [disabled]="accountConnectionTestState[acct.accountId]?.busy">Test</button>
+                            <button class="social-provider-help-toggle" type="button" (click)="disconnectAccount(acct)">Disconnect</button>
+                            <small>{{ accountConnectionTestState[acct.accountId]?.result || acct.healthSummaryText }}</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="social-platform">
+                <div>
+                    <strong>Threads</strong>
+                    <p>Use it for shorter outreach posts that create fast conversation signals.</p>
+                    <div class="social-provider-actions">
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="connectProvider('threads')" [disabled]="providerConnectionsDisabled || !providerSummary['threads'].configured">
+                            {{ providerSummary['threads'].connectButtonLabel }}
+                        </button>
+                        <span class="social-provider-status todd-status-pill" *ngIf="providerSummary['threads'].hasConnected" data-tone="on">{{ providerSummary['threads'].connectedCount }} connected</span>
+                    </div>
+                    <p class="social-provider-note" *ngIf="providerSummary['threads'].connectNote">{{ providerSummary['threads'].connectNote }}</p>
+                    <ul class="social-provider-links" *ngIf="providerSummary['threads'].hasConnected">
+                        <li *ngFor="let acct of threadsAccounts">
+                            <div class="social-account-led">
+                                <app-status-led [tone]="acct.healthTone === 'on' ? 'positive' : acct.healthTone === 'warning' ? 'attention' : 'warn'" [pulse]="acct.healthTone !== 'on'">
+                                </app-status-led>
+                            </div>
+                            <span class="todd-status-pill" [attr.data-tone]="acct.healthTone">{{ acct.healthLabel }}</span>
+                            <ng-container *ngIf="acct.profileUrl; else thNoUrl">
+                                <a class="btn-todd me-2" [href]="acct.profileUrl" target="_blank" rel="noopener noreferrer">Account: {{ acct.displayLabel }}</a>
+                            </ng-container>
+                            <ng-template #thNoUrl><span>{{ acct.displayLabel }} </span></ng-template>
+                            <button class="btn-todd me-2" type="button" (click)="testAccountConnection(acct)" [disabled]="accountConnectionTestState[acct.accountId]?.busy">Test</button>
+                            <button class="btn-todd me-2" type="button" (click)="disconnectAccount(acct)">Disconnect</button>
+                            <small>{{ accountConnectionTestState[acct.accountId]?.result || acct.healthSummaryText }}</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="social-platform">
+                <div>
+                    <strong>Facebook</strong>
+                    <p>Publish to your Facebook Page. Requires a Business or Creator Page managed by your Facebook account.</p>
+                    <div class="social-provider-actions">
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="connectProvider('facebook')" [disabled]="providerConnectionsDisabled || !providerSummary['facebook'].configured">
+                            {{ providerSummary['facebook'].connectButtonLabel }}
+                        </button>
+                        <span class="social-provider-status todd-status-pill" *ngIf="providerSummary['facebook'].hasConnected" data-tone="on">{{ providerSummary['facebook'].connectedCount }} connected</span>
+                    </div>
+                    <p class="social-provider-note" *ngIf="providerSummary['facebook'].connectNote">{{ providerSummary['facebook'].connectNote }}</p>
+                    <ul class="social-provider-links" *ngIf="providerSummary['facebook'].hasConnected">
+                        <li *ngFor="let acct of facebookAccounts">
+                            <div class="social-account-led">
+                                <app-status-led [tone]="acct.healthTone === 'on' ? 'positive' : acct.healthTone === 'warning' ? 'attention' : 'warn'" [pulse]="acct.healthTone !== 'on'">
+                                </app-status-led>
+                            </div>
+                            <span class="todd-status-pill" [attr.data-tone]="acct.healthTone">{{ acct.healthLabel }}</span>
+                            <ng-container *ngIf="acct.profileUrl; else fbNoUrl">
+                                <a [href]="acct.profileUrl" target="_blank" rel="noopener noreferrer">{{ acct.displayLabel }}</a>
+                            </ng-container>
+                            <ng-template #fbNoUrl><span>{{ acct.displayLabel }} </span></ng-template>
+                            <button class="social-provider-help-toggle" type="button" (click)="testAccountConnection(acct)" [disabled]="accountConnectionTestState[acct.accountId]?.busy">Test</button>
+                            <button class="social-provider-help-toggle" type="button" (click)="disconnectAccount(acct)">Disconnect</button>
+                            <small>{{ accountConnectionTestState[acct.accountId]?.result || acct.healthSummaryText }}</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="social-platform">
+                <div>
+                    <strong>Instagram</strong>
+                    <p>Publish images and videos to Instagram. Requires a professional (Business or Creator) account. Text-only posts are not supported by the Instagram API.</p>
+                    <div class="social-provider-actions">
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="connectProvider('instagram')" [disabled]="providerConnectionsDisabled || !providerSummary['instagram'].configured">
+                            {{ providerSummary['instagram'].connectButtonLabel }}
+                        </button>
+                        <span class="social-provider-status todd-status-pill" *ngIf="providerSummary['instagram'].hasConnected" data-tone="on">{{ providerSummary['instagram'].connectedCount }} connected</span>
+                    </div>
+                    <p class="social-provider-note" *ngIf="providerSummary['instagram'].connectNote">{{ providerSummary['instagram'].connectNote }}</p>
+                    <ul class="social-provider-links" *ngIf="providerSummary['instagram'].hasConnected">
+                        <li *ngFor="let acct of instagramAccounts">
+                            <div class="social-account-led">
+                                <app-status-led [tone]="acct.healthTone === 'on' ? 'positive' : acct.healthTone === 'warning' ? 'attention' : 'warn'" [pulse]="acct.healthTone !== 'on'">
+                                </app-status-led>
+                            </div>
+                            <span class="todd-status-pill" [attr.data-tone]="acct.healthTone">{{ acct.healthLabel }}</span>
+                            <ng-container *ngIf="acct.profileUrl; else igNoUrl">
+                                <a class="btn-todd me-2" [href]="acct.profileUrl" target="_blank" rel="noopener noreferrer">Account: {{ acct.displayLabel }}</a>
+                            </ng-container>
+                            <ng-template #igNoUrl><span>{{ acct.displayLabel }} </span></ng-template>
+                            <button class="btn-todd me-2" type="button" (click)="testAccountConnection(acct)" [disabled]="accountConnectionTestState[acct.accountId]?.busy">Test</button>
+                            <button class="btn-todd me-2" type="button" (click)="disconnectAccount(acct)">Disconnect</button>
+                            <small>{{ accountConnectionTestState[acct.accountId]?.result || acct.healthSummaryText }}</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="social-platform">
+                <div>
+                    <strong>Bluesky</strong>
+                    <p>Use it for shorter, sharper posts that can keep momentum moving even when other platforms are blocked.</p>
+                    <div class="social-provider-actions">
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="connectProvider('bluesky')" [disabled]="providerConnectionsDisabled || !providerSummary['bluesky'].configured">
+                            {{ providerSummary['bluesky'].connectButtonLabel }}
+                        </button>
+                        <span class="social-provider-status todd-status-pill" *ngIf="providerSummary['bluesky'].hasConnected" data-tone="on">{{ providerSummary['bluesky'].connectedCount }} connected</span>
+                    </div>
+                    <p class="social-provider-note" *ngIf="providerSummary['bluesky'].connectNote">{{ providerSummary['bluesky'].connectNote }}</p>
+                    <ul class="social-provider-links" *ngIf="providerSummary['bluesky'].hasConnected">
+                        <li *ngFor="let acct of blueskyAccounts">
+                            <div class="social-account-led">
+                                <app-status-led [tone]="acct.healthTone === 'on' ? 'positive' : acct.healthTone === 'warning' ? 'attention' : 'warn'" [pulse]="acct.healthTone !== 'on'">
+                                </app-status-led>
+                            </div>
+                            <span class="todd-status-pill" [attr.data-tone]="acct.healthTone">{{ acct.healthLabel }}</span>
+                            <ng-container *ngIf="acct.profileUrl; else bsNoUrl">
+                                <a class="btn-todd me-2" [href]="acct.profileUrl" target="_blank" rel="noopener noreferrer">Account: {{ acct.displayLabel }}</a>
+                            </ng-container>
+                            <ng-template #bsNoUrl><span>{{ acct.displayLabel }}</span></ng-template>
+                            <button class="btn-todd me-2" type="button" (click)="testAccountConnection(acct)" [disabled]="accountConnectionTestState[acct.accountId]?.busy">Test</button>
+                            <button class="btn-todd me-2" type="button" (click)="disconnectAccount(acct)">Disconnect</button>
+                            <small>{{ accountConnectionTestState[acct.accountId]?.result || acct.healthSummaryText }}</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="social-platform">
+                <div>
+                    <strong>Reddit</strong>
+                    <p>Use it for helpful, specific posts inside the right subreddit. Keep the tone human and non-promotional.</p>
+                    <div class="social-provider-actions">
+                        <button class="btn-todd btn-todd-secondary" type="button" (click)="connectProvider('reddit')" [disabled]="providerConnectionsDisabled || !providerSummary['reddit'].configured">
+                            {{ providerSummary['reddit'].connectButtonLabel }}
+                        </button>
+                        <span class="social-provider-status todd-status-pill" *ngIf="providerSummary['reddit'].hasConnected" data-tone="on">{{ providerSummary['reddit'].connectedCount }} connected</span>
+                    </div>
+                    <p class="social-provider-note">{{ providerSummary['reddit'].connectNote }}</p>
+                    <ul class="social-provider-links" *ngIf="providerSummary['reddit'].hasConnected">
+                        <li *ngFor="let acct of redditAccounts">
+                            <div class="social-account-led">
+                                <app-status-led [tone]="acct.healthTone === 'on' ? 'positive' : acct.healthTone === 'warning' ? 'attention' : 'warn'" [pulse]="acct.healthTone !== 'on'">
+                                </app-status-led>
+                            </div>
+                            <span class="todd-status-pill" [attr.data-tone]="acct.healthTone">{{ acct.healthLabel }}</span>
+                            <ng-container *ngIf="acct.profileUrl; else rdNoUrl">
+                                <a [href]="acct.profileUrl" target="_blank" rel="noopener noreferrer">{{ acct.displayLabel }}</a>
+                            </ng-container>
+                            <ng-template #rdNoUrl><span>{{ acct.displayLabel }}</span></ng-template>
+                            <button class="social-provider-help-toggle" type="button" (click)="testAccountConnection(acct)" [disabled]="accountConnectionTestState[acct.accountId]?.busy">Test</button>
+                            <button class="social-provider-help-toggle" type="button" (click)="disconnectAccount(acct)">Disconnect</button>
+                            <small>{{ accountConnectionTestState[acct.accountId]?.result || acct.healthSummaryText }}</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="social-provider-panel" *ngIf="showBlueskyConnectPanel">
+                <div class="social-provider-panel__header">
+                    <div>
+                        <span class="social-card__eyebrow">Bluesky Connect</span>
+                        <h3>Connect your Bluesky account</h3>
+                    </div>
+                    <button class="social-draft-control social-draft-control--ghost" type="button" (click)="closeBlueskyConnectPanel()">Close</button>
+                </div>
+                <p class="social-provider-panel__intro">Bluesky uses an app password for third-party tools like TODD. You will create that password in Bluesky, then paste it here.</p>
+                <div class="social-provider-panel__warning">TODD needs an app password because Bluesky does not use the same one-click connection flow as LinkedIn. Your regular Bluesky password will not work here.</div>
+                <ol class="social-provider-steps">
+                    <li>Sign in to Bluesky</li>
+                    <li>Open Settings</li>
+                    <li>Go to Privacy and Security</li>
+                    <li>Select App passwords</li>
+                    <li>Create a new app password for TODD</li>
+                    <li>Copy the password</li>
+                    <li>Paste your Bluesky handle and app password here</li>
+                </ol>
+                <div class="social-provider-panel__actions">
+                    <button class="btn-todd btn-todd-secondary" type="button" (click)="openBlueskyInNewTab()">Open Bluesky</button>
+                    <button class="social-provider-help-toggle" type="button" (click)="toggleBlueskyPasswordHelp()">Where do I find App Passwords?</button>
+                </div>
+                <div class="social-provider-help" *ngIf="showBlueskyPasswordHelp">
+                    <p>Go to Settings</p>
+                    <p>Click Privacy and Security</p>
+                    <p>Click App passwords</p>
+                </div>
+                <div class="social-provider-form">
+                    <label class="social-stack-field">
+                        <span>Bluesky Handle</span>
+                        <input class="form-control" type="text" [(ngModel)]="blueskyHandle" placeholder="taliferro.bsky.social" />
+                        <small>Example: taliferro.bsky.social</small>
+                    </label>
+                    <label class="social-stack-field">
+                        <span>App Password</span>
+                        <input class="form-control" type="password" [(ngModel)]="blueskyAppPassword" placeholder="xxxx-xxxx-xxxx-xxxx" />
+                        <small>Use the app password created in Bluesky Settings → Privacy and Security → App passwords. Do not use your normal Bluesky password.</small>
+                    </label>
+                </div>
+                <div class="social-provider-panel__actions">
+                    <button class="btn-todd" type="button" (click)="submitBlueskyConnection()" [disabled]="blueskyConnecting">
+                        {{ blueskyConnecting ? 'Connecting…' : 'Connect Bluesky' }}
+                    </button>
+                    <button class="btn-todd btn-todd-secondary" type="button" (click)="closeBlueskyConnectPanel()" [disabled]="blueskyConnecting">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <!-- ── Active Platform Context ───────────────────────────────────── -->
+        <div class="social-card">
+            <div class="social-card__header">
+                <div>
+                    <span class="social-card__eyebrow">Active Platforms</span>
+                    <h2>Choose where TODD should work</h2>
+                </div>
+                <button class="btn-todd btn-todd-secondary" type="button" (click)="selectAllPlatforms()" [disabled]="!isLoggedIn">All Platforms</button>
+            </div>
+            <p>Checked platforms drive every Social tab: drafts, queue, signals, analytics, and cadence. Uncheck a platform to hide it from Social views. Selection is saved per user.</p>
+            <div class="social-strategy-grid">
+                <label class="social-strategy-item" *ngFor="let platform of allProviders" style="cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                    <input type="checkbox" [ngModel]="selectedPlatforms[platform]" (ngModelChange)="togglePlatform(platform)" />
+                    <span style="flex:1;">{{ platformLabel(platform) }}</span>
+                    <span class="todd-status-pill" [attr.data-tone]="providerSummary[platform].connectedCount ? 'on' : 'off'">
+                        {{ providerSummary[platform].connectedCount ? providerSummary[platform].connectedCount + ' connected' : 'none' }}
+                    </span>
+                </label>
+            </div>
+        </div>
+        <!-- ── Per-Platform Cadence ──────────────────────────────────────── -->
+        <div class="social-card" *ngIf="platformList.length">
+            <div class="social-card__header">
+                <div>
+                    <span class="social-card__eyebrow">Posting Schedule</span>
+                    <h2>Set cadence by platform</h2>
+                </div>
+            </div>
+            <p>Set how often TODD posts on each active platform, define custom time slots, and toggle smart scheduling. TODD uses these rules when posts become publish-ready.</p>
+            <ng-container *ngFor="let platform of platformList">
+                <ng-container *ngIf="getPlatformCadence(platform) as cfg">
+                    <div class="social-strategy-item social-strategy-item--wide" style="border-top:1px solid var(--border-color,#e5e7eb); padding-top:1rem; margin-top:0.5rem;">
+                        <span>{{ platformLabel(platform) }}</span>
+                        <div class="social-strategy-controls" style="margin-top:0.75rem;">
+                            <label class="social-stack-field">
+                                <span>Cadence</span>
+                                <select class="form-select" [ngModel]="cfg.cadence" (ngModelChange)="updatePlatformCadenceField(platform, 'cadence', $event)">
+                                    <option *ngFor="let option of strategyCadenceOptions" [ngValue]="option.value">{{ option.label }}</option>
+                                </select>
+                            </label>
+                            <label class="social-stack-field">
+                                <span>Randomization window (min)</span>
+                                <input class="form-control" type="number" min="0" max="120" step="5" [ngModel]="cfg.randomizationWindowMinutes" (ngModelChange)="updatePlatformCadenceField(platform, 'randomizationWindowMinutes', $event)" />
+                            </label>
+                        </div>
+                        <div class="social-strategy-controls" style="margin-top:0.5rem;">
+                            <label class="social-landing-toggle">
+                                <input type="checkbox" [ngModel]="cfg.useBestTime" (ngModelChange)="updatePlatformCadenceField(platform, 'useBestTime', $event)" />
+                                <span>
+                                    <strong>Use best time</strong>
+                                    <p>Let TODD pick optimal posting windows based on engagement patterns.</p>
+                                </span>
+                            </label>
+                            <label class="social-landing-toggle">
+                                <input type="checkbox" [ngModel]="cfg.smartRandomization" (ngModelChange)="updatePlatformCadenceField(platform, 'smartRandomization', $event)" />
+                                <span>
+                                    <strong>Smart randomization</strong>
+                                    <p>Vary the exact post time within the window so posts don't always fire at the same minute.</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div style="margin-top:0.75rem;">
+                            <span style="display:block; font-size:0.875rem; font-weight:500; margin-bottom:0.5rem;">Custom posting times</span>
+                            <div *ngFor="let time of cfg.customTimes; let i = index" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.375rem;">
+                                <input class="form-control" type="time" [ngModel]="time" (ngModelChange)="updateCustomTime(platform, i, $event)" />
+                                <button class="social-provider-help-toggle" type="button" (click)="removeCustomTime(platform, i)">Remove</button>
+                            </div>
+                            <button class="btn-todd btn-todd-secondary" type="button" (click)="addCustomTime(platform)" style="margin-top:0.25rem;">+ Add time</button>
+                        </div>
+                    </div>
+                </ng-container>
+            </ng-container>
+        </div>
+    </section>
+</div>

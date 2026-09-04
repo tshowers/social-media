@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-/** Shared Taliferro Tech loading treatment, branded for Network. */
+/** Shared Taliferro Tech loading treatment, branded for Social. */
 @Component( {
   selector: 'app-preloader',
   standalone: true,
@@ -18,7 +18,7 @@ export class PreloaderComponent implements OnInit {
   @Input() inline = false;
 
   ngOnInit(): void {
-    this.brandName = this.brandName || 'Network';
+    this.brandName = this.brandName || 'Social';
     this.brandSubtext = this.brandSubtext || 'Momentum Engine';
   }
 }

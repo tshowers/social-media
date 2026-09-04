@@ -17,6 +17,13 @@ export const routes: Routes = [
     title: environment.COMPANY_NAME + ' – Calendar',
   },
   {
+    path: 'accounts',
+    loadComponent: () =>
+      import( './features/social/accounts/accounts.component' ).then( ( m ) => m.SocialOutreachAccountsComponent ),
+    canActivate: [authGuard],
+    title: environment.COMPANY_NAME + ' – Accounts',
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import( './features/sign-in/sign-in.component' ).then( ( m ) => m.SignInComponent ),

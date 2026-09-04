@@ -1,0 +1,544 @@
+/* Health summary: arc gauge + pill in a flex row */
+.social-provider-health-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Per-account LED — compact, sits before the health pill */
+.social-account-led {
+    display: inline-flex;
+    align-items: center;
+    --led-outer: 28px;
+    --led-inner: 13px;
+}
+
+:host {
+    display: block;
+    min-height: 100vh;
+    color: var(--accounts-text, #0f172a);
+    --accounts-text: #0f172a;
+    --accounts-muted: #475569;
+    --accounts-subtle: #64748b;
+    --accounts-border: rgba(15, 23, 42, 0.1);
+    --accounts-border-strong: rgba(15, 23, 42, 0.18);
+    --accounts-blue: #0095cc;
+    --accounts-cyan: #00bfff;
+    --accounts-green: #22c55e;
+    --accounts-amber: #f59e0b;
+    --accounts-red: #ef4444;
+    --accounts-shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+    --accounts-shadow-soft: 0 14px 36px rgba(15, 23, 42, 0.08);
+}
+
+:host::before {
+    content: none;
+}
+
+.social-outreach-shell {
+    width: min(1720px, calc(100vw - 2rem));
+    margin: 0 auto 6rem;
+}
+
+.social-route-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    width: fit-content;
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 0.45rem;
+    border: 1px solid var(--accounts-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: var(--accounts-shadow-soft);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.social-route-nav__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0.55rem 0.95rem;
+    border-radius: 999px;
+    color: var(--accounts-text);
+    font-size: 0.78rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.social-route-nav__link:hover {
+    transform: translateY(-1px);
+    color: var(--accounts-text);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.social-route-nav__link--active {
+    color: #fff;
+    background: #000000;
+    box-shadow: 0 10px 24px rgba(0, 149, 204, 0.24);
+}
+
+.social-hero,
+.social-card,
+.social-provider-panel,
+.social-platform {
+    border: 1px solid var(--accounts-border);
+    border-radius: 30px;
+    box-shadow: var(--accounts-shadow);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+}
+
+.social-hero {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 1.2rem;
+    padding: 1.35rem;
+}
+
+.social-hero--single {
+    grid-template-columns: 1fr;
+}
+
+.social-hero__copy,
+.social-card,
+.social-provider-panel,
+.social-platform {
+    padding: clamp(1.2rem, 2.2vw, 2rem);
+}
+
+.social-hero__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.social-hero__eyebrow,
+.social-card__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 0.85rem;
+    padding: 0.42rem 0.68rem;
+    border: 1px solid var(--accounts-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accounts-blue);
+    font-size: 0.72rem;
+    font-weight: 950;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.social-hero h1 {
+    max-width: 13ch;
+    margin: 0;
+    color: var(--accounts-text);
+    font-size: clamp(3rem, 6.5vw, 5.8rem);
+    font-weight: 950;
+    letter-spacing: -0.08em;
+    line-height: 0.96;
+}
+
+.social-hero p,
+.social-platform p,
+.social-start-card p,
+.social-provider-note,
+.social-provider-panel__intro,
+.social-provider-help p {
+    color: var(--accounts-muted);
+    font-size: 0.94rem;
+    font-weight: 650;
+    line-height: 1.6;
+}
+
+.social-hero__value-grid,
+.social-start-grid,
+.social-strategy-grid,
+.social-strategy-controls {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+}
+
+.social-start-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.social-hero__value-card,
+.social-start-card,
+.social-strategy-item {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--accounts-border);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.social-hero__value-card span,
+.social-start-card span,
+.social-strategy-item span,
+.social-stack-field span {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--accounts-subtle);
+    font-size: 0.72rem;
+    font-weight: 950;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.social-hero__value-card strong,
+.social-start-card h3,
+.social-strategy-item strong {
+    display: block;
+    color: var(--accounts-text);
+    font-size: 0.96rem;
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+.social-hero__actions,
+.social-provider-actions,
+.social-provider-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.social-hero__actions {
+    margin-top: 1.4rem;
+}
+
+.btn-todd,
+.btn-todd-secondary,
+.social-provider-help-toggle,
+.social-draft-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.72rem 1rem;
+    border: 1px solid var(--accounts-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accounts-text);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+    font-size: 0.88rem;
+    font-weight: 900;
+    text-decoration: none;
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
+    cursor: pointer;
+}
+
+.btn-todd:hover,
+.btn-todd-secondary:hover,
+.social-provider-help-toggle:hover,
+.social-draft-control:hover {
+    transform: translateY(-1px);
+    border-color: var(--accounts-border-strong);
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.social-card {
+    margin-bottom: 1rem;
+}
+
+.social-card__header,
+.social-provider-panel__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.social-card h2,
+.social-provider-panel h3 {
+    margin: 0;
+    color: var(--accounts-text);
+    font-size: clamp(1.35rem, 2.2vw, 2rem);
+    font-weight: 950;
+    letter-spacing: -0.045em;
+    line-height: 1.08;
+}
+
+.social-posts {
+    display: grid;
+    gap: 1rem;
+}
+
+.social-platform {
+    display: grid;
+    gap: 1rem;
+}
+
+.social-provider-links {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.social-provider-links li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--accounts-border);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.social-provider-health-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.social-provider-links a {
+    color: var(--accounts-blue);
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.social-provider-links a:hover {
+    text-decoration: underline;
+}
+
+.todd-status-pill,
+.social-provider-status {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.38rem 0.62rem;
+    border: 1px solid var(--accounts-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accounts-muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.todd-status-pill[data-tone='on'] {
+    border-color: rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+}
+
+.todd-status-pill[data-tone='warning'] {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+}
+
+.todd-status-pill[data-tone='critical'] {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+}
+
+.todd-status-pill[data-tone='off'] {
+    border-color: rgba(100, 116, 139, 0.24);
+    background: rgba(148, 163, 184, 0.08);
+    color: var(--accounts-subtle);
+}
+
+.social-provider-location {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.65rem;
+}
+
+.social-provider-location small {
+    color: var(--accounts-subtle);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.social-provider-location--warning {
+    padding: 0.75rem;
+    border: 1px solid rgba(245, 158, 11, 0.32);
+    border-radius: 16px;
+    background: rgba(245, 158, 11, 0.06);
+}
+
+.social-provider-panel {
+    display: grid;
+    gap: 1rem;
+}
+
+.social-provider-panel__warning,
+.social-provider-help {
+    padding: 1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(245, 158, 11, 0.32);
+    background: rgba(245, 158, 11, 0.06);
+    color: var(--accounts-text);
+    font-weight: 750;
+}
+
+.social-provider-steps {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--accounts-muted);
+    font-weight: 700;
+    line-height: 1.8;
+}
+
+.social-provider-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.social-stack-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.social-stack-field .form-control,
+.social-stack-field .form-select {
+    width: 100%;
+}
+
+.social-stack-field small {
+    color: var(--accounts-subtle);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.social-landing-toggle {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.social-landing-toggle input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    margin-top: 0.2rem;
+}
+
+.social-provider-account-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+@media (prefers-color-scheme: dark) {
+    :host {
+        --accounts-text: #f8fafc;
+        --accounts-muted: #cbd5e1;
+        --accounts-subtle: #94a3b8;
+        --accounts-border: rgba(226, 232, 240, 0.12);
+        --accounts-border-strong: rgba(226, 232, 240, 0.2);
+    }
+
+    .social-route-nav,
+    .social-hero,
+    .social-card,
+    .social-provider-panel,
+    .social-platform,
+    .social-provider-links li,
+    .social-hero__value-card,
+    .social-start-card,
+    .social-strategy-item,
+    .social-hero__eyebrow,
+    .social-card__eyebrow,
+    .todd-status-pill,
+    .social-provider-status {
+        background: rgba(226, 232, 240, 0.08);
+        color: #93c5fd;
+        border-color: var(--accounts-border);
+    }
+
+    .social-hero__value-card span,
+    .social-start-card span,
+    .social-strategy-item span,
+    .social-stack-field span {
+        color: #93c5fd;
+    }
+
+    .social-route-nav__link {
+        color: #e2e8f0;
+    }
+
+    .social-route-nav__link:not(.social-route-nav__link--active):hover {
+        background: rgba(226, 232, 240, 0.1);
+        color: #ffffff;
+    }
+}
+
+@media (max-width: 1100px) {
+
+    .social-hero__value-grid,
+    .social-start-grid,
+    .social-strategy-grid,
+    .social-strategy-controls,
+    .social-provider-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .social-outreach-shell {
+        width: min(100%, calc(100vw - 1rem));
+    }
+
+    .social-route-nav {
+        width: 100%;
+        border-radius: 22px;
+    }
+
+    .social-route-nav__link {
+        flex: 1 1 calc(50% - 0.55rem);
+    }
+
+    .social-hero,
+    .social-card,
+    .social-provider-panel,
+    .social-platform {
+        border-radius: 22px;
+    }
+
+    .social-hero h1 {
+        max-width: 100%;
+        font-size: clamp(2.6rem, 14vw, 4.4rem);
+    }
+
+    .social-card__header,
+    .social-provider-panel__header,
+    .social-provider-actions,
+    .social-provider-panel__actions,
+    .social-hero__actions,
+    .social-provider-account-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-todd,
+    .btn-todd-secondary,
+    .social-provider-help-toggle,
+    .social-draft-control {
+        width: 100%;
+    }
+}
