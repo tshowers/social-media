@@ -1,0 +1,290 @@
+<app-back-to-top></app-back-to-top>
+<app-preloader [isLoading]="socialPreloaderActive" [message]="socialPreloaderMessage" [autoHideAfterMs]="null"></app-preloader>
+<div class="container-fluid social-marketing-page">
+    <div class="social-outreach-shell  mt-5">
+        <nav class="social-route-nav" aria-label="Social outreach sections">
+            <a routerLink="/command" [queryParams]="currentQueryParams" class="social-route-nav__link">Command</a>
+            <a routerLink="/queue" [queryParams]="currentQueryParams" class="social-route-nav__link">Approved</a>
+            <a routerLink="/strategy" [queryParams]="currentQueryParams" class="social-route-nav__link social-route-nav__link--active">Strategy</a>
+            <a [routerLink]="accountsRouteLink" [queryParams]="currentQueryParams" class="social-route-nav__link">Accounts</a>
+            <a routerLink="/calendar" [queryParams]="currentQueryParams" class="social-route-nav__link">Calendar</a>
+        </nav>
+        <section class="social-hero social-hero--single" *ngIf="showIntro">
+            <div class="social-hero__copy">
+                <span class="social-hero__eyebrow">Outreach / Social / Strategy</span>
+                <div class="social-hero__header">
+                    <div class="social-hero__content">
+                        <h1>Tell TODD what kind of attention to create</h1>
+                        <p>Strategy now acts like TODD’s marketing operator layer, with social remaining the execution view for goal, platform focus, posting rhythm, and content lane.</p>
+                        <div class="social-hero__value-grid">
+                            <div class="social-hero__value-card">
+                                <span>Goal</span>
+                                <strong>Choose whether TODD should build awareness, drive action, or support follow-up.</strong>
+                            </div>
+                            <div class="social-hero__value-card">
+                                <span>Cadence</span>
+                                <strong>Set the posting rhythm so visibility stays intentional.</strong>
+                            </div>
+                            <div class="social-hero__value-card">
+                                <span>Signal</span>
+                                <strong>Use identity, timing, and platform context to guide the next post.</strong>
+                            </div>
+                        </div>
+                        <div class="social-hero__actions">
+                            <a class="btn-todd" routerLink="/command" [queryParams]="currentQueryParams">Back to Command</a>
+                            <a class="btn-todd btn-todd-secondary" [routerLink]="sourceRouteLink" [queryParams]="currentQueryParams">Open Calendar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="social-card social-card--how-to-start">
+            <div class="social-card__header">
+                <div>
+                    <span class="social-card__eyebrow">How Strategy works</span>
+                    <h2>Set the goal, tune the lane, then let TODD draft</h2>
+                </div>
+            </div>
+            <div class="social-start-grid">
+                <div class="social-start-card">
+                    <span>01</span>
+                    <h3>Pick the goal</h3>
+                    <p>Tell TODD whether the priority is awareness, action, recovery, or follow-up.</p>
+                </div>
+                <div class="social-start-card">
+                    <span>02</span>
+                    <h3>Choose the platform focus</h3>
+                    <p>Guide where TODD should aim the next post.</p>
+                </div>
+                <div class="social-start-card">
+                    <span>03</span>
+                    <h3>Set the cadence</h3>
+                    <p>Control how much content TODD should prepare this week.</p>
+                </div>
+                <div class="social-start-card">
+                    <span>04</span>
+                    <h3>Generate drafts</h3>
+                            <p>Use the strategy to create sharper posts for the Calendar.</p>
+                </div>
+            </div>
+        </section>
+        <section class="social-grid">
+            <div class="social-card social-card--strategy">
+                <div class="social-card__header">
+                    <div>
+                        <span class="social-card__eyebrow">Current Strategy</span>
+                        <h2>TODD’s marketing operator plan</h2>
+                    </div>
+                </div>
+                <div class="social-strategy-item social-strategy-item--wide" *ngIf="identityState?.identity as identity">
+                    <span>Identity Engine</span>
+                    <strong>{{ identity.primaryContentLane || strategyRecommendation?.contentLane || 'Operational insight' }}</strong>
+                    <p>{{ identity.identitySummary || identity.whatTheyDo || identity.whoTheyAre }}</p>
+                    <p *ngIf="identity.voiceProfile"><strong>Voice:</strong> {{ identity.voiceProfile }}</p>
+                </div>
+                <div class="social-strategy-grid" *ngIf="strategyRecommendation as strategy">
+                    <div class="social-strategy-item social-strategy-item--wide" *ngIf="hasOperatorSnapshot">
+                        <span>Today&apos;s Operator Status</span>
+                        <strong>{{ formatOperatorStatus(todayOperatorStatus) }}</strong>
+                        <p>{{ operatorNextBestAction || strategy.nextBestAction || strategy.recommendedNextPostType || 'TODD is waiting for the next operator step.' }}</p>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--cockpit" *ngIf="hasOperatorSnapshot">
+                        <div class="mc-instrument-slot">
+                            <app-status-led [tone]="operatorPendingApprovalsCount > 0 ? 'attention' : 'idle'"></app-status-led>
+                        </div>
+                        <div class="mc-instrument-text">
+                            <span>Pending Approvals</span>
+                            <strong>{{ operatorPendingApprovalsCount }}</strong>
+                        </div>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--cockpit" *ngIf="hasOperatorSnapshot">
+                        <div class="mc-instrument-slot">
+                            <app-status-led [tone]="operatorBlockedNeedsCount > 0 ? 'warn' : 'idle'"></app-status-led>
+                        </div>
+                        <div class="mc-instrument-text">
+                            <span>Blocked Needs</span>
+                            <strong>{{ operatorBlockedNeedsCount }}</strong>
+                        </div>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide" *ngIf="lastEndOfDaySummary">
+                        <span>Last End-of-Day Summary</span>
+                        <strong>{{ lastEndOfDaySummary }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Strategy Summary</span>
+                        <strong>{{ strategy.strategySummary }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Recommended Next Post Type</span>
+                        <strong>{{ strategy.recommendedNextPostType }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Recommended Timing</span>
+                        <strong>{{ strategy.recommendedTiming }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Suggested Source</span>
+                        <strong>{{ strategy.suggestedSource }}</strong>
+                        <p>{{ strategy.suggestedSourceDetail }}</p>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide">
+                        <span>Reason</span>
+                        <strong>{{ strategy.reason }}</strong>
+                        <p>{{ strategy.recentMixSummary }}</p>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide" *ngIf="strategy.alternateAngles?.length">
+                        <span>Alternate Angles</span>
+                        <ul class="social-angle-list">
+                            <li *ngFor="let angle of strategy.alternateAngles">{{ angle }}</li>
+                        </ul>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide" *ngIf="strategy.watchout">
+                        <span>Watchout</span>
+                        <strong>{{ strategy.watchout }}</strong>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide social-strategy-item--alert" *ngIf="strategy.platformConcentrationWarning">
+                        <span>Platform Concentration</span>
+                        <strong>{{ strategy.platformConcentrationWarning }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Active Marketing Goal</span>
+                        <strong>{{ strategy.activeMarketingGoal || strategy.goal }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Target Audience</span>
+                        <strong>{{ strategy.targetAudience || 'Derived from your profile and current offer' }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Primary Offer</span>
+                        <strong>{{ strategy.primaryOffer || 'Current offer' }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Pain Being Addressed</span>
+                        <strong>{{ strategy.painBeingAddressed || 'The friction your buyer feels before they act' }}</strong>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide" *ngIf="strategy.proofPoints?.length">
+                        <span>Proof Points</span>
+                        <ul class="social-angle-list">
+                            <li *ngFor="let point of strategy.proofPoints">{{ point }}</li>
+                        </ul>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Preferred Channels</span>
+                        <strong>{{ strategy.preferredChannels?.join(', ') || strategy.platformFocus || 'Social-led' }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Current Campaign / Theme</span>
+                        <strong>{{ strategy.currentCampaignTheme || 'Use social to validate the strongest market angle' }}</strong>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide" *ngIf="strategy.winningAngles?.length">
+                        <span>Winning Angles</span>
+                        <ul class="social-angle-list">
+                            <li *ngFor="let angle of strategy.winningAngles">{{ angle }}</li>
+                        </ul>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide" *ngIf="strategy.weakAngles?.length">
+                        <span>Weak Angles</span>
+                        <ul class="social-angle-list">
+                            <li *ngFor="let angle of strategy.weakAngles">{{ angle }}</li>
+                        </ul>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--wide">
+                        <span>Last Signal Summary</span>
+                        <strong>{{ strategy.lastSignalSummary || 'Signals are still developing, so TODD is leaning on profile, offer, and cadence context.' }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Recommended Adjustment</span>
+                        <strong>{{ strategy.recommendedAdjustment || strategy.reason }}</strong>
+                    </div>
+                    <div class="social-strategy-item">
+                        <span>Next Best Action</span>
+                        <strong>{{ strategy.nextBestAction || strategy.nextBestSocialAction || strategy.recommendedNextPostType }}</strong>
+                    </div>
+                </div>
+                <div class="social-strategy-controls">
+                    <label class="social-stack-field">
+                        <span>Goal</span>
+                        <select class="form-select" [(ngModel)]="strategyGoal" (ngModelChange)="onStrategyChanged()">
+                            <option *ngFor="let option of strategyGoalOptions" [ngValue]="option.value">{{ option.label }}</option>
+                        </select>
+                    </label>
+                    <label class="social-stack-field">
+                        <span>Platform Focus</span>
+                        <select class="form-select" [(ngModel)]="strategyPlatformFocus" (ngModelChange)="onStrategyChanged()">
+                            <option *ngFor="let option of strategyPlatformOptions" [ngValue]="option.value">{{ option.label }}</option>
+                        </select>
+                    </label>
+                    <label class="social-stack-field">
+                        <span>Posting Cadence</span>
+                        <select class="form-select" [(ngModel)]="strategyCadence" (ngModelChange)="onStrategyChanged()">
+                            <option *ngFor="let option of strategyCadenceOptions" [ngValue]="option.value">{{ option.label }}</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="social-strategy-grid">
+                    <div class="social-strategy-item social-strategy-item--cockpit">
+                        <div class="mc-instrument-slot">
+                            <app-status-led tone="info"></app-status-led>
+                        </div>
+                        <div class="mc-instrument-text">
+                            <span>Cadence Target</span>
+                            <strong>{{ cadenceTargetCount }} this week</strong>
+                            <p *ngIf="strategyRecommendation?.cadencePerAccount">{{ strategyRecommendation?.cadenceBaseTargetCount }} per connected account</p>
+                        </div>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--cockpit">
+                        <div class="mc-instrument-slot">
+                            <app-arc-gauge [value]="publishedThisWeek" [max]="cadenceTargetCount || 1" [tone]="publishedThisWeek >= cadenceTargetCount ? 'positive' : publishedThisWeek >= cadenceTargetCount * 0.5 ? 'info' : 'attention'">
+                            </app-arc-gauge>
+                        </div>
+                        <div class="mc-instrument-text">
+                            <span>Posted So Far</span>
+                            <strong>{{ publishedThisWeek }}</strong>
+                        </div>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--cockpit">
+                        <div class="mc-instrument-slot">
+                            <app-status-led [tone]="approvedPosts.length > 0 ? 'positive' : 'idle'"></app-status-led>
+                        </div>
+                        <div class="mc-instrument-text">
+                            <span>Approved Inventory</span>
+                            <strong>{{ approvedPosts.length }}</strong>
+                        </div>
+                    </div>
+                    <div class="social-strategy-item social-strategy-item--cockpit">
+                        <div class="mc-instrument-slot">
+                            <app-status-led [tone]="postsNeededNow > 0 ? 'attention' : 'idle'"></app-status-led>
+                        </div>
+                        <div class="mc-instrument-text">
+                            <span>Posts Needed Now</span>
+                            <strong>{{ postsNeededNow }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="social-card social-niche-engagement" *ngIf="nichePosts.length || nichePostsLoading || nichePostsLoaded">
+            <div class="social-card__header">
+                <div>
+                    <span class="social-card__eyebrow">Today's Engagement</span>
+                    <h2>Engage before you post</h2>
+                    <p>Replying to posts in your niche before publishing your own is the #1 driver of organic algorithmic pickup on Bluesky. Do this first.</p>
+                </div>
+            </div>
+            <div class="social-niche-loading" *ngIf="nichePostsLoading">Loading niche posts from Bluesky…</div>
+            <div class="social-niche-loading" *ngIf="!nichePostsLoading && nichePostsLoaded && !nichePosts.length">No niche posts found. Check that your Bluesky account is connected and credentials are current in Settings.</div>
+            <div class="social-niche-post" *ngFor="let post of nichePosts">
+                <div class="social-niche-post__header">
+                    <strong>{{ post.authorDisplayName || post.authorHandle }}</strong>
+                    <span class="social-niche-post__handle">{{ '@' + post.authorHandle }}</span>
+                    <span class="social-niche-post__stats">{{ post.likeCount }} likes · {{ post.replyCount }} replies</span>
+                </div>
+                <p class="social-niche-post__text">{{ post.text }}</p>
+                <div class="social-niche-post__actions">
+                    <a class="btn-todd btn-todd-secondary" [href]="post.postUrl" target="_blank" rel="noopener noreferrer" *ngIf="post.postUrl">Open on Bluesky</a>
+                    <button class="btn-todd btn-todd-secondary" type="button" (click)="copyNichePostUrl(post)">Copy Link</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
