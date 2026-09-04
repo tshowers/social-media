@@ -1,0 +1,10 @@
+<div class="arc-gauge" [attr.data-tone]="tone" [style.--gauge-text]="gaugeTextColor">
+  <svg class="arc-gauge__svg" [attr.viewBox]="viewBox" aria-hidden="true" focusable="false">
+    <!-- Track: full 270° arc in muted color -->
+    <circle class="arc-gauge__track" [attr.cx]="cx" [attr.cy]="cy" [attr.r]="r" fill="none" [attr.stroke-dasharray]="trackDasharray" [attr.stroke-dashoffset]="START_OFFSET" />
+    <!-- Fill: value-driven arc, transitions on change -->
+    <circle class="arc-gauge__fill" [attr.cx]="cx" [attr.cy]="cy" [attr.r]="r" fill="none" [attr.stroke-dasharray]="fillDasharray" [attr.stroke-dashoffset]="START_OFFSET" />
+    <!-- Center readout -->
+    <text class="arc-gauge__value" [attr.x]="cx" [attr.y]="cy + 6" text-anchor="middle">{{ displayValue }}</text>
+  </svg>
+</div>

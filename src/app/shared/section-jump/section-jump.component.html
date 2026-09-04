@@ -1,0 +1,25 @@
+<!-- Desktop floating pill bar -->
+<nav *ngIf="items.length > 0" class="section-jump" [attr.aria-label]="label">
+  <span class="section-jump__label">{{ label }}</span>
+  <div class="section-jump__pills">
+    <button *ngFor="let item of desktopItems" type="button" class="section-jump__pill" [class.is-active]="activeSection === item.id" (click)="scrollToSection(item.id)">
+      {{ item.label }}
+    </button>
+  </div>
+</nav>
+<!-- Mobile: backdrop exists in DOM only when open — avoids iOS backdrop-filter pointer-events bug -->
+<div *ngIf="items.length > 0 && trayOpen" class="section-jump-mobile__backdrop" (click)="closeTray()">
+</div>
+<!-- Mobile: bottom tray -->
+<div *ngIf="items.length > 0" class="section-jump-mobile" [class.is-open]="trayOpen">
+  <div class="section-jump-mobile__sheet">
+    <div class="section-jump-mobile__pills">
+      <button *ngFor="let item of items" type="button" class="section-jump__pill" [class.is-active]="activeSection === item.id" (click)="closeTray(); scrollToSection(item.id)">
+        {{ item.label }}
+      </button>
+    </div>
+  </div>
+  <button class="section-jump-mobile__handle" type="button" (click)="toggleTray()" [attr.aria-expanded]="trayOpen" aria-label="Toggle page sections">
+    <span class="section-jump-mobile__chevron" [class.is-open]="trayOpen">&#9660;</span>
+  </button>
+</div>

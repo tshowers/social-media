@@ -1,0 +1,11 @@
+<div class="toast-stack">
+  <div
+    *ngFor="let toast of notifications.toasts$ | async"
+    class="toast"
+    [class]="'toast--' + toast.type"
+  >
+    <div class="toast-header">{{ toast.header }}</div>
+    <div class="toast-description">{{ toast.description }}</div>
+    <button type="button" class="toast-close" (click)="dismiss(toast.id)" aria-label="Dismiss">&times;</button>
+  </div>
+</div>

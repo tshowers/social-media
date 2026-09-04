@@ -1,0 +1,30 @@
+.preloader-inline { display:inline-flex; align-items:center; gap:10px; color:#9aafbc; font-size:.85rem; font-weight:600; }
+.preloader-inline-spinner { width:18px; height:18px; border:2px solid rgba(0,191,255,.2); border-top-color:#00bfff; border-radius:50%; animation:ttSignalSpin 1s linear infinite; }
+
+#preloader { position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; overflow:hidden; text-align:center; background:radial-gradient(circle at 18% 18%,rgba(111,204,255,.18),transparent 24%),radial-gradient(circle at 82% 82%,rgba(255,181,110,.18),transparent 26%),linear-gradient(180deg,rgba(255,255,255,.24),rgba(245,248,252,.16)); backdrop-filter:blur(20px) saturate(1.08); }
+#preloader::before { position:absolute; inset:0; background:rgba(255,255,255,.1); content:''; pointer-events:none; }
+.preloader-stage-wrap { position:relative; z-index:1; display:flex; align-items:center; justify-content:center; width:min(100%,560px); min-height:clamp(340px,56vw,560px); }
+.tt-center-stage { position:relative; display:grid; width:100%; min-height:560px; place-items:center; transform:scale(.78); }
+
+.tt-connector { position:absolute; top:50%; width:45%; height:2px; background:linear-gradient(90deg,transparent,rgba(0,191,255,.55),transparent); filter:drop-shadow(0 0 8px rgba(0,191,255,.65)); }
+.tt-connector-left { right:50%; transform:rotate(24deg); transform-origin:right center; }
+.tt-connector-right { left:50%; transform:rotate(-24deg); transform-origin:left center; }
+.tt-orbit,.tt-signal-ring { position:absolute; border-radius:50%; pointer-events:none; }
+.tt-orbit { border:1px solid rgba(0,191,255,.2); box-shadow:0 0 22px rgba(0,191,255,.12); }
+.tt-orbit-one { width:320px; height:150px; transform:rotate(28deg); }
+.tt-orbit-two { width:390px; height:190px; transform:rotate(-32deg); border-color:rgba(255,177,96,.2); }
+.tt-orbit-three { width:260px; height:410px; transform:rotate(68deg); border-color:rgba(80,255,194,.18); }
+.tt-signal-ring { width:314px; height:314px; background:conic-gradient(from 30deg,transparent 0 10%,#00bfff 13% 18%,transparent 21% 56%,#ffb160 59% 64%,transparent 67% 100%); -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px)); mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px)); filter:drop-shadow(0 0 11px rgba(0,191,255,.85)); animation:ttSignalSpin 7s linear infinite; }
+
+.tt-todd-core { position:relative; z-index:2; display:grid; width:240px; height:240px; place-items:center; border-radius:50%; background:conic-gradient(#00bfff,#7c61ff,#ffb160,#55f5c2,#00bfff); box-shadow:0 0 34px rgba(0,191,255,.32),0 0 80px rgba(255,177,96,.16); animation:ttCorePulse 2.8s ease-in-out infinite; }
+.tt-todd-core::after { position:absolute; inset:8px; border:1px solid rgba(255,255,255,.25); border-radius:inherit; content:''; }
+.tt-todd-core-inner { display:grid; width:calc(100% - 14px); height:calc(100% - 14px); place-content:center; border-radius:50%; color:#fff; background:radial-gradient(circle at 35% 25%,#263d53,#111b25 68%); }
+.tt-todd-word { font-size:2.5rem; font-weight:900; letter-spacing:-.08em; }
+.tt-todd-sub { margin-top:4px; color:#8edfff; font-size:.65rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; }
+.preloader-message { position:relative; z-index:1; margin:-20px 0 0; color:#344d60; font-size:.9rem; font-weight:600; }
+
+@keyframes ttSignalSpin { to { transform:rotate(360deg); } }
+@keyframes ttCorePulse { 50% { transform:scale(1.035); } }
+@media (prefers-color-scheme:dark) { #preloader { background:radial-gradient(circle at 20% 20%,rgba(0,191,255,.13),transparent 27%),linear-gradient(180deg,rgba(14,24,33,.96),rgba(8,15,22,.98)); } #preloader::before { background:rgba(7,14,21,.2); } .preloader-message { color:#9aafbc; } }
+@media (max-width:768px) { .tt-center-stage { min-height:400px; transform:scale(.64); } }
+@media (prefers-reduced-motion:reduce) { .tt-signal-ring,.tt-todd-core,.preloader-inline-spinner { animation:none; } }

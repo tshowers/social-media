@@ -1,0 +1,8 @@
+<div class="no-print"
+     [style.opacity]="isVisible ? '1' : '0'"
+     [style.visibility]="isVisible ? 'visible' : 'hidden'"
+     [style.pointer-events]="isVisible ? 'auto' : 'none'">
+  <div id="back-to-top" [class.visible]="isVisible" (click)="scrollToTop()" title="Back to top" aria-label="Back to top">
+    <i class="fa-solid fa-angle-up fa-2x"></i>
+  </div>
+</div>

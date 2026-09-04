@@ -1,0 +1,6 @@
+<div class="auth-callback-shell">
+  <ng-container *ngIf="!errorMessage">
+    <p>Signing you in...</p>
+  </ng-container>
+  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+</div>

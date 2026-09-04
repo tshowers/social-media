@@ -1,0 +1,24 @@
+<div class="preloader-inline" *ngIf="isLoading && inline" role="status" aria-live="polite">
+  <span class="preloader-inline-spinner" aria-hidden="true"></span>
+  <span class="preloader-inline-message">{{ message || 'Loading…' }}</span>
+</div>
+
+<div id="preloader" *ngIf="isLoading && !inline" role="status" aria-live="polite">
+  <section class="preloader-stage-wrap" aria-hidden="true">
+    <section class="tt-center-stage">
+      <div class="tt-connector tt-connector-left"></div>
+      <div class="tt-connector tt-connector-right"></div>
+      <div class="tt-orbit tt-orbit-one"></div>
+      <div class="tt-orbit tt-orbit-two"></div>
+      <div class="tt-orbit tt-orbit-three"></div>
+      <div class="tt-signal-ring"></div>
+      <div class="tt-todd-core">
+        <div class="tt-todd-core-inner">
+          <div class="tt-todd-word">{{ brandName }}</div>
+          <div class="tt-todd-sub">{{ brandSubtext }}</div>
+        </div>
+      </div>
+    </section>
+  </section>
+  <p class="preloader-message" *ngIf="message">{{ message }}</p>
+</div>

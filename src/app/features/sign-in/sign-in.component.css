@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.sign-in-shell {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.sign-in-card {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  color: #0d1117;
+  border: 1px solid rgba(15, 15, 15, 0.08);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.sign-in-logo {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1.25rem;
+}

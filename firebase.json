@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "site": "todd-social",
+    "public": "dist/social-media/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+/* You can add global styles to this file, and also import other style files */
+
+/*
+ * TODD's brand blue, from frontend/src/styles.css :root. Several ported
+ * components' own CSS reference these by name (--tl-blue, --tl-blue-mid)
+ * without redeclaring them locally - mirrors web-products/network's
+ * src/styles.css, which carries the same subset for the same reason: this
+ * is not a port of the full 7000+ line monorepo stylesheet, only the
+ * handful of custom properties Social's ported component CSS depends on.
+ */
+:root {
+  --tl-blue: #00bfff;
+  --tl-blue-mid: #0095cc;
+  --tl-amber: #de8b38;
+  --tl-amber-rgb: 194, 101, 10;
+  --tl-amber-ink: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tl-amber: #fcc168;
+    --tl-amber-rgb: 255, 181, 69;
+    --tl-amber-ink: #2b1400;
+  }
+}
+
+.btn-glow {
+  background: var(--tl-amber) !important;
+  color: var(--tl-amber-ink) !important;
+  border-color: transparent !important;
+  animation: btn-glow-pulse 1.8s ease-in-out infinite;
+}
+
+.btn-glow:hover,
+.btn-glow:focus {
+  background: var(--tl-amber) !important;
+  color: var(--tl-amber-ink) !important;
+}
+
+@keyframes btn-glow-pulse {
+  0%,
+  100% { box-shadow: 0 0 0 0 rgba(var(--tl-amber-rgb), 0.45); }
+  50% { box-shadow: 0 0 0 12px rgba(var(--tl-amber-rgb), 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-glow {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(var(--tl-amber-rgb), 0.35);
+  }
+}
+
+/*
+ * No component here should have to paint its own page-level background -
+ * ported cockpit-style components assume a dark canvas is already behind
+ * their semi-transparent dark-mode panels. Mirrors network's global rule.
+ */
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #f6f8fa;
+  color: #0d1117;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #141a1e;
+    color: #e8edf2;
+  }
+}
