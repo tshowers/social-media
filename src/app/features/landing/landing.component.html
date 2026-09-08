@@ -1,0 +1,113 @@
+<main class="landing-shell" [class.landing-shell--light]="theme === 'light'">
+  <nav class="landing-nav" aria-label="Main navigation">
+    <a class="brand" routerLink="/" aria-label="Social home"><img src="assets/logo.png" alt="" class="brand-logo"><span>social<span class="brand-dot">.</span></span></a>
+    <div class="nav-meta">
+      <span class="nav-status" [class.nav-status--online]="(isLoggedIn$ | async) === true"><i></i> {{ (isLoggedIn$ | async) ? 'TODD connected workspace' : 'Sign in to your workspace' }}</span>
+      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"><span aria-hidden="true">{{ theme === 'dark' ? '☼' : '◐' }}</span> {{ theme === 'dark' ? 'Light' : 'Dark' }}</button>
+      <a class="nav-login" routerLink="/login">{{ (isLoggedIn$ | async) ? 'Open Social' : 'Sign in' }} <span aria-hidden="true">↗</span></a>
+    </div>
+  </nav>
+  <section class="landing-hero" aria-labelledby="landing-title">
+    <div class="hero-copy">
+      <p class="kicker"><span>01</span> Social media for busy people</p>
+      <h1 id="landing-title">Your work<br>has a <em>story.</em></h1>
+      <p class="hero-summary">Social helps busy founders and small teams turn the links they save, the work they finish, and the ideas they have into a consistent presence — without another full-time job.</p>
+      <div class="hero-actions"><a class="primary-action" routerLink="/login">Enter Social <span aria-hidden="true">→</span></a><span class="action-note">Use your TODD account. You stay in control of every post.</span></div>
+    </div>
+    <div class="signal-board" aria-label="Social content workflow preview">
+      <div class="board-header"><span class="board-label">The week, in motion</span><span class="board-time">TODD / ACTIVE</span></div>
+      <div class="board-grid" aria-hidden="true"></div>
+      <div class="board-post post-top"><span class="post-platform">LINKEDIN</span><strong>What changed in the work?</strong><small>Draft ready · review next</small></div>
+      <div class="board-post post-mid"><span class="post-platform post-platform--lime">THREADS</span><strong>A sharper point of view</strong><small>Approved · queued Thursday</small></div>
+      <div class="board-post post-bottom"><span class="post-platform">SOURCE LIBRARY</span><strong>3 new ideas captured</strong><small>From your working week</small></div>
+      <div class="signal-core"><span></span><strong>ON</strong></div>
+      <div class="signal-line line-one"></div>
+      <div class="signal-line line-two"></div>
+      <div class="signal-line line-three"></div>
+      <div class="board-footer"><span><b></b> source → draft → queue</span><span>less catching up</span></div>
+    </div>
+  </section>
+  <section class="stats-strip" aria-label="What Social keeps together">
+    <p class="section-label">02 / One workflow for the work behind the post</p>
+    <div class="stats-grid">
+      <article *ngFor="let stat of stats"><strong>{{ stat.value }}</strong>
+        <div>
+          <h2>{{ stat.label }}</h2>
+          <p>{{ stat.detail }}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+  <section class="problem-section">
+    <div class="section-heading">
+      <p class="section-label">03 / The actual problem</p>
+      <h2>Staying visible should not require a second career.</h2>
+      <p>Most people do not run out of things to say. They lose the moment between “that matters” and “I should post about it.” Social closes that gap.</p>
+    </div>
+    <div class="problem-grid">
+      <article><span>01</span>
+        <h3>The good idea stays in your notes.</h3>
+        <p>Links, observations, client wins, and useful conversations are already happening. They just need a place to become source material.</p>
+      </article>
+      <article><span>02</span>
+        <h3>Your voice gets flattened by generic automation.</h3>
+        <p>TODD starts with what you actually know and helps shape an angle that is useful, specific, and yours.</p>
+      </article>
+      <article><span>03</span>
+        <h3>Your cadence disappears when the week gets full.</h3>
+        <p>Review and approve a clear queue so your presence keeps moving while you focus on delivery, sales, and life.</p>
+      </article>
+    </div>
+  </section>
+  <section class="workflow-section" aria-labelledby="workflow-title">
+    <div class="section-heading">
+      <p class="section-label">04 / How Social works</p>
+      <h2 id="workflow-title">Capture the signal. Ship the story.</h2>
+    </div>
+    <div class="steps-grid">
+      <article *ngFor="let step of steps"><span class="step-number">{{ step.number }}</span>
+        <h3>{{ step.title }}</h3>
+        <p>{{ step.copy }}</p>
+      </article>
+    </div>
+    <div class="workflow-quote"><span class="quote-mark">“</span>
+      <p>Social is the place where your business activity becomes a thoughtful public presence.</p>
+    </div>
+  </section>
+  <section class="maya-section">
+    <div class="maya-image-wrap"><img src="assets/social-maya.png" alt="Maya shaping social content from ideas into posts"></div>
+    <div>
+      <p class="section-label">05 / The difference</p>
+      <h2>Good social starts with noticing.</h2>
+      <p>Maya helps turn the raw material of a busy week into something clear enough to share: the lesson from the client call, the pattern in the work, the point you keep coming back to.</p>
+      <p>Social gives that signal somewhere to go — from source material to a draft you can stand behind.</p>
+    </div>
+  </section>
+  <section class="testimonial-section">
+    <p class="section-label">06 / The difference</p>
+    <div class="testimonial">
+      <div class="testimonial-mark">“</div>
+      <blockquote>It feels less like content production and more like having someone notice the good material already passing through the business.</blockquote><cite>— A better week for the person doing the work</cite>
+    </div>
+  </section>
+  <section class="faq-section" id="faq">
+    <div class="section-heading">
+      <p class="section-label">07 / Questions, answered</p>
+      <h2>Good to know before you sign in.</h2>
+    </div>
+    <div class="faq-list">
+      <details *ngFor="let faq of faqs">
+        <summary>{{ faq.question }} <span aria-hidden="true">+</span></summary>
+        <p>{{ faq.answer }}</p>
+      </details>
+    </div>
+  </section>
+  <section class="final-cta">
+    <div>
+      <p class="section-label">08 / Start with what you already have</p>
+      <h2>Your next post is probably hiding in this week.</h2>
+      <p>Bring the idea. Social helps you find the angle, make the call, and keep the queue moving.</p>
+    </div><div class="final-cta__actions"><a class="primary-action" routerLink="/login">Open Social <span aria-hidden="true">→</span></a><a class="pricing-link" routerLink="/ios">Social for iOS <span aria-hidden="true">→</span></a><a class="pricing-link" href="https://todd.taliferro.tech/suite/pricing">See Suite Pricing <span aria-hidden="true">↗</span></a></div>
+  </section>
+  <footer class="landing-footer"><span>© 2026 TODD.</span><span>Site design <a href="https://taliferro.com/website-development">Taliferro Group</a>. Taliferro Is Registered In The U.S. Patent And Trademark Office. All rights reserved.</span><span><a href="https://taliferro.com/careers/">Careers</a> · Version: {{ buildNumber }}</span></footer>
+</main>

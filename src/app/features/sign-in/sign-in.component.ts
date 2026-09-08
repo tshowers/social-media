@@ -27,6 +27,9 @@ export class SignInComponent implements OnInit {
 
   ngOnInit (): void {
     this.returnUrl = this.route.snapshot.queryParamMap.get( 'returnUrl' ) || '/command';
+    // /login is a compatibility handoff route. Send visitors directly to
+    // TODD's shared hosted login instead of making them click twice.
+    this.signIn();
   }
 
   signIn (): void {

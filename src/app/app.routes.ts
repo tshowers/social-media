@@ -7,7 +7,9 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'command',
+    loadComponent: () =>
+      import( './features/landing/landing.component' ).then( ( m ) => m.LandingComponent ),
+    title: environment.COMPANY_NAME + ' – Social outreach, in motion',
   },
   {
     path: 'command',
@@ -15,6 +17,12 @@ export const routes: Routes = [
       import( './features/social/command/command.component' ).then( ( m ) => m.SocialOutreachComponent ),
     canActivate: [authGuard],
     title: environment.COMPANY_NAME + ' – Command',
+  },
+  {
+    path: 'ios',
+    loadComponent: () =>
+      import( './features/app-showcase/app-showcase.component' ).then( ( m ) => m.AppShowcaseComponent ),
+    title: environment.COMPANY_NAME + ' – Social for iOS',
   },
   {
     path: 'calendar',
