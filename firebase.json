@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "todd-social",
+    "site": "todd-social-media",
     "public": "dist/social-media/browser",
     "ignore": [
       "firebase.json",
