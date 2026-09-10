@@ -1,12 +1,4 @@
 <main class="landing-shell" [class.landing-shell--light]="theme === 'light'">
-  <nav class="landing-nav" aria-label="Main navigation">
-    <a class="brand" routerLink="/" aria-label="Social home"><img src="assets/logo.png" alt="" class="brand-logo"><span>social<span class="brand-dot">.</span></span></a>
-    <div class="nav-meta">
-      <span class="nav-status" [class.nav-status--online]="(isLoggedIn$ | async) === true"><i></i> {{ (isLoggedIn$ | async) ? 'TODD connected workspace' : 'Sign in to your workspace' }}</span>
-      <button class="theme-toggle" type="button" (click)="toggleTheme()" [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"><span aria-hidden="true">{{ theme === 'dark' ? '☼' : '◐' }}</span> {{ theme === 'dark' ? 'Light' : 'Dark' }}</button>
-      <a class="nav-login" routerLink="/login">{{ (isLoggedIn$ | async) ? 'Open Social' : 'Sign in' }} <span aria-hidden="true">↗</span></a>
-    </div>
-  </nav>
   <section class="landing-hero" aria-labelledby="landing-title">
     <div class="hero-copy">
       <p class="kicker"><span>01</span> Social media for busy people</p>
@@ -107,7 +99,8 @@
       <p class="section-label">08 / Start with what you already have</p>
       <h2>Your next post is probably hiding in this week.</h2>
       <p>Bring the idea. Social helps you find the angle, make the call, and keep the queue moving.</p>
-    </div><div class="final-cta__actions"><a class="primary-action" routerLink="/login">Open Social <span aria-hidden="true">→</span></a><a class="pricing-link" routerLink="/ios">Social for iOS <span aria-hidden="true">→</span></a><a class="pricing-link" href="https://todd.taliferro.tech/suite/pricing">See Suite Pricing <span aria-hidden="true">↗</span></a></div>
+    </div>
+    <div class="final-cta__actions"><a class="primary-action" routerLink="/login">Open Social <span aria-hidden="true">→</span></a><a class="pricing-link" routerLink="/ios">Social for iOS <span aria-hidden="true">→</span></a><a class="pricing-link" href="https://todd.taliferro.tech/suite/pricing">See Suite Pricing <span aria-hidden="true">↗</span></a></div>
   </section>
   <footer class="landing-footer"><span>© 2026 TODD.</span><span>Site design <a href="https://taliferro.com/website-development">Taliferro Group</a>. Taliferro Is Registered In The U.S. Patent And Trademark Office. All rights reserved.</span><span><a href="https://taliferro.com/careers/">Careers</a> · Version: {{ buildNumber }}</span></footer>
 </main>

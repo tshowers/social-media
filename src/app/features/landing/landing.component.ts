@@ -1,4 +1,4 @@
-import { AsyncPipe, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -8,7 +8,7 @@ import { BUILD_NUMBER } from '../../build-info';
 @Component( {
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, AsyncPipe, RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.css',
 } )
@@ -41,8 +41,12 @@ export class LandingComponent implements OnInit {
   }
 
   ngOnInit (): void {
-    const savedTheme = localStorage.getItem( 'social-theme' );
+    const savedTheme = localStorage.getItem( 'platform-theme' ) || localStorage.getItem( 'social-theme' );
     this.theme = savedTheme === 'light' ? 'light' : 'dark';
+    window.addEventListener( 'platform-theme-change', ( event: Event ) => {
+      const nextTheme = ( event as CustomEvent<{ theme?: string }> ).detail?.theme;
+      if ( nextTheme === 'light' || nextTheme === 'dark' ) this.theme = nextTheme;
+    } );
   }
 
   toggleTheme (): void {

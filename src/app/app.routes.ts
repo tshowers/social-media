@@ -2,11 +2,13 @@ import { Routes } from '@angular/router';
 
 import { environment } from '../environments/environment';
 import { authGuard } from './services/auth.guard';
+import { landingRedirectGuard } from './services/landing-redirect.guard';
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
+    canActivate: [landingRedirectGuard],
     loadComponent: () =>
       import( './features/landing/landing.component' ).then( ( m ) => m.LandingComponent ),
     title: environment.COMPANY_NAME + ' – Social outreach, in motion',
