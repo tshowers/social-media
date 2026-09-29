@@ -1,0 +1,72 @@
+/* Scoped tokens (light/dark) so the page looks the same on every TODD site
+ * whatever that site's global stylesheet defines. */
+:host {
+  display: block;
+  --gta-bg: #f6f8fa;
+  --gta-card: #ffffff;
+  --gta-ink: #0f172a;
+  --gta-muted: #5b6b7d;
+  --gta-line: rgba(15, 23, 42, .1);
+  --gta-accent: #0a6ccf;
+  --gta-accent-ink: #ffffff;
+  --gta-ok: #1f9d55;
+}
+/* Dark mode: follows the site's Light/Dark toggle (data-theme on <html>)
+ * where there is one, and the system setting where there isn't. */
+@media (prefers-color-scheme: dark) {
+  :host-context(html:not([data-theme='light'])) {
+    --gta-bg: #0d1117;
+    --gta-card: #151f2b;
+    --gta-ink: #f0f6ff;
+    --gta-muted: #9aadc1;
+    --gta-line: rgba(0, 191, 255, .16);
+    --gta-accent: #38bdf8;
+    --gta-accent-ink: #04121f;
+    --gta-ok: #4ade80;
+  }
+}
+:host-context(html[data-theme='dark']) {
+    --gta-bg: #0d1117;
+    --gta-card: #151f2b;
+    --gta-ink: #f0f6ff;
+    --gta-muted: #9aadc1;
+    --gta-line: rgba(0, 191, 255, .16);
+    --gta-accent: #38bdf8;
+    --gta-accent-ink: #04121f;
+    --gta-ok: #4ade80;
+  }
+
+
+.gta { min-height: 100vh; background: var(--gta-bg); color: var(--gta-ink); padding: 96px 16px 120px; font-family: 'Manrope', system-ui, sans-serif; }
+.gta > section { max-width: 880px; margin: 0 auto 48px; }
+.gta-eyebrow { margin: 0 0 10px; color: var(--gta-accent); font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.gta h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.08; letter-spacing: -.02em; }
+.gta h2 { margin: 0 0 16px; font-size: 1.35rem; }
+.gta-lead { max-width: 680px; margin: 16px 0 0; color: var(--gta-muted); font-size: 1.1rem; line-height: 1.6; }
+.gta-status { display: inline-block; margin: 20px 0 0; padding: 10px 14px; border: 1px solid var(--gta-line); border-radius: 12px; background: var(--gta-card); font-weight: 700; }
+.gta-status--ok { color: var(--gta-ok); }
+
+.gta-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.gta-plan { display: flex; flex-direction: column; gap: 8px; padding: 24px; border: 1px solid var(--gta-line); border-radius: 20px; background: var(--gta-card); }
+.gta-plan--featured { border: 2px solid var(--gta-accent); }
+.gta-plan h2 { margin: 0; font-size: 1rem; text-transform: uppercase; letter-spacing: .1em; color: var(--gta-muted); }
+.gta-price { margin: 0; font-size: 2.2rem; font-weight: 800; }
+.gta-price span { font-size: 1rem; font-weight: 600; color: var(--gta-muted); }
+.gta-note { margin: 0; color: var(--gta-muted); }
+.gta-plan ul { margin: 8px 0 12px; padding-left: 20px; line-height: 1.7; }
+
+.gta-store { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 12px; background: #000; color: #fff; text-decoration: none; }
+.gta-store small { display: block; font-size: .7rem; opacity: .85; }
+.gta-store strong { display: block; font-size: 1.15rem; line-height: 1.1; }
+.gta-store__apple { font-size: 1.8rem; line-height: 1; }
+.gta-store--soon { opacity: .55; cursor: default; }
+.gta-alt { margin: 4px 0 0; color: var(--gta-muted); font-size: .85rem; }
+
+.gta-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.gta-steps li { display: flex; gap: 12px; padding: 16px; border: 1px solid var(--gta-line); border-radius: 16px; background: var(--gta-card); }
+.gta-steps p { margin: 4px 0 0; color: var(--gta-muted); }
+.gta-step-number { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--gta-accent); color: var(--gta-accent-ink); font-weight: 800; }
+
+.gta-faq__item { padding: 14px 16px; border: 1px solid var(--gta-line); border-radius: 14px; background: var(--gta-card); margin-bottom: 10px; }
+.gta-faq__item summary { cursor: pointer; font-weight: 700; }
+.gta-faq__item p { margin: 10px 0 0; color: var(--gta-muted); line-height: 1.6; }

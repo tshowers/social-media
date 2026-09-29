@@ -55,6 +55,13 @@ export const routes: Routes = [
     title: environment.COMPANY_NAME + ' – Approved',
   },
   {
+    // "Browse free, create with the app" (Ty, 2026-09-28) - shared wording
+    // in @taliferro/ui/platform/get-the-app.model.ts.
+    path: 'pricing',
+    data: { product: 'social' },
+    loadComponent: () => import('./features/get-the-app/get-the-app.component').then((m) => m.GetTheAppComponent),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import( './features/sign-in/sign-in.component' ).then( ( m ) => m.SignInComponent ),

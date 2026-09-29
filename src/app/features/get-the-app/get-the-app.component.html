@@ -1,0 +1,46 @@
+<main class="gta" data-cy="get-the-app">
+  <section class="gta-hero">
+    <p class="gta-eyebrow">Pricing</p>
+    <h1>Browse {{ product.shortName }} free. Create with the app.</h1>
+    <p class="gta-lead">Explore every page of {{ product.shortName }} in your browser - no charge, no card. To create, edit and save, subscribe in the <strong>{{ product.appName }}</strong> app for iPhone and iPad.</p>
+
+    <ng-container *ngIf="state$ | async as state">
+      <p *ngIf="state === 'canWrite'" class="gta-status gta-status--ok" data-cy="get-the-app-status">&#10003; You're subscribed - everything is unlocked here too.</p>
+      <p *ngIf="state === 'browsing'" class="gta-status" data-cy="get-the-app-status">You're signed in and browsing. Get the app and subscribe to create and edit.</p>
+    </ng-container>
+  </section>
+
+  <section class="gta-plans" aria-label="What's included">
+    <article class="gta-plan">
+      <h2>Browse</h2>
+      <p class="gta-price">Free</p>
+      <p class="gta-note">In any browser, signed in or not</p>
+      <ul><li *ngFor="let item of product.browseExamples">{{ item }}</li></ul>
+    </article>
+    <article class="gta-plan gta-plan--featured">
+      <h2>Create</h2>
+      <p class="gta-price">{{ product.monthlyPrice || 'Coming soon' }}<span *ngIf="product.monthlyPrice"> / month</span></p>
+      <p class="gta-note">One subscription, in the app and on the web</p>
+      <ul><li *ngFor="let item of product.createExamples">{{ item }}</li></ul>
+      <a *ngIf="isLive" class="gta-store" [href]="appStoreLink" target="_blank" rel="noopener" data-cy="get-the-app-store">
+        <span class="gta-store__apple" aria-hidden="true">&#63743;</span><span><small>Download on the</small><strong>App Store</strong></span>
+      </a>
+      <span *ngIf="!isLive" class="gta-store gta-store--soon" data-cy="get-the-app-store-soon" [attr.aria-label]="product.appName + ' on the App Store - coming soon'">
+        <span class="gta-store__apple" aria-hidden="true">&#63743;</span><span><small>App Store</small><strong>Coming soon</strong></span>
+      </span>
+      <p class="gta-alt">Google Play Store coming soon.</p>
+    </article>
+  </section>
+
+  <section class="gta-steps" aria-labelledby="gta-steps-title">
+    <h2 id="gta-steps-title">How it works</h2>
+    <ol>
+      <li *ngFor="let step of steps; let i = index"><span class="gta-step-number">{{ i + 1 }}</span><div><strong>{{ step.title }}</strong><p>{{ step.detail }}</p></div></li>
+    </ol>
+  </section>
+
+  <section class="gta-faq" aria-labelledby="gta-faq-title">
+    <h2 id="gta-faq-title">Questions</h2>
+    <details *ngFor="let faq of faqs" class="gta-faq__item" data-cy="get-the-app-faq"><summary>{{ faq.question }}</summary><p>{{ faq.answer }}</p></details>
+  </section>
+</main>
