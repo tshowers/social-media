@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /command
+Disallow: /calendar
+Disallow: /accounts
+Disallow: /strategy
+Disallow: /queue
+Disallow: /login
+Disallow: /auth/
+Disallow: /not-found
+
+Sitemap: https://social.taliferro.tech/sitemap.xml
