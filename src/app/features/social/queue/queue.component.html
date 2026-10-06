@@ -8,6 +8,7 @@
         <a [routerLink]="accountsRouteLink" [queryParams]="currentQueryParams" class="social-route-nav__link">Accounts</a>
         <a routerLink="/calendar" [queryParams]="currentQueryParams" class="social-route-nav__link">Calendar</a>
     </nav>
+    <app-browse-notice what="these posts"></app-browse-notice>
     <div class="container d-flex justify-content-center">
         <app-section-jump [items]="anchorItems" label="On this page"></app-section-jump>
     </div>
@@ -155,10 +156,10 @@
                     </div>
                     <p class="social-post-card__id">ID: {{ post.postId }}</p>
                     <div class="social-post-card__actions">
-                        <button class="btn-todd" type="button" (click)="publishPost(post.source)" [disabled]="!canPublishPost || post.hasMissingSubreddit || post.isBusy">{{ queueOwnershipMode === 'auto' ? 'Publish Now Override' : 'Publish Now' }}</button>
-                        <button class="btn-todd btn-todd-secondary" type="button" (click)="moveApprovedPostToDraft(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Move to draft</button>
+                        <button class="btn-todd" type="button" appWriteAction="publish this post" (click)="publishPost(post.source)" [disabled]="!canPublishPost || post.hasMissingSubreddit || post.isBusy">{{ queueOwnershipMode === 'auto' ? 'Publish Now Override' : 'Publish Now' }}</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" appWriteAction="move this post back to draft" (click)="moveApprovedPostToDraft(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Move to draft</button>
                         <button class="btn-todd btn-todd-secondary" type="button" (click)="copyPostContent(post.source)" [disabled]="post.isBusy">Copy Post</button>
-                        <button class="btn-todd btn-todd-secondary" type="button" (click)="deleteQueuedPost(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Delete</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" appWriteAction="delete this post" (click)="deleteQueuedPost(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Delete</button>
                     </div>
                     <div class="social-post-card__hint" *ngIf="post.isBusy">
                         {{ post.busyLabel }}
@@ -242,10 +243,10 @@
                         </div>
                     </div>
                     <div class="social-post-card__actions">
-                        <button class="btn-todd" type="button" (click)="resetToApproved(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Reset &amp; Retry</button>
-                        <button class="btn-todd btn-todd-secondary" type="button" (click)="moveApprovedPostToDraft(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Move to draft</button>
+                        <button class="btn-todd" type="button" appWriteAction="change this post" (click)="resetToApproved(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Reset &amp; Retry</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" appWriteAction="move this post back to draft" (click)="moveApprovedPostToDraft(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Move to draft</button>
                         <button class="btn-todd btn-todd-secondary" type="button" (click)="copyPostContent(post.source)" [disabled]="post.isBusy">Copy Post</button>
-                        <button class="btn-todd btn-todd-secondary" type="button" (click)="deleteQueuedPost(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Delete</button>
+                        <button class="btn-todd btn-todd-secondary" type="button" appWriteAction="delete this post" (click)="deleteQueuedPost(post.source)" [disabled]="!isLoggedIn || demoModeEnabled || post.isBusy">Delete</button>
                     </div>
                     <div class="social-post-card__hint" *ngIf="post.isBusy">
                         {{ post.busyLabel }}

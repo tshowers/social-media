@@ -8,10 +8,11 @@ import { SocialAuthService } from './services/social-auth.service';
 import { ToastComponent } from './shared/toast/toast.component';
 import { PlatformMenuComponent } from './shared/platform-menu/platform-menu.component';
 import { ThemeToggleComponent } from './shared/theme-toggle/theme-toggle.component';
+import { WriteAccessPromptComponent } from './shared/write-access/write-access-prompt.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastComponent, PlatformMenuComponent, ThemeToggleComponent, AsyncPipe],
+  imports: [WriteAccessPromptComponent, RouterOutlet, ToastComponent, PlatformMenuComponent, ThemeToggleComponent, AsyncPipe],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

@@ -8,6 +8,7 @@
             <a routerLink="/accounts" [queryParams]="currentQueryParams" class="social-route-nav__link">Accounts</a>
             <a routerLink="/calendar" [queryParams]="currentQueryParams" class="social-route-nav__link social-route-nav__link--active">Calendar</a>
         </nav>
+        <app-browse-notice what="these posts"></app-browse-notice>
         <span class="social-hero__eyebrow">Outreach / Social / Calendar</span>
 
         <section class="social-posts social-calendar" id="social-calendar">
@@ -64,8 +65,8 @@
                                 <small *ngIf="post.publishedTimestamp">Published {{ post.publishedTimestamp | date:'MMM d, y, h:mm a' }}</small>
                             </div>
                             <div class="social-calendar__post-actions" *ngIf="post.status === 'draft'">
-                                <button class="btn-todd btn-todd-secondary btn-todd-icon" type="button" (click)="rejectPost(post)" [disabled]="isDraftActionBusy(post)" aria-label="Reject" title="Reject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-                                <button class="btn-todd btn-todd-icon" type="button" (click)="approvePost(post)" [disabled]="isDraftActionBusy(post)" aria-label="Approve" title="Approve"><i class="fa-solid fa-check" aria-hidden="true"></i></button>
+                                <button class="btn-todd btn-todd-secondary btn-todd-icon" type="button" appWriteAction="reject this post" (click)="rejectPost(post)" [disabled]="isDraftActionBusy(post)" aria-label="Reject" title="Reject"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                                <button class="btn-todd btn-todd-icon" type="button" appWriteAction="approve this post" (click)="approvePost(post)" [disabled]="isDraftActionBusy(post)" aria-label="Approve" title="Approve"><i class="fa-solid fa-check" aria-hidden="true"></i></button>
                             </div>
                             <div class="social-post-card__hint" *ngIf="isDraftActionBusy(post)">{{ draftBusyLabel(post) }}</div>
                         </div>

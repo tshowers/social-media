@@ -4,7 +4,6 @@ import { MenuAppConfig } from '@taliferro/ui/platform/universal-menu.model';
 export const PLATFORM_MENU_CONFIG: MenuAppConfig = {
   app: 'social',
   name: 'Social',
-  logo: 'assets/find/entities/social/logo.png',
   items: [
     { label: 'Command', icon: 'grid', route: '/command', keywords: 'home dashboard' },
     { label: 'Calendar', icon: 'calendar', route: '/calendar', keywords: 'schedule' },
