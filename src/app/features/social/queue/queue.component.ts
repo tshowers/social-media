@@ -16,6 +16,8 @@ import { SocialQueueService, SocialQueuePostPayload } from '../services/social-q
 import { ClickSoundDirective } from '../../../shared/directives/click-sound.directive';
 import { ArcGaugeComponent } from '../../../shared/arc-gauge/arc-gauge.component';
 import { AssistantPageContext, ToddAssistantBusService } from '../../../services/social-assistant-signal.service';
+import { WriteActionDirective } from '../../../shared/write-access/write-action.directive';
+import { BrowseNoticeComponent } from '../../../shared/write-access/browse-notice.component';
 
 type DraftActionState = { action: string; label: string; };
 
@@ -78,7 +80,7 @@ interface ApprovedQueuePlatformSection {
 @Component( {
   selector: 'app-social-outreach-queue',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, BackToTopComponent, PreloaderComponent, ClickSoundDirective, ArcGaugeComponent, SectionJumpComponent],
+  imports: [BrowseNoticeComponent, WriteActionDirective, CommonModule, FormsModule, RouterModule, BackToTopComponent, PreloaderComponent, ClickSoundDirective, ArcGaugeComponent, SectionJumpComponent],
   templateUrl: './queue.component.html',
   styleUrl: './social-outreach-queue.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

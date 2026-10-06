@@ -12,6 +12,8 @@ import { SocialApiService, SocialPost } from '../../../services/social-api.servi
 import { SocialAccountService } from '../services/social-account.service';
 import { SocialQueueService, SocialQueuePostPayload } from '../services/social-queue.service';
 import { SocialPlatformContextService } from '../services/social-platform-context.service';
+import { WriteActionDirective } from '../../../shared/write-access/write-action.directive';
+import { BrowseNoticeComponent } from '../../../shared/write-access/browse-notice.component';
 
 // Calendar is the shared lifecycle view for social work. Maya plans the day
 // for drafts and TODD chooses the exact time on approval; published posts
@@ -42,7 +44,7 @@ function dateKeyFromIso ( iso?: string | null ): string {
 @Component( {
   selector: 'app-social-outreach-calendar',
   standalone: true,
-  imports: [CommonModule, RouterModule, BackToTopComponent],
+  imports: [BrowseNoticeComponent, WriteActionDirective, CommonModule, RouterModule, BackToTopComponent],
   templateUrl: './calendar.component.html',
   styleUrl: './social-outreach-calendar.component.css'
 } )
