@@ -65,6 +65,10 @@ const STRATEGY: Strategy = {
   approvedAt: '2026-10-01T15:10:00.000Z',
 };
 
+/** Striped placeholder like the design's ("not a pattern to ship"). */
+const PLACEHOLDER = ( tint: string ) => 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><defs><pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="40" height="40" fill="#e4e7ed"/><rect width="20" height="40" fill="${ tint }"/></pattern></defs><rect width="400" height="400" fill="url(#p)"/></svg>` );
+
 const CHANNELS = { linkedin: 'LinkedIn', threads: 'Threads', facebook: 'Facebook', instagram: 'Instagram', google_business_profile: 'Google Business' };
 
 const TITLES: [string, string, string][] = [
@@ -91,12 +95,15 @@ function seedPosts (): Post[] {
     post( 'thu', '2026-10-08', 'howto', '3 signs your lead list is stale', 'needs_review', '16:00', ['linkedin', 'threads'], {
       body: 'Bounce rates over 8%. Contacts who changed jobs a year ago. Companies that closed. If two of these sound familiar, your list is costing you calls. Here’s how to check yours in 15 minutes.',
       autoApproveAt: iso( '2026-10-08', '15:00' ),
+      image: { source: 'maya', status: 'ready', brief: 'a lead list on a laptop, three rows flagged in pink', url: PLACEHOLDER( '#e3ecff' ) },
     } ),
     post( 'fri', '2026-10-09', 'proof', 'How Ridgeline HVAC booked 11 calls in a month', 'needs_review', '09:00', ['linkedin', 'facebook'], {
       body: 'Ridgeline HVAC is a 6-person shop in Austin. In September they used Lead Vault to find 40 property managers within 25 miles and booked 11 calls. Here’s the search they ran.',
       autoApproveAt: iso( '2026-10-08', '14:00' ), rewriteCount: 1, holdCount: 1,
+      image: { source: 'user', status: 'ready', brief: 'the Ridgeline team beside a service van', fileName: 'ridgeline-van.jpg', width: 2400, height: 1600, url: PLACEHOLDER( '#fff4c2' ) },
     } ),
-    post( 'sat', '2026-10-10', 'behind', 'Friday build review: what we shipped this week', 'on_hold', '12:00', ['instagram', 'threads'], { body: 'Three fixes and one new filter in Find. Here’s the short version, with the screenshots.', holdCount: 2, rewriteCount: 1 } ),
+    post( 'sat', '2026-10-10', 'behind', 'Friday build review: what we shipped this week', 'on_hold', '12:00', ['instagram', 'threads'], { body: 'Three fixes and one new filter in Find. Here’s the short version, with the screenshots.', holdCount: 2, rewriteCount: 1,
+      image: { source: 'maya', status: 'failed', brief: 'the team at a whiteboard', reason: 'generation_failed' } } ),
     post( 'sun', '2026-10-11', 'howto', 'What buyers search for before they call you', 'drafted', '09:00', ['linkedin', 'threads'], { body: 'Before a buyer calls, they search.', reviewOpensAt: iso( '2026-10-10', '18:00' ) } ),
     post( 'mon', '2026-10-12', 'product', 'Find: search 40,000 companies by capability', 'planned', '12:00', ['linkedin', 'facebook', 'google_business_profile'] ),
     post( 'tue', '2026-10-13', 'product', 'Webinar today at 1 PM: fill your pipeline in 30 days', 'planned', '08:00', Object.keys( CHANNELS ), { pinned: true } ),
@@ -235,6 +242,16 @@ class MockServer {
       const created = post( `u${ Date.now() }`, check.slot!.slotDate, 'product', text.split( /[.!?]/ )[0].slice( 0, 70 ), 'approved', check.slot!.time, body['channels'], { body: text, source: 'user', pinned: !!body['pinned'] } );
       this.posts.push( created );
       return ok( { post: created, moved: check.moved } );
+    }
+    const imageVerb = path.match( /^\/posts\/([^/]+)\/image\/(upload|maya|remake|brief|cancel)$/ );
+    if ( imageVerb ) {
+      const [, id, verb] = imageVerb;
+      const current = find( id );
+      const brief = body['brief'] ?? current.image?.brief ?? '';
+      const image = verb === 'upload' ? { source: 'user' as const, status: 'ready' as const, brief, url: body['dataUrl'], fileName: body['fileName'], width: 2400, height: 1600 }
+        : verb === 'cancel' ? { source: 'none' as const, status: 'failed' as const, brief, reason: 'cancelled' }
+        : { source: 'maya' as const, status: 'ready' as const, brief, url: PLACEHOLDER( '#efe5ff' ) };
+      return ok( save( { ...current, image } ), verb === 'upload' || verb === 'cancel' ? 400 : 2000 );
     }
     const channelVerb = path.match( /^\/posts\/([^/]+)\/channels\/([^/]+)\/(retry|skip)$/ );
     if ( channelVerb ) {

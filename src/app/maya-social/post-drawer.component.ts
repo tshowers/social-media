@@ -7,6 +7,7 @@ import { ChannelResult, MayaSocialApi, Post } from './api';
 import { STATUS_LABELS, addDays, channelList, clock, monthDay, pillarOf, relativeDayAt, slotLabel, wallClock, weekdayLong } from './format';
 import { HelpPopComponent } from './help-pop.component';
 import { IconComponent } from './icon.component';
+import { ImageBlockComponent } from './image-block.component';
 import { MayaSocialState } from './state';
 
 /**
@@ -17,7 +18,7 @@ import { MayaSocialState } from './state';
 @Component( {
   selector: 'ms-post-drawer',
   standalone: true,
-  imports: [IconComponent, HelpPopComponent],
+  imports: [IconComponent, HelpPopComponent, ImageBlockComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .drawer {
@@ -72,6 +73,7 @@ import { MayaSocialState } from './state';
         <p class="note"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />{{ post.holdCount && post.holdCount > 1 ? 'Held twice. I’ve stopped rewriting it.' : 'You held this. I’m writing a new version.' }}</p>
       }
       @if (post.body) { <p class="body">{{ post.body }}</p> }
+      @if (post.image && post.status !== 'planned') { <ms-image-block [post]="post" variant="block" (changed)="changed.emit($event)" /> }
       @if (post.status === 'planned') {
         <div class="title-edit">
           <label class="ms-sr-only" for="drawer-title">Title</label>

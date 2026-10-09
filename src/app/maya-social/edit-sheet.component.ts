@@ -7,6 +7,7 @@ import { catchError, debounceTime, switchMap, tap } from 'rxjs/operators';
 import { MayaSocialApi, Post, PostCheck, apiError } from './api';
 import { channelList, pillarOf, slotLabel } from './format';
 import { IconComponent } from './icon.component';
+import { ImageBlockComponent } from './image-block.component';
 import { MayaSocialState } from './state';
 
 /**
@@ -19,7 +20,7 @@ import { MayaSocialState } from './state';
 @Component( {
   selector: 'ms-edit-sheet',
   standalone: true,
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, IconComponent, ImageBlockComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .scrim { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(15, 17, 21, .45); }
@@ -70,6 +71,7 @@ import { MayaSocialState } from './state';
           <input #first id="edit-title-input" class="ms-input title-input" [ngModel]="title()" (ngModelChange)="title.set($event); changed()" name="title" />
           <label for="edit-body">Post</label>
           <textarea id="edit-body" class="ms-input" rows="7" [ngModel]="body()" (ngModelChange)="body.set($event); changed()" name="body"></textarea>
+          @if (post.image) { <ms-image-block [post]="post" variant="row" /> }
         </div>
 
         <div class="right" aria-live="polite">

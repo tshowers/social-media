@@ -13,6 +13,7 @@ import { IconComponent } from '../icon.component';
 import { MayaSocialState } from '../state';
 import { ChannelConnect, ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NoChannelsComponent, NotSetUpComponent, SkeletonComponent } from '../states.component';
 import { PostChannelsComponent } from '../post-channels.component';
+import { ImageBlockComponent } from '../image-block.component';
 
 const PENDING = ['needs_review', 'on_hold'];
 
@@ -24,7 +25,7 @@ const PENDING = ['needs_review', 'on_hold'];
 @Component( {
   selector: 'ms-today',
   standalone: true,
-  imports: [RouterLink, HelpPopComponent, IconComponent, EditSheetComponent, ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent, NoChannelsComponent, PostChannelsComponent],
+  imports: [RouterLink, HelpPopComponent, IconComponent, EditSheetComponent, ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent, NoChannelsComponent, PostChannelsComponent, ImageBlockComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; align-items: start; }
@@ -35,6 +36,7 @@ const PENDING = ['needs_review', 'on_hold'];
 
     .card { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 28px; padding: 24px; border-radius: 28px; background: var(--surface); }
     .card.is-held { box-shadow: inset 0 0 0 2px var(--pink); }
+    .card.has-image { grid-template-columns: 200px minmax(0, 1fr) 220px; gap: 24px; }
     .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--muted); }
     .rewrite { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; font-weight: 700; color: var(--t-pink-fg); }
     .card h2 { margin-bottom: 10px; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
@@ -92,7 +94,7 @@ const PENDING = ['needs_review', 'on_hold'];
     /* 4d tablet: one column, actions in a row, Going out next and Plan side by side. */
     @media (max-width: 1000px) {
       .grid { grid-template-columns: minmax(0, 1fr); }
-      .card { grid-template-columns: 1fr; gap: 14px; }
+      .card, .card.has-image { grid-template-columns: 1fr; gap: 14px; }
       .side { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: end; }
       .side .slot, .side .auto { grid-column: 1 / -1; }
       .pair { display: contents; }
@@ -103,7 +105,7 @@ const PENDING = ['needs_review', 'on_hold'];
       .side { display: flex; flex-direction: column; }
       .pair { display: grid; }
       .rail { display: flex; flex-direction: column; }
-      .card { grid-template-columns: 1fr; gap: 16px; padding: 20px; }
+      .card, .card.has-image { grid-template-columns: 1fr; gap: 16px; padding: 20px; }
       .card .ms-btn--46 { height: 50px; }
       .card .pair .ms-btn { height: 44px; }
       .knock { margin: -8px 8px 0; }
@@ -195,7 +197,8 @@ const PENDING = ['needs_review', 'on_hold'];
                 <button type="button" class="ms-btn ms-btn--bg ms-btn--36" [disabled]="busy() === post.id" (click)="undo(post)">Undo</button>
               </div>
             } @else {
-              <article class="card" [class.is-held]="post.status === 'on_hold'" [attr.aria-labelledby]="'post-' + post.id">
+              <article class="card" [class.is-held]="post.status === 'on_hold'" [class.has-image]="!!post.image" [attr.aria-labelledby]="'post-' + post.id">
+                @if (post.image) { <ms-image-block [post]="post" variant="tile" /> }
                 <div>
                   <div class="meta">
                     <span class="ms-chip" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>

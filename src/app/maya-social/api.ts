@@ -69,6 +69,9 @@ export interface SocialSettings { autoApproveHours?: AutoApproveHours; notifyPus
 
 export interface ChannelState { key: string; name: string; status: 'connected' | 'needs_reconnect' | 'not_connected'; account: string; signedOutAt: string | null; }
 
+/** A post's image (gaps 2l). */
+export interface PostImage { source: 'maya' | 'user' | 'none'; status: 'pending' | 'making' | 'ready' | 'failed'; url?: string; brief: string; fileName?: string; width?: number; height?: number; reason?: string; }
+
 /** One channel of a post that went out (gaps 2n). */
 export interface ChannelResult { channel: string; status: 'queued' | 'retrying' | 'posted' | 'failed' | 'skipped'; url?: string; postedAt?: string | null; reason?: string; error?: string; retries?: number; }
 
@@ -92,6 +95,8 @@ export interface Post {
   holdCount?: number;
   rewriteCount?: number;
   channelResults?: ChannelResult[];
+  image?: PostImage;
+  mayaImage?: PostImage;
   movedBackDays: number;
 }
 
@@ -149,6 +154,9 @@ export class MayaSocialApi {
   unpin ( id: string ): Observable<{ post: Post; moved: Move[] }> { return this.unwrap( this.http.post<Envelope<{ post: Post; moved: Move[] }>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/unpin`, {} ) ); }
   channelAction ( id: string, channel: string, action: 'retry' | 'skip' ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/channels/${ encodeURIComponent( channel ) }/${ action }`, {} ) ); }
   disconnect ( channel: string ): Observable<Overview> { return this.unwrap( this.http.delete<Envelope<Overview>>( `${ this.base }/channels/${ encodeURIComponent( channel ) }` ) ); }
+  imageAction ( id: string, action: 'upload' | 'maya' | 'remake' | 'brief' | 'cancel', body: { dataUrl?: string; fileName?: string; brief?: string } = {} ): Observable<Post> {
+    return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/image/${ action }`, body ) );
+  }
   hold ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/hold`, {} ) ); }
 
   /** Starts a channel's OAuth (the existing Social accounts flow); resolves to the provider's sign-in URL. */
