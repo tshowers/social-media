@@ -63,6 +63,9 @@ const PENDING = ['needs_review', 'on_hold'];
     .result.is-failed { grid-template-columns: 16px auto 1fr; min-height: 36px; background: var(--t-pink); color: var(--t-pink-fg); }
     .result.is-failed ms-icon, .result.is-failed span { color: inherit; text-align: left; }
     .held-note { margin-top: 8px; }
+    .my-edit { margin-top: 10px; padding: 16px 18px; border-radius: 20px; background: var(--bg); }
+    .my-edit .ms-label { display: block; margin-bottom: 6px; font-size: 12px; }
+    .my-edit p { font-size: 15px; line-height: 1.55; }
     .drop-note { font-size: 12px; color: var(--muted); text-align: center; }
     .card.is-held .side .ms-btn--block + .ms-btn--block { margin-top: 0; }
     .knock { margin: -12px 24px 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
@@ -185,6 +188,39 @@ const PENDING = ['needs_review', 'on_hold'];
                   }
                   <button type="button" class="ms-btn ms-btn--bg ms-btn--block" [disabled]="busy() === post.id" (click)="channelAction(post, row.channel, 'skip')">Skip {{ channelName(row.channel) }}</button>
                 }
+              </div>
+            </article>
+          }
+
+          @for (post of offStrategy(); track post.id) {
+            <!-- 2h -->
+            <article class="card" [attr.aria-labelledby]="'off-' + post.id">
+              <div>
+                <div class="meta">
+                  <span class="ms-chip" data-tint="pink">Off-strategy</span><ms-help class="ms-help--small" topic="offStrategy" />
+                  <span>{{ post.source === 'user' ? 'Your post' : 'My post' }}@if (post.approvedAt) { · approved {{ approvedOn(post) }}} ·</span>
+                  <ms-post-channels [channels]="post.channels" />
+                </div>
+                <h2 [id]="'off-' + post.id">{{ post.title }}</h2>
+                <p class="body">{{ post.body }}</p>
+                <p class="rewrite" style="margin-top: 12px"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />{{ post.offStrategyNote }} Here’s an edit that fits.</p>
+                @if (post.offStrategyEdit; as edit) {
+                  <div class="my-edit">
+                    <span class="ms-label">My edit · {{ pillarName(edit.pillar || post.pillar) }} pillar</span>
+                    <p>{{ edit.body }}</p>
+                  </div>
+                }
+              </div>
+              <div class="side">
+                <div class="slot">{{ slot(post) }}</div>
+                <p class="auto">Still approved. It goes out as written unless you switch.</p>
+                @if (post.offStrategyEdit) {
+                  <button type="button" class="ms-btn ms-btn--primary ms-btn--46 ms-btn--block" [disabled]="busy() === post.id" (click)="offStrategyAction(post, 'use-edit')">Use my edit</button>
+                }
+                <div class="pair">
+                  <button type="button" class="ms-btn ms-btn--bg" [disabled]="busy() === post.id" (click)="offStrategyAction(post, 'keep')">Keep yours</button>
+                  <button type="button" class="ms-btn ms-btn--bg" (click)="editing.set(post)">Edit</button>
+                </div>
               </div>
             </article>
           }
@@ -326,7 +362,7 @@ export class TodayComponent implements OnInit {
 
   readonly headline = computed( () => {
     if ( !this.strategy() ) return 'Nothing is planned yet.';
-    const count = this.pending().length + this.failed().length;
+    const count = this.pending().length + this.failed().length + this.offStrategy().length;
     if ( !count ) return 'You’re clear for today.';
     return `${ plural( count, 'post' ) } ${ count === 1 ? 'needs' : 'need' } you today.`;
   } );
@@ -334,6 +370,10 @@ export class TodayComponent implements OnInit {
   readonly mayaLine = computed( () => {
     if ( !this.strategy() || this.loading() ) return '';
     const pending = this.pending();
+    const off = this.offStrategy()[0];
+    if ( off && !pending.length && !this.failed().length ) {
+      return off.source === 'user' ? 'It’s yours, so I won’t change it without you. It keeps its slot either way.' : 'It’s already approved, so I won’t change it without you. It keeps its slot either way.';
+    }
     const failed = this.failed()[0];
     if ( failed && !pending.length ) {
       const ok = ( failed.channelResults ?? [] ).filter( ( row ) => row.status === 'posted' ).map( ( row ) => this.channelName( row.channel ) );
@@ -394,6 +434,29 @@ export class TodayComponent implements OnInit {
         this.loading.set( false );
         this.loadError.set( ( response as { status?: number } )?.status || null );
       },
+    } );
+  }
+
+  /** 2h: posts that stopped fitting after an approved strategy change. */
+  readonly offStrategy = computed( () => this.posts().filter( ( post ) => post.offStrategy && !post.offStrategyKept && ['approved', 'needs_review', 'drafted', 'planned', 'on_hold'].includes( post.status ) ) );
+
+  pillarName ( key: string ): string {
+    return pillarOf( this.strategy(), key ).name;
+  }
+
+  approvedOn ( post: Post ): string {
+    return post.approvedAt ? monthDay( localDateKey( post.approvedAt, this.state.timeZone() ) ) : '';
+  }
+
+  offStrategyAction ( post: Post, action: 'use-edit' | 'keep' ): void {
+    this.busy.set( post.id );
+    this.api.offStrategy( post.id, action ).subscribe( {
+      next: ( saved ) => {
+        this.replace( saved );
+        this.busy.set( null );
+        if ( action === 'use-edit' ) this.notifications.show( 'Switched to my edit', `It still goes out ${ this.goesOut( saved ) }.`, 'success' );
+      },
+      error: ( error ) => this.fail( '', error ),
     } );
   }
 

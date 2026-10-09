@@ -7,6 +7,7 @@
  *   ?mock=ready       strategy in place, two posts to review (1a, 1d-1f),
  *                     plus a failed channel, an expired pin, a post held twice
  *   ?mock=nochannels  strategy in place, nothing connected (gaps 2c)
+ *   ?mock=change      a strategy change waiting after a profile save (gaps 2g)
  *   ?mock=first       Maya, first visit (1p)
  *   ?mock=new         set up, profile complete, no strategy (1h)
  *   ?mock=incomplete  set up, profile missing goal + products (1i)
@@ -21,7 +22,7 @@ import { delay } from 'rxjs/operators';
 
 import { idTokenInterceptor } from '../core/interceptors/id-token.interceptor';
 import { SocialAuthService } from '../services/social-auth.service';
-import type { ChannelState, Overview, Post, PostCheck, Strategy } from './api';
+import type { ChannelState, Overview, Post, PostCheck, Strategy, StrategyChange } from './api';
 
 const KEY = 'maya-social-mock';
 const TODAY = '2026-10-08';
@@ -121,10 +122,38 @@ function seedPosts (): Post[] {
       { channel: 'facebook', status: 'failed', reason: 'account_reauth_required', error: 'Facebook signed us out.', retries: 3 },
     ],
   } );
+  // Gaps 2h: the owner's approved post that stopped fitting after a strategy change.
+  posts.push( post( 'u1', '2026-10-22', 'product', 'TODD now syncs with Lead Vault', 'approved', '09:00', ['linkedin', 'facebook'], {
+    source: 'user', approvedAt: '2026-10-06T15:00:00.000Z',
+    body: 'Your TODD list now pulls in new Lead Vault leads automatically, sorted by how much they could be worth.',
+    offStrategy: true, offStrategyNote: 'TODD isn’t in your profile anymore.',
+    offStrategyEdit: { title: 'Lead Vault Match ranks your new leads', body: 'Lead Vault Match now ranks your new leads by fit, so the best ones are at the top of your list each morning.', pillar: 'product' },
+  } ) );
   const expired = posts.find( ( item ) => item.slotDate === '2026-10-06' )!;
   Object.assign( expired, { status: 'expired', pinned: true, time: '08:00', slotAt: iso( '2026-10-06', '08:00' ), title: 'Webinar replay: fill your pipeline in 30 days' } );
   return posts.sort( ( a, b ) => a.slotDate.localeCompare( b.slotDate ) );
 }
+
+/** Design 2g's example: a product swapped. */
+const SAMPLE_CHANGE: StrategyChange = {
+  at: '2026-10-09T15:00:00.000Z',
+  headline: 'You swapped a product. Here’s how I’d adjust the strategy.',
+  profileChanges: [
+    { kind: 'added', field: 'product', name: 'Lead Vault Match', detail: 'AI picks your best-fit leads' },
+    { kind: 'removed', field: 'product', name: 'TODD', detail: 'A to-do list sorted by revenue impact' },
+  ],
+  pillars: [
+    { key: 'product', name: 'Product', tint: 'violet', from: 20, to: 25 },
+    { key: 'proof', name: 'Proof', tint: 'green', from: 35, to: 30 },
+  ],
+  channels: [{ key: 'google_business_profile', name: 'Google Business', from: 1, to: 2 }],
+  affectedPosts: [
+    { id: 'm12', slotDate: '2026-10-19', title: 'TODD: your to-do list, sorted by revenue', pillar: 'product', source: 'maya', status: 'planned', action: 'replace', newTitle: 'Lead Vault Match: let the AI pick your best fit', note: '' },
+    { id: 'm16', slotDate: '2026-10-21', title: 'Q3 pipeline from Lead Vault users', pillar: 'proof', source: 'maya', status: 'planned', action: 'replace', newTitle: 'How Match found Alder Dental 9 new leads', note: '' },
+    { id: 'm15', slotDate: '2026-10-24', title: 'A day in Maya’s queue', pillar: 'behind', source: 'maya', status: 'planned', action: 'rewrite', newTitle: '', note: 'Rewritten to drop the TODD mention' },
+    { id: 'u1', slotDate: '2026-10-22', title: 'TODD now syncs with Lead Vault', pillar: 'product', source: 'user', status: 'approved', action: 'off_strategy', newTitle: '', note: 'TODD isn’t in your profile anymore.' },
+  ],
+};
 
 function channelStatus ( name: string ): ChannelState[] {
   const none = name === 'nochannels';
@@ -161,10 +190,11 @@ function seedOverview ( name: string ): Overview {
       audience: 'Owners of 5–50 person B2B firms', location: 'Austin, TX', website: 'taliferro.com', tones: ['Plain', 'Confident'],
     },
     missing: complete ? [] : ['companyGoal', 'products'],
-    strategy: name === 'ready' || name === 'nochannels' ? STRATEGY : null,
+    strategy: ['ready', 'nochannels', 'change'].includes( name ) ? STRATEGY : null,
     pendingStrategy: null,
-    plannedThrough: name === 'ready' || name === 'nochannels' ? '2026-10-28' : null,
-    nextPlanDate: name === 'ready' || name === 'nochannels' ? '2026-10-25' : null,
+    pendingChange: null,
+    plannedThrough: ['ready', 'nochannels', 'change'].includes( name ) ? '2026-10-28' : null,
+    nextPlanDate: ['ready', 'nochannels', 'change'].includes( name ) ? '2026-10-25' : null,
     connectedChannels: name === 'nochannels' ? [] : ['linkedin', 'threads', 'google_business_profile'],
     channelStatus: channelStatus( name ),
     publishingPaused: name === 'nochannels',
@@ -178,7 +208,10 @@ class MockServer {
 
   constructor ( name: string ) {
     this.overview = seedOverview( name );
-    this.posts = name === 'ready' || name === 'nochannels' ? seedPosts() : [];
+    this.posts = ['ready', 'nochannels', 'change'].includes( name ) ? seedPosts() : [];
+    if ( name === 'change' ) {
+      this.overview = { ...this.overview, pendingStrategy: { ...STRATEGY, reason: 'profile_changed', builtAt: SAMPLE_CHANGE.at }, pendingChange: SAMPLE_CHANGE };
+    }
   }
 
   handle ( req: HttpRequest<unknown> ): Observable<HttpEvent<unknown>> | null {
@@ -202,7 +235,12 @@ class MockServer {
     if ( path === '/profile' ) {
       const profile = { ...this.overview.profile, ...body['profile'] };
       const missing = [!profile.companyName && 'companyName', !profile.companyGoal && 'companyGoal', !profile.products?.length && 'products'].filter( Boolean ) as Overview['missing'];
-      this.overview = { ...this.overview, profile, missing, pendingStrategy: this.overview.strategy ? { ...STRATEGY, reason: 'profile_changed', builtAt: new Date().toISOString() } : null };
+      const changed = !!this.overview.strategy;
+      this.overview = {
+        ...this.overview, profile, missing,
+        pendingStrategy: changed ? { ...STRATEGY, pillars: STRATEGY.pillars.map( ( pillar ) => ( pillar.key === 'product' ? { ...pillar, share: 25 } : pillar.key === 'proof' ? { ...pillar, share: 30 } : pillar ) ), reason: 'profile_changed', builtAt: new Date().toISOString() } : null,
+        pendingChange: changed ? SAMPLE_CHANGE : null,
+      };
       return ok( this.overview, 600 );
     }
     if ( path === '/strategy/generate' ) {
@@ -216,7 +254,7 @@ class MockServer {
       if ( !this.posts.length ) this.posts = seedPosts();
       return ok( this.overview, 1500 );
     }
-    if ( path === '/strategy/pending' ) return ok( this.overview = { ...this.overview, pendingStrategy: null } );
+    if ( path === '/strategy/pending' ) return ok( this.overview = { ...this.overview, pendingStrategy: null, pendingChange: null } );
 
     if ( path.startsWith( '/posts' ) && req.method === 'GET' ) {
       const from = req.params.get( 'from' ) || TODAY;
@@ -242,6 +280,13 @@ class MockServer {
       const created = post( `u${ Date.now() }`, check.slot!.slotDate, 'product', text.split( /[.!?]/ )[0].slice( 0, 70 ), 'approved', check.slot!.time, body['channels'], { body: text, source: 'user', pinned: !!body['pinned'] } );
       this.posts.push( created );
       return ok( { post: created, moved: check.moved } );
+    }
+    const offVerb = path.match( /^\/posts\/([^/]+)\/off-strategy\/(use-edit|keep)$/ );
+    if ( offVerb ) {
+      const current = find( offVerb[1] );
+      if ( offVerb[2] === 'keep' ) return ok( save( { ...current, offStrategyKept: true } ) );
+      const edit = current.offStrategyEdit!;
+      return ok( save( { ...current, title: edit.title, body: edit.body, offStrategy: false, offStrategyEdit: null } ) );
     }
     const imageVerb = path.match( /^\/posts\/([^/]+)\/image\/(upload|maya|remake|brief|cancel)$/ );
     if ( imageVerb ) {

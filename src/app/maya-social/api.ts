@@ -54,6 +54,8 @@ export interface Overview {
   missing: RequiredField[];
   strategy: Strategy | null;
   pendingStrategy: Strategy | null;
+  /** What a proposed change does (gaps 2g); null for a plain regenerate. */
+  pendingChange: StrategyChange | null;
   plannedThrough: string | null;
   nextPlanDate: string | null;
   connectedChannels: string[];
@@ -68,6 +70,15 @@ export interface Overview {
 export interface SocialSettings { autoApproveHours?: AutoApproveHours; notifyPush?: boolean; notifyEmail?: boolean; }
 
 export interface ChannelState { key: string; name: string; status: 'connected' | 'needs_reconnect' | 'not_connected'; account: string; signedOutAt: string | null; }
+
+export interface StrategyChange {
+  at: string;
+  headline: string;
+  profileChanges: { kind: 'added' | 'removed' | 'changed'; field: string; name: string; detail: string }[];
+  pillars: { key: string; name: string; tint?: Tint; from: number; to: number }[];
+  channels: { key: string; name: string; from: number; to: number }[];
+  affectedPosts: { id: string; slotDate: string; title: string; pillar: string; source: string; status: PostStatus; action: 'replace' | 'rewrite' | 'off_strategy'; newTitle: string; note: string }[];
+}
 
 /** A post's image (gaps 2l). */
 export interface PostImage { source: 'maya' | 'user' | 'none'; status: 'pending' | 'making' | 'ready' | 'failed'; url?: string; brief: string; fileName?: string; width?: number; height?: number; reason?: string; }
@@ -97,6 +108,12 @@ export interface Post {
   channelResults?: ChannelResult[];
   image?: PostImage;
   mayaImage?: PostImage;
+  /** Gaps 2h: no longer fits after an approved strategy change. */
+  offStrategy?: boolean;
+  offStrategyKept?: boolean;
+  offStrategyNote?: string;
+  offStrategyEdit?: { title: string; body: string; pillar?: string } | null;
+  approvedAt?: string;
   movedBackDays: number;
 }
 
@@ -157,6 +174,7 @@ export class MayaSocialApi {
   imageAction ( id: string, action: 'upload' | 'maya' | 'remake' | 'brief' | 'cancel', body: { dataUrl?: string; fileName?: string; brief?: string } = {} ): Observable<Post> {
     return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/image/${ action }`, body ) );
   }
+  offStrategy ( id: string, action: 'use-edit' | 'keep' ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/off-strategy/${ action }`, {} ) ); }
   hold ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/hold`, {} ) ); }
 
   /** Starts a channel's OAuth (the existing Social accounts flow); resolves to the provider's sign-in URL. */

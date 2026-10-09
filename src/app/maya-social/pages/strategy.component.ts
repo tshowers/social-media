@@ -9,6 +9,7 @@ import { IconComponent } from '../icon.component';
 import { MayaSocialState } from '../state';
 import { FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent } from '../states.component';
 import { StrategyChannelsComponent } from '../strategy-channels.component';
+import { StrategyChangeComponent } from '../strategy-change.component';
 
 const FIELD_LABELS: Record<RequiredField, string> = {
   companyName: 'Company name',
@@ -25,7 +26,7 @@ const FIELD_LABELS: Record<RequiredField, string> = {
 @Component( {
   selector: 'ms-strategy',
   standalone: true,
-  imports: [FormsModule, RouterLink, IconComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, StrategyChannelsComponent],
+  imports: [FormsModule, RouterLink, IconComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, StrategyChannelsComponent, StrategyChangeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .avatar88 { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; object-position: left center; box-shadow: 0 0 0 6px var(--t-blue); }
@@ -116,6 +117,11 @@ const FIELD_LABELS: Record<RequiredField, string> = {
           <li><span class="step-spin" aria-hidden="true"></span>Picking content pillars and how often to post on each channel</li>
           <li class="is-next"><span class="step-todo" aria-hidden="true"></span>Planning three weeks of posts, once you approve</li>
         </ol>
+      </main>
+    } @else {
+    @if (changeView(); as change) {
+      <main class="ms-page">
+        <ms-strategy-change [value]="change" [current]="active()!" [busy]="busy()" (approve)="approve()" (keep)="discard()" />
       </main>
     } @else {
     @if (shown(); as strategy) {
@@ -242,6 +248,7 @@ const FIELD_LABELS: Record<RequiredField, string> = {
       </main>
     }
     }
+    }
   `,
 } )
 export class StrategyComponent implements OnInit, OnDestroy {
@@ -262,6 +269,8 @@ export class StrategyComponent implements OnInit, OnDestroy {
   readonly active = this.state.strategy;
   readonly pending = computed( () => this.state.overview()?.pendingStrategy ?? null );
   readonly shown = computed( () => this.pending() ?? this.active() );
+  /** Gaps 2g: a change Maya proposed after a profile save. */
+  readonly changeView = computed( () => ( this.active() && this.pending() ? this.state.overview()?.pendingChange ?? null : null ) );
   readonly profile = computed( () => this.state.overview()?.profile ?? null );
   readonly missing = computed( () => this.state.overview()?.missing ?? [] );
   readonly hours = computed( () => this.state.overview()?.autoApproveHours ?? this.shown()?.autoApproveHours ?? 6 );

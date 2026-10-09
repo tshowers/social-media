@@ -186,6 +186,7 @@ interface Day {
                   <div class="day" role="button" tabindex="0" [attr.aria-label]="shortLabel(post)" [class.is-open]="selected()?.id === post.id" [class.is-held]="post.status === 'on_hold'" [class.is-past]="day.date < today() && post.status === 'posted' && !failedRows(post).length" [class.is-faded]="post.status === 'expired' || post.status === 'paused' || post.status === 'dropped'" (click)="open(post)" (keydown.enter)="open(post)" (keydown.space)="$event.preventDefault(); open(post)">
                     <div class="chips">
                       <span class="ms-chip ms-chip--11" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>
+                      @if (post.offStrategy) { <span class="ms-chip ms-chip--11" data-tint="pink">{{ post.offStrategyKept ? 'Kept' : 'Off-strategy' }}</span> }
                       @if (post.pinned) { <span class="ms-pinned"><ms-icon name="pin" [size]="12" />Pinned</span> }
                     </div>
                     <h3>{{ post.title }}</h3>
