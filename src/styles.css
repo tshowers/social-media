@@ -215,7 +215,13 @@ button.ms-link {
 .ms-status[data-status="on_hold"] { background: var(--t-pink); color: var(--t-pink-fg); }
 .ms-status[data-status="drafted"] { background: var(--surface2); color: var(--text); }
 .ms-status[data-status="planned"] { background: var(--bg); color: var(--muted); }
-.ms-status[data-status="expired"] { background: var(--t-yellow); color: var(--t-yellow-fg); }
+.ms-status[data-status="expired"],
+.ms-status[data-status="paused"] { background: var(--t-yellow); color: var(--t-yellow-fg); }
+.ms-status[data-status="failed"],
+.ms-status[data-status="dropped"] { background: var(--t-pink); color: var(--t-pink-fg); }
+
+/* A channel that can't post, on a post's channel list (gaps 2d). */
+.ms-skipped { text-decoration: line-through; }
 
 /* Pillar dot. */
 .ms-dot {

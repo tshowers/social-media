@@ -80,6 +80,8 @@ export const STATUS_LABELS: Record<PostStatus, string> = {
   on_hold: 'On hold',
   posted: 'Posted',
   expired: 'Expired',
+  dropped: 'Dropped',
+  paused: 'Paused',
 };
 
 export function pillarOf ( strategy: Strategy | null | undefined, key: string ): Pillar {

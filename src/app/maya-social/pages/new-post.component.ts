@@ -171,6 +171,12 @@ export class NewPostComponent implements OnInit {
 
   ngOnInit (): void {
     this.channels.set( this.strategyChannels().map( ( channel ) => channel.key ) );
+    // "Duplicate as new post" (gaps 2o) hands over the expired post's copy.
+    const handed = ( typeof history !== 'undefined' ? history.state?.body : '' ) as string | undefined;
+    if ( handed ) {
+      this.body.set( handed );
+      queueMicrotask( () => this.recheck() );
+    }
     this.slotDate.set( this.tomorrow() );
     this.api.posts( this.tomorrow(), addDays( this.tomorrow(), 180 ) ).subscribe( {
       next: ( posts ) => this.pinnedPosts.set( posts.filter( ( post ) => post.pinned && !['expired'].includes( post.status ) ) ),

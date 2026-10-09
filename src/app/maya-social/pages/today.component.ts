@@ -2,16 +2,17 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { Router, RouterLink } from '@angular/router';
 
 import { NotificationService } from '../../services/notification.service';
-import { MayaSocialApi, Post } from '../api';
+import { ChannelResult, MayaSocialApi, Post } from '../api';
 import { EditSheetComponent } from '../edit-sheet.component';
 import {
   STATUS_LABELS, addDays, channelList, clock, dayOfMonth, localDateKey, longDate, monthDay, pillarOf, plural,
-  relativeDayAt, slotLabel, weekdayLong, weekdayShort,
+  relativeDayAt, slotLabel, wallClock, weekdayLong, weekdayShort,
 } from '../format';
 import { HelpPopComponent } from '../help-pop.component';
 import { IconComponent } from '../icon.component';
 import { MayaSocialState } from '../state';
-import { ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent } from '../states.component';
+import { ChannelConnect, ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NoChannelsComponent, NotSetUpComponent, SkeletonComponent } from '../states.component';
+import { PostChannelsComponent } from '../post-channels.component';
 
 const PENDING = ['needs_review', 'on_hold'];
 
@@ -23,7 +24,7 @@ const PENDING = ['needs_review', 'on_hold'];
 @Component( {
   selector: 'ms-today',
   standalone: true,
-  imports: [RouterLink, HelpPopComponent, IconComponent, EditSheetComponent, ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent],
+  imports: [RouterLink, HelpPopComponent, IconComponent, EditSheetComponent, ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent, NoChannelsComponent, PostChannelsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; align-items: start; }
@@ -53,6 +54,15 @@ const PENDING = ['needs_review', 'on_hold'];
     .hold-btn:hover { transform: none; }
     .hold-btn:disabled { opacity: .5; }
     .hold-btn:focus-visible { outline: 2px solid var(--blue) !important; outline-offset: 2px; box-shadow: none !important; }
+    .results { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .result { display: grid; grid-template-columns: 16px 1fr auto auto; gap: 10px; align-items: center; min-height: 48px; padding: 6px 8px 6px 16px; border-radius: 999px; background: var(--bg); font-size: 14px; }
+    .result ms-icon { color: var(--t-green-fg); }
+    .result span { font-size: 13px; color: var(--muted); text-align: right; }
+    .result.is-failed { grid-template-columns: 16px auto 1fr; min-height: 36px; background: var(--t-pink); color: var(--t-pink-fg); }
+    .result.is-failed ms-icon, .result.is-failed span { color: inherit; text-align: left; }
+    .held-note { margin-top: 8px; }
+    .drop-note { font-size: 12px; color: var(--muted); text-align: center; }
+    .card.is-held .side .ms-btn--block + .ms-btn--block { margin-top: 0; }
     .knock { margin: -12px 24px 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
 
     .approved { display: flex; align-items: center; gap: 12px; padding: 18px 24px; border-radius: 28px; background: var(--t-green); color: var(--t-green-fg); font-size: 15px; line-height: 1.5; }
@@ -106,6 +116,8 @@ const PENDING = ['needs_review', 'on_hold'];
       <ms-load-error [status]="loadError() ?? null" (retry)="retry()" />
     } @else if (loading()) {
       <ms-skeleton />
+    } @else if (strategy() && state.publishingPaused()) {
+      <ms-no-channels />
     } @else {
     <main class="ms-page">
       <div class="grid">
@@ -136,6 +148,45 @@ const PENDING = ['needs_review', 'on_hold'];
             </div>
           }
 
+          @for (post of failed(); track post.id) {
+            <!-- 2n -->
+            <article class="card" [attr.aria-labelledby]="'failed-' + post.id">
+              <div>
+                <div class="meta">
+                  <span class="ms-chip ms-status" data-status="failed">Failed on {{ failedNames(post) }}</span>
+                  <span class="ms-chip" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>
+                </div>
+                <h2 [id]="'failed-' + post.id">{{ post.title }}</h2>
+                <div class="results">
+                  @for (row of post.channelResults ?? []; track row.channel) {
+                    @if (row.status === 'failed') {
+                      <div class="result is-failed"><ms-icon name="alert" [size]="16" /><strong>{{ channelName(row.channel) }}</strong><span>{{ failureText(row) }}</span></div>
+                    } @else {
+                      <div class="result">
+                        @if (row.status === 'posted') { <ms-icon name="check" [size]="16" [stroke]="3" /> } @else { <span class="ms-spinner" aria-hidden="true"></span> }
+                        <strong>{{ channelName(row.channel) }}</strong>
+                        <span>{{ row.status === 'posted' ? 'Posted ' + wallClockOf(post) : row.status === 'skipped' ? 'Skipped' : 'Retrying' }}</span>
+                        @if (row.url) { <a class="ms-btn ms-btn--bg ms-btn--36" [href]="row.url" target="_blank" rel="noopener">View</a> }
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+              <div class="side">
+                <div class="slot">Was due {{ wallClockOf(post) }}</div>
+                <p class="auto">I can retry until 9:00 PM tonight. After that I drop {{ failedNames(post) }} for this post.</p>
+                @for (row of failedRows(post); track row.channel) {
+                  @if (isSignInError(row) && !state.isConnected(row.channel)) {
+                    <button type="button" class="ms-btn ms-btn--primary ms-btn--46 ms-btn--block" (click)="reconnectAndRetry(post, row.channel)">Reconnect and retry</button>
+                  } @else {
+                    <button type="button" class="ms-btn ms-btn--primary ms-btn--46 ms-btn--block" [disabled]="busy() === post.id" (click)="channelAction(post, row.channel, 'retry')">Retry now</button>
+                  }
+                  <button type="button" class="ms-btn ms-btn--bg ms-btn--block" [disabled]="busy() === post.id" (click)="channelAction(post, row.channel, 'skip')">Skip {{ channelName(row.channel) }}</button>
+                }
+              </div>
+            </article>
+          }
+
           @for (post of reviewList(); track post.id) {
             @if (justApproved().has(post.id)) {
               <div class="approved" role="status">
@@ -149,14 +200,20 @@ const PENDING = ['needs_review', 'on_hold'];
                   <div class="meta">
                     <span class="ms-chip" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>
                     @if (post.source === 'user') { <span>Your post ·</span> }
-                    <span>{{ channels(post) }}</span>
-                    @if (post.status === 'on_hold') { <span class="ms-chip ms-status" data-status="on_hold">On hold</span> }
+                    <ms-post-channels [channels]="post.channels" />
+                    @if (isHeldTwice(post)) { <span class="ms-chip ms-status" data-status="on_hold">Held twice</span> }
+                    @else if (post.status === 'on_hold') { <span class="ms-chip ms-status" data-status="on_hold">On hold</span> }
                   </div>
                   @if (post.rewriteCount && post.status === 'needs_review') {
                     <p class="rewrite"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />You held the first draft. This is my rewrite.</p>
+                  } @else if (isHeldTwice(post)) {
+                    <p class="rewrite"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />You held my rewrite too. I’ll stop rewriting until you tell me what to change.</p>
                   }
                   <h2 [id]="'post-' + post.id">{{ post.title }}</h2>
                   <p class="body">{{ post.body }}</p>
+                  @if (isHeldTwice(post)) {
+                    <p class="body held-note">It still keeps {{ post.slotDate === today() ? 'today' : weekday(post.slotDate) }}’s slot. If it’s held at {{ wallClockOf(post) }}, nothing goes out and the {{ plural(behind(post), 'unpinned post') }} behind it move back another day.</p>
+                  }
                 </div>
                 <div class="side">
                   <div class="slot">{{ slot(post) }}</div>
@@ -165,6 +222,12 @@ const PENDING = ['needs_review', 'on_hold'];
                   } @else if (post.status === 'on_hold') {
                     <p class="auto">Held. If its slot arrives still held, nothing goes out that day. <ms-help topic="hold" /></p>
                   }
+                  @if (isHeldTwice(post)) {
+                    <button type="button" class="ms-btn ms-btn--primary ms-btn--46 ms-btn--block" [disabled]="busy() === post.id" (click)="approve(post)">Approve</button>
+                    <button type="button" class="ms-btn ms-btn--bg ms-btn--block" (click)="editing.set(post)">Edit it yourself</button>
+                    <button type="button" class="ms-btn ms-btn--bg ms-btn--block" [disabled]="busy() === post.id" (click)="drop(post)">Drop this post</button>
+                    <p class="drop-note">Drop: the posts behind it move up a day.</p>
+                  } @else {
                   <button type="button" class="ms-btn ms-btn--primary ms-btn--46 ms-btn--block" [disabled]="busy() === post.id" (click)="approve(post)">Approve now</button>
                   <div class="pair">
                     <button type="button" class="ms-btn ms-btn--bg" (click)="editing.set(post)">Edit</button>
@@ -176,6 +239,7 @@ const PENDING = ['needs_review', 'on_hold'];
                       <ms-help class="ms-help--small" topic="hold" />
                     </div>
                   </div>
+                  }
                 </div>
               </article>
               @if (post.rewriteCount && post.status === 'needs_review') {
@@ -259,7 +323,7 @@ export class TodayComponent implements OnInit {
 
   readonly headline = computed( () => {
     if ( !this.strategy() ) return 'Nothing is planned yet.';
-    const count = this.pending().length;
+    const count = this.pending().length + this.failed().length;
     if ( !count ) return 'You’re clear for today.';
     return `${ plural( count, 'post' ) } ${ count === 1 ? 'needs' : 'need' } you today.`;
   } );
@@ -267,6 +331,11 @@ export class TodayComponent implements OnInit {
   readonly mayaLine = computed( () => {
     if ( !this.strategy() || this.loading() ) return '';
     const pending = this.pending();
+    const failed = this.failed()[0];
+    if ( failed && !pending.length ) {
+      const ok = ( failed.channelResults ?? [] ).filter( ( row ) => row.status === 'posted' ).map( ( row ) => this.channelName( row.channel ) );
+      return `${ ok.length ? `“${ failed.title }” went out on ${ this.listNames( ok ) }. ` : '' }${ this.failedNames( failed ) } didn’t take it.`;
+    }
     const inReview = pending.filter( ( post ) => post.status === 'needs_review' && post.autoApproveAt );
     if ( !pending.length ) {
       const next = this.posts()
@@ -322,6 +391,76 @@ export class TodayComponent implements OnInit {
         this.loading.set( false );
         this.loadError.set( ( response as { status?: number } )?.status || null );
       },
+    } );
+  }
+
+  /** 2n: posts that went out today or yesterday with a channel that failed. */
+  readonly failed = computed( () => this.posts().filter( ( post ) =>
+    post.status === 'posted' && post.slotDate >= addDays( this.today(), -1 ) && ( post.channelResults ?? [] ).some( ( row ) => row.status === 'failed' ) ) );
+
+  private readonly connect = inject( ChannelConnect );
+
+  isHeldTwice ( post: Post ): boolean {
+    return post.status === 'on_hold' && ( post.holdCount ?? 0 ) >= 2;
+  }
+
+  channelName ( key: string ): string {
+    return this.state.channelNames()[key] || key;
+  }
+
+  listNames ( names: string[] ): string {
+    return names.length > 1 ? `${ names.slice( 0, -1 ).join( ', ' ) } and ${ names[names.length - 1] }` : names.join( '' );
+  }
+
+  failedRows ( post: Post ): ChannelResult[] {
+    return ( post.channelResults ?? [] ).filter( ( row ) => row.status === 'failed' );
+  }
+
+  failedNames ( post: Post ): string {
+    return this.listNames( this.failedRows( post ).map( ( row ) => this.channelName( row.channel ) ) );
+  }
+
+  wallClockOf ( post: Post ): string {
+    return wallClock( post.time );
+  }
+
+  /** Sign-in problems need a reconnect first; everything else can retry now. */
+  isSignInError ( row: ChannelResult ): boolean {
+    return ['account_reauth_required', 'account_disconnected', 'stale_social_account_binding', 'missing_social_account', 'missing_auth_token'].includes( row.reason ?? '' );
+  }
+
+  failureText ( row: ChannelResult ): string {
+    const name = this.channelName( row.channel );
+    const tries = row.retries ? ` Tried ${ row.retries } ${ row.retries === 1 ? 'time' : 'times' }.` : '';
+    if ( this.isSignInError( row ) ) return `${ name } signed us out.${ tries }`;
+    return `${ row.error || 'It didn’t take the post.' }${ tries }`;
+  }
+
+  channelAction ( post: Post, channel: string, action: 'retry' | 'skip' ): void {
+    this.busy.set( post.id );
+    this.api.channelAction( post.id, channel, action ).subscribe( {
+      next: ( saved ) => {
+        this.replace( saved );
+        this.busy.set( null );
+      },
+      error: ( error ) => this.fail( '', error ),
+    } );
+  }
+
+  /** Reconnect first; the retry happens when they come back and press Retry now. */
+  reconnectAndRetry ( _post: Post, channel: string ): void {
+    this.connect.connect( channel );
+  }
+
+  drop ( post: Post ): void {
+    this.busy.set( post.id );
+    this.api.drop( post.id ).subscribe( {
+      next: () => {
+        this.busy.set( null );
+        this.notifications.show( 'Dropped', 'The posts behind it moved up a day.', 'success' );
+        this.load();
+      },
+      error: ( error ) => this.fail( '', error ),
     } );
   }
 

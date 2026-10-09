@@ -29,17 +29,25 @@ export class MayaSocialState {
   readonly today = computed( () => this.overview()?.today ?? new Date().toISOString().slice( 0, 10 ) );
   readonly timeZone = computed( () => this.overview()?.timeZone ?? 'America/Los_Angeles' );
   readonly channelNames = computed( () => this.overview()?.channels ?? {} );
-  /** Strategy channels with no connected account: their posts can't go out. */
+  /** Strategy channels that can't post, signed-out ones first (gaps 2d). */
   readonly unconnectedChannels = computed( () => {
     const overview = this.overview();
     if ( !overview?.strategy ) return [];
-    return overview.strategy.channels.filter( ( channel ) => !overview.connectedChannels.includes( channel.key ) );
+    const byKey = new Map( ( overview.channelStatus ?? [] ).map( ( channel ) => [channel.key, channel] ) );
+    return overview.strategy.channels
+      .filter( ( channel ) => !overview.connectedChannels.includes( channel.key ) )
+      .map( ( channel ) => ( { ...channel, state: byKey.get( channel.key ) } ) )
+      .sort( ( a, b ) => Number( b.state?.status === 'needs_reconnect' ) - Number( a.state?.status === 'needs_reconnect' ) );
   } );
+
+  isConnected ( key: string ): boolean {
+    return ( this.overview()?.connectedChannels ?? [] ).includes( key );
+  }
 
   /** 2c: with no channel connected, publishing and auto-approve pause. */
   readonly publishingPaused = computed( () => {
     const overview = this.overview();
-    return !!overview?.strategy && !( overview.connectedChannels ?? [] ).length;
+    return !!overview?.publishingPaused;
   } );
 
   private loading: Observable<Overview | null> | null = null;

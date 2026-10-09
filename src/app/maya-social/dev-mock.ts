@@ -4,7 +4,9 @@
  * localhost to run every screen against an in-memory API seeded with the
  * design's sample week (Thu, Oct 8, 2026):
  *
- *   ?mock=ready       strategy in place, two posts to review (1a, 1d-1f)
+ *   ?mock=ready       strategy in place, two posts to review (1a, 1d-1f),
+ *                     plus a failed channel, an expired pin, a post held twice
+ *   ?mock=nochannels  strategy in place, nothing connected (gaps 2c)
  *   ?mock=first       Maya, first visit (1p)
  *   ?mock=new         set up, profile complete, no strategy (1h)
  *   ?mock=incomplete  set up, profile missing goal + products (1i)
@@ -19,7 +21,7 @@ import { delay } from 'rxjs/operators';
 
 import { idTokenInterceptor } from '../core/interceptors/id-token.interceptor';
 import { SocialAuthService } from '../services/social-auth.service';
-import type { Overview, Post, PostCheck, Strategy } from './api';
+import type { ChannelState, Overview, Post, PostCheck, Strategy } from './api';
 
 const KEY = 'maya-social-mock';
 const TODAY = '2026-10-08';
@@ -94,13 +96,40 @@ function seedPosts (): Post[] {
       body: 'Ridgeline HVAC is a 6-person shop in Austin. In September they used Lead Vault to find 40 property managers within 25 miles and booked 11 calls. Here’s the search they ran.',
       autoApproveAt: iso( '2026-10-08', '14:00' ), rewriteCount: 1, holdCount: 1,
     } ),
-    post( 'sat', '2026-10-10', 'behind', 'Friday build review: what we shipped this week', 'drafted', '16:00', ['instagram', 'threads'], { body: 'Every Friday we show what shipped.', reviewOpensAt: iso( '2026-10-10', '09:00' ) } ),
+    post( 'sat', '2026-10-10', 'behind', 'Friday build review: what we shipped this week', 'on_hold', '12:00', ['instagram', 'threads'], { body: 'Three fixes and one new filter in Find. Here’s the short version, with the screenshots.', holdCount: 2, rewriteCount: 1 } ),
     post( 'sun', '2026-10-11', 'howto', 'What buyers search for before they call you', 'drafted', '09:00', ['linkedin', 'threads'], { body: 'Before a buyer calls, they search.', reviewOpensAt: iso( '2026-10-10', '18:00' ) } ),
     post( 'mon', '2026-10-12', 'product', 'Find: search 40,000 companies by capability', 'planned', '12:00', ['linkedin', 'facebook', 'google_business_profile'] ),
     post( 'tue', '2026-10-13', 'product', 'Webinar today at 1 PM: fill your pipeline in 30 days', 'planned', '08:00', Object.keys( CHANNELS ), { pinned: true } ),
     post( 'wed', '2026-10-14', 'proof', 'Before and after: a cleaned-up lead list', 'planned', '16:00', ['linkedin', 'facebook'] ),
   );
+  // Exceptions (gaps 2n, 2o): yesterday's post failed on Facebook; a pinned post expired.
+  const yesterday = posts.find( ( item ) => item.slotDate === '2026-10-07' )!;
+  Object.assign( yesterday, {
+    title: 'How Ridgeline HVAC booked 11 calls in a month', pillar: 'proof', time: '09:00', slotAt: iso( '2026-10-07', '09:00' ),
+    channels: ['linkedin', 'threads', 'facebook'],
+    body: 'Ridgeline HVAC is a 6-person shop in Austin. In September they used Lead Vault to find 40 property managers.',
+    channelResults: [
+      { channel: 'linkedin', status: 'posted', url: 'https://www.linkedin.com/feed/', postedAt: iso( '2026-10-07', '09:00' ) },
+      { channel: 'threads', status: 'posted', url: 'https://www.threads.net/', postedAt: iso( '2026-10-07', '09:00' ) },
+      { channel: 'facebook', status: 'failed', reason: 'account_reauth_required', error: 'Facebook signed us out.', retries: 3 },
+    ],
+  } );
+  const expired = posts.find( ( item ) => item.slotDate === '2026-10-06' )!;
+  Object.assign( expired, { status: 'expired', pinned: true, time: '08:00', slotAt: iso( '2026-10-06', '08:00' ), title: 'Webinar replay: fill your pipeline in 30 days' } );
   return posts.sort( ( a, b ) => a.slotDate.localeCompare( b.slotDate ) );
+}
+
+function channelStatus ( name: string ): ChannelState[] {
+  const none = name === 'nochannels';
+  const row = ( key: keyof typeof CHANNELS, status: ChannelState['status'], account = '', signedOutAt: string | null = null ): ChannelState =>
+    ( { key, name: CHANNELS[key], status: none ? 'not_connected' : status, account: none ? '' : account, signedOutAt } );
+  return [
+    row( 'linkedin', 'connected', 'Taliferro Tech page' ),
+    row( 'threads', 'connected', '@taliferrotech' ),
+    row( 'facebook', 'needs_reconnect', 'Taliferro Tech page', '2026-10-07T14:00:00.000Z' ),
+    row( 'instagram', 'not_connected' ),
+    row( 'google_business_profile', 'connected', 'Taliferro Tech, Austin' ),
+  ];
 }
 
 function seedOverview ( name: string ): Overview {
@@ -125,11 +154,13 @@ function seedOverview ( name: string ): Overview {
       audience: 'Owners of 5–50 person B2B firms', location: 'Austin, TX', website: 'taliferro.com', tones: ['Plain', 'Confident'],
     },
     missing: complete ? [] : ['companyGoal', 'products'],
-    strategy: name === 'ready' ? STRATEGY : null,
+    strategy: name === 'ready' || name === 'nochannels' ? STRATEGY : null,
     pendingStrategy: null,
-    plannedThrough: name === 'ready' ? '2026-10-28' : null,
-    nextPlanDate: name === 'ready' ? '2026-10-25' : null,
-    connectedChannels: ['linkedin', 'threads', 'facebook', 'instagram'],
+    plannedThrough: name === 'ready' || name === 'nochannels' ? '2026-10-28' : null,
+    nextPlanDate: name === 'ready' || name === 'nochannels' ? '2026-10-25' : null,
+    connectedChannels: name === 'nochannels' ? [] : ['linkedin', 'threads', 'google_business_profile'],
+    channelStatus: channelStatus( name ),
+    publishingPaused: name === 'nochannels',
     channels: CHANNELS,
   };
 }
@@ -140,7 +171,7 @@ class MockServer {
 
   constructor ( name: string ) {
     this.overview = seedOverview( name );
-    this.posts = name === 'ready' ? seedPosts() : [];
+    this.posts = name === 'ready' || name === 'nochannels' ? seedPosts() : [];
   }
 
   handle ( req: HttpRequest<unknown> ): Observable<HttpEvent<unknown>> | null {
@@ -205,11 +236,34 @@ class MockServer {
       this.posts.push( created );
       return ok( { post: created, moved: check.moved } );
     }
+    const channelVerb = path.match( /^\/posts\/([^/]+)\/channels\/([^/]+)\/(retry|skip)$/ );
+    if ( channelVerb ) {
+      const [, id, channel, verb] = channelVerb;
+      const current = find( id );
+      const channelResults = ( current.channelResults ?? [] ).map( ( row ) => ( row.channel === channel ? { channel, status: verb === 'retry' ? 'retrying' as const : 'skipped' as const } : row ) );
+      return ok( save( { ...current, channelResults } ), 600 );
+    }
+    const channelOff = path.match( /^\/channels\/([^/]+)$/ );
+    if ( channelOff && req.method === 'DELETE' ) {
+      const key = channelOff[1];
+      this.overview = {
+        ...this.overview,
+        connectedChannels: this.overview.connectedChannels.filter( ( item ) => item !== key ),
+        channelStatus: this.overview.channelStatus.map( ( row ) => ( row.key === key ? { ...row, status: 'not_connected', account: '' } : row ) ),
+      };
+      return ok( this.overview );
+    }
     const action = path.match( /^\/posts\/([^/]+)(?:\/([a-z-]+))?$/ );
     if ( action ) {
       const [, id, verb] = action;
       const current = find( id );
       if ( verb === 'approve' ) return ok( save( { ...current, status: 'approved', approvedBy: 'owner' } ) );
+      if ( verb === 'title' ) return ok( save( { ...current, title: body['title'] } ) );
+      if ( verb === 'drop' ) {
+        save( { ...current, status: 'dropped' } );
+        return ok( { moved: [] } );
+      }
+      if ( verb === 'unpin' ) return ok( { post: save( { ...current, pinned: false } ), moved: [] } );
       if ( verb === 'undo-approve' ) return ok( save( { ...current, status: 'needs_review' } ) );
       if ( verb === 'hold' ) {
         if ( current.holdCount ) return ok( save( { ...current, status: 'on_hold', holdCount: ( current.holdCount || 0 ) + 1 } ), 400 );

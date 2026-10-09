@@ -8,7 +8,7 @@ import { SocialAuthService } from '../services/social-auth.service';
 /** The backend's Maya Social API (todd-backend/functions/mayaSocial/routes.js). */
 
 export type AutoApproveHours = 2 | 4 | 6;
-export type PostStatus = 'planned' | 'drafted' | 'needs_review' | 'approved' | 'on_hold' | 'posted' | 'expired';
+export type PostStatus = 'planned' | 'drafted' | 'needs_review' | 'approved' | 'on_hold' | 'posted' | 'expired' | 'dropped' | 'paused';
 export type Tint = 'green' | 'blue' | 'violet' | 'yellow';
 export type RequiredField = 'companyName' | 'companyGoal' | 'products';
 
@@ -57,11 +57,20 @@ export interface Overview {
   plannedThrough: string | null;
   nextPlanDate: string | null;
   connectedChannels: string[];
+  /** Every channel and where it stands (gaps 2b). */
+  channelStatus: ChannelState[];
+  /** No strategy channel connected: publishing and auto-approve pause (2c). */
+  publishingPaused: boolean;
   channels: Record<string, string>;
 }
 
 /** Social settings (gaps 2m): Maya Social only, not the Taliferro profile. */
 export interface SocialSettings { autoApproveHours?: AutoApproveHours; notifyPush?: boolean; notifyEmail?: boolean; }
+
+export interface ChannelState { key: string; name: string; status: 'connected' | 'needs_reconnect' | 'not_connected'; account: string; signedOutAt: string | null; }
+
+/** One channel of a post that went out (gaps 2n). */
+export interface ChannelResult { channel: string; status: 'queued' | 'retrying' | 'posted' | 'failed' | 'skipped'; url?: string; postedAt?: string | null; reason?: string; error?: string; retries?: number; }
 
 export interface Post {
   id: string;
@@ -82,6 +91,7 @@ export interface Post {
   approvedBy?: 'owner' | 'auto';
   holdCount?: number;
   rewriteCount?: number;
+  channelResults?: ChannelResult[];
   movedBackDays: number;
 }
 
@@ -134,6 +144,11 @@ export class MayaSocialApi {
   edit ( id: string, edit: { title: string; body: string } ): Observable<Post> { return this.unwrap( this.http.put<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }`, edit ) ); }
   approve ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/approve`, {} ) ); }
   undoApprove ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/undo-approve`, {} ) ); }
+  editTitle ( id: string, title: string ): Observable<Post> { return this.unwrap( this.http.put<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/title`, { title } ) ); }
+  drop ( id: string ): Observable<{ moved: Move[] }> { return this.unwrap( this.http.post<Envelope<{ moved: Move[] }>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/drop`, {} ) ); }
+  unpin ( id: string ): Observable<{ post: Post; moved: Move[] }> { return this.unwrap( this.http.post<Envelope<{ post: Post; moved: Move[] }>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/unpin`, {} ) ); }
+  channelAction ( id: string, channel: string, action: 'retry' | 'skip' ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/channels/${ encodeURIComponent( channel ) }/${ action }`, {} ) ); }
+  disconnect ( channel: string ): Observable<Overview> { return this.unwrap( this.http.delete<Envelope<Overview>>( `${ this.base }/channels/${ encodeURIComponent( channel ) }` ) ); }
   hold ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/hold`, {} ) ); }
 
   /** Starts a channel's OAuth (the existing Social accounts flow); resolves to the provider's sign-in URL. */

@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { NotificationService } from '../../services/notification.service';
-import { MayaSocialApi, Post, apiError } from '../api';
+import { ChannelResult, MayaSocialApi, Post, apiError } from '../api';
 import { EditSheetComponent } from '../edit-sheet.component';
+import { PostChannelsComponent } from '../post-channels.component';
 import { PostDrawerComponent } from '../post-drawer.component';
 import { ChannelWarningComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent } from '../states.component';
 import {
@@ -32,7 +33,7 @@ interface Day {
 @Component( {
   selector: 'ms-calendar',
   standalone: true,
-  imports: [IconComponent, EditSheetComponent, PostDrawerComponent, ChannelWarningComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent],
+  imports: [IconComponent, EditSheetComponent, PostDrawerComponent, PostChannelsComponent, ChannelWarningComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .bar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
@@ -58,6 +59,11 @@ interface Day {
       font: inherit; box-shadow: none; transform: none; cursor: pointer;
     }
     .day:hover { background: var(--surface2); transform: none; }
+    .day.is-faded > :not(.foot) { opacity: .55; }
+    .exc { font-size: 12px; font-weight: 700; line-height: 1.35; color: var(--muted); }
+    .exc--yellow { color: var(--t-yellow-fg); }
+    .exc--pink { color: var(--t-pink-fg); }
+    .retry { height: 30px; padding: 0 12px; font-size: 12px; }
     .day:focus-visible { outline: 2px solid var(--blue) !important; outline-offset: 2px; box-shadow: none !important; }
     .day.is-held { box-shadow: inset 0 0 0 2px var(--pink); }
     .day.is-past { opacity: .55; }
@@ -177,18 +183,28 @@ interface Day {
               <div>
                 <div class="dhead" [class.is-today]="day.date === today()">{{ weekdayShort(day.date) }} <b>{{ dayOfMonth(day.date) }}</b>@if (day.date === today()) { <em>Today</em> }</div>
                 @if (day.post; as post) {
-                  <button type="button" class="day" [class.is-open]="selected()?.id === post.id" [class.is-held]="post.status === 'on_hold'" [class.is-past]="day.date < today()" (click)="open(post)">
+                  <div class="day" role="button" tabindex="0" [attr.aria-label]="shortLabel(post)" [class.is-open]="selected()?.id === post.id" [class.is-held]="post.status === 'on_hold'" [class.is-past]="day.date < today() && post.status === 'posted' && !failedRows(post).length" [class.is-faded]="post.status === 'expired' || post.status === 'paused' || post.status === 'dropped'" (click)="open(post)" (keydown.enter)="open(post)" (keydown.space)="$event.preventDefault(); open(post)">
                     <div class="chips">
                       <span class="ms-chip ms-chip--11" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>
                       @if (post.pinned) { <span class="ms-pinned"><ms-icon name="pin" [size]="12" />Pinned</span> }
                     </div>
                     <h3>{{ post.title }}</h3>
-                    <p class="when">{{ wallClock(post.time) }} · {{ channels(post) }}</p>
+                    <p class="when">{{ wallClock(post.time) }} · <ms-post-channels [channels]="post.channels" [live]="post.status !== 'posted'" /></p>
                     <div class="foot">
-                      <span class="ms-chip ms-status" [attr.data-status]="post.status">{{ status(post) }}</span>
+                      <span class="ms-chip ms-status" [attr.data-status]="chip(post).status">{{ chip(post).label }}</span>
+                      @switch (exception(post)) {
+                        @case ('expired') { <span class="exc exc--yellow">Not approved by {{ wallClock(post.time) }}. Didn’t post.</span> }
+                        @case ('failed') {
+                          <span class="exc">{{ postedTo(post) }}</span>
+                          @for (row of failedRows(post); track row.channel) {
+                            <button type="button" class="ms-btn ms-btn--primary retry" (click)="$event.stopPropagation(); retryChannel(post, row.channel)"><ms-icon name="refresh" [size]="13" />Retry {{ channelName(row.channel) }}</button>
+                          }
+                        }
+                        @case ('heldTwice') { <span class="exc exc--pink">Held twice</span> }
+                      }
                       @if (post.movedBackDays && post.status !== 'posted') { <span class="ms-moved"><ms-icon name="moved" [size]="12" />Moved back {{ plural(post.movedBackDays, 'day') }}</span> }
                     </div>
-                  </button>
+                  </div>
                 } @else if (day.empty === 'held-past' || day.empty === 'held-future') {
                   <div class="gap">{{ day.empty === 'held-past' ? 'Nothing went out' : 'Nothing goes out' }}<span>Waiting on the held post.</span></div>
                 } @else {
@@ -212,7 +228,7 @@ interface Day {
                 <button type="button" class="cell" role="gridcell" [class.is-open]="selected()?.id === day.post!.id" [class.is-held]="day.post!.status === 'on_hold'" [class.is-past]="day.date < today()" (click)="open(day.post!)" [attr.aria-label]="shortLabel(day.post!)">
                   <span class="badge" [class.is-today]="day.date === today()">{{ dayOfMonth(day.date) }}</span>
                   <span class="t" [attr.data-tint]="pillar(day.post!).tint"><span class="ms-dot"></span><span>{{ day.post!.title }}</span></span>
-                  <span class="ms-chip ms-chip--11 ms-status" [attr.data-status]="day.post!.status">{{ status(day.post!) }}</span>
+                  <span class="ms-chip ms-chip--11 ms-status" [attr.data-status]="chip(day.post!).status">{{ chip(day.post!).label }}</span>
                 </button>
               } @else {
                 <div class="cell" role="gridcell" [class.is-out]="!day.inMonth" [class.is-gap]="day.inMonth && (day.empty === 'held-past' || day.empty === 'held-future')">
@@ -239,14 +255,14 @@ interface Day {
                     <div>
                       <div class="top">
                         <span class="ms-chip ms-chip--11" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>
-                        <span>{{ wallClock(post.time) }} · {{ channels(post) }}</span>
+                        <span>{{ wallClock(post.time) }} · <ms-post-channels [channels]="post.channels" [live]="post.status !== 'posted'" /></span>
                         @if (post.pinned) { <span class="ms-pinned">Pinned</span> }
                       </div>
                       <h3>{{ post.title }}</h3>
                       @if (post.status === 'on_hold') { <p class="holding">Holding the line. {{ plural(behind(post), 'unpinned post') }} wait behind it{{ pinnedAhead(post) ? '; pinned posts don’t move.' : '.' }}</p> }
                     </div>
                     <div class="right">
-                      <span class="ms-chip ms-status" [attr.data-status]="post.status">{{ status(post) }}</span>
+                      <span class="ms-chip ms-status" [attr.data-status]="chip(post).status">{{ chip(post).label }}</span>
                       @if (post.movedBackDays && post.status !== 'posted') { <span class="ms-moved"><ms-icon name="moved" [size]="12" />Moved back {{ plural(post.movedBackDays, 'day') }}</span> }
                     </div>
                   </button>
@@ -264,7 +280,7 @@ interface Day {
     }
 
     @if (selected(); as post) {
-      <ms-post-drawer [post]="post" (closed)="selected.set(null)" (changed)="done($event)" (edit)="editing.set($event); selected.set(null)" />
+      <ms-post-drawer [post]="post" (closed)="selected.set(null)" (changed)="done($event)" (reload)="load()" (edit)="editing.set($event); selected.set(null)" />
     }
 
     @if (editing(); as post) {
@@ -397,6 +413,41 @@ export class CalendarComponent implements OnInit {
   isActive ( post: Post ) { return ACTIVE.includes( post.status ); }
   canApprove ( post: Post ) { return !!post.body && ['drafted', 'needs_review', 'on_hold'].includes( post.status ); }
   canHold ( post: Post ) { return ['planned', 'drafted', 'needs_review', 'approved'].includes( post.status ); }
+
+  /** The chip a card shows (gaps 2c, 2o). */
+  chip ( post: Post ): { status: string; label: string } {
+    if ( this.state.publishingPaused() && ACTIVE.includes( post.status ) ) return { status: 'paused', label: 'Paused' };
+    if ( this.exception( post ) === 'failed' ) return { status: 'failed', label: `Failed on ${ this.failedRows( post ).map( ( row ) => this.channelName( row.channel ) ).join( ', ' ) }` };
+    return { status: post.status, label: this.status( post ) };
+  }
+
+  exception ( post: Post ): 'expired' | 'failed' | 'heldTwice' | null {
+    if ( post.status === 'expired' ) return 'expired';
+    if ( post.status === 'posted' && this.failedRows( post ).length ) return 'failed';
+    if ( post.status === 'on_hold' && ( post.holdCount ?? 0 ) >= 2 ) return 'heldTwice';
+    return null;
+  }
+
+  failedRows ( post: Post ): ChannelResult[] {
+    return ( post.channelResults ?? [] ).filter( ( row ) => row.status === 'failed' );
+  }
+
+  channelName ( key: string ): string {
+    return this.state.channelNames()[key] || key;
+  }
+
+  postedTo ( post: Post ): string {
+    const names = ( post.channelResults ?? [] ).filter( ( row ) => row.status === 'posted' ).map( ( row ) => this.channelName( row.channel ) );
+    if ( !names.length ) return 'Nothing went out.';
+    return `Posted to ${ names.length > 1 ? `${ names.slice( 0, -1 ).join( ', ' ) } and ${ names[names.length - 1] }` : names[0] }`;
+  }
+
+  retryChannel ( post: Post, channel: string ): void {
+    this.api.channelAction( post.id, channel, 'retry' ).subscribe( {
+      next: ( saved ) => this.done( saved ),
+      error: () => this.notifications.show( 'That didn’t save', 'Try again.', 'error' ),
+    } );
+  }
 
   draftWhen ( post: Post ): string {
     const day = addDays( post.slotDate, -3 );

@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 
 import { NotificationService } from '../services/notification.service';
 import { MayaSocialApi, apiError } from './api';
+import { monthDay } from './format';
 import { IconComponent } from './icon.component';
 import { MayaSocialState } from './state';
 
@@ -71,8 +72,13 @@ const LATER_KEY = 'maya-social-channel-warning-later';
         @for (channel of channels(); track channel.key) {
           <div class="row">
             <strong>{{ channel.name }}</strong>
-            <span>Never connected. Its posts are skipped until you connect.</span>
-            <button type="button" class="ms-btn ms-btn--primary ms-btn--36" [disabled]="connect.connecting() === channel.key" (click)="connect.connect(channel.key)">Connect</button>
+            @if (channel.state?.status === 'needs_reconnect') {
+              <span>Signed out{{ signedOut(channel.state?.signedOutAt) }}. Its posts are skipped until you reconnect.</span>
+              <button type="button" class="ms-btn ms-btn--primary ms-btn--36" [disabled]="connect.connecting() === channel.key" (click)="connect.connect(channel.key)">Reconnect</button>
+            } @else {
+              <span>Never connected. Its posts are skipped until you connect.</span>
+              <button type="button" class="ms-btn ms-btn--primary ms-btn--36" [disabled]="connect.connecting() === channel.key" (click)="connect.connect(channel.key)">Connect</button>
+            }
           </div>
         }
       </section>
@@ -90,6 +96,10 @@ export class ChannelWarningComponent {
     const count = this.channels().length;
     return count === 1 ? '1 channel in your strategy can’t post' : `${ count } channels in your strategy can’t post`;
   } );
+
+  signedOut ( iso: string | null | undefined ): string {
+    return iso ? ` ${ monthDay( iso.slice( 0, 10 ) ) }` : '';
+  }
 
   later (): void {
     const until = Date.now() + 24 * 60 * 60 * 1000;
@@ -266,4 +276,50 @@ export class LoadErrorComponent {
 } )
 export class SkeletonComponent {
   @Input() layout: 'today' | 'week' = 'today';
+}
+
+/** 2c: the strategy is approved but no channel is connected. Replaces Today. */
+@Component( {
+  selector: 'ms-no-channels',
+  standalone: true,
+  imports: [IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    .col { display: flex; flex-direction: column; gap: 18px; max-width: 880px; margin: 0 auto; padding: 40px 40px 72px; }
+    h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
+    .lead { font-size: 18px; line-height: 1.6; color: var(--muted); }
+    .rows { display: flex; flex-direction: column; gap: 8px; }
+    .row { display: grid; grid-template-columns: 196px 1fr auto; gap: 12px; align-items: center; min-height: 56px; padding: 8px 8px 8px 22px; border-radius: 999px; background: var(--surface); }
+    .row strong { font-size: 16px; }
+    .row span { font-size: 14px; color: var(--muted); }
+    .paused { display: grid; grid-template-columns: 20px 1fr; gap: 12px; padding: 18px 22px; border-radius: 28px; background: var(--t-yellow); color: var(--t-yellow-fg); font-size: 15px; line-height: 1.5; }
+    .bars { display: flex; gap: 3px; padding-top: 4px; }
+    .bars i { width: 4px; height: 14px; border-radius: 2px; background: currentColor; }
+    @media (max-width: 760px) { .col { padding: 24px 16px 120px; } h1 { font-size: 32px; } .row { grid-template-columns: 1fr auto; border-radius: 22px; } .row span { grid-row: 2; } .row .ms-btn { grid-row: 1 / span 2; grid-column: 2; } }
+  `],
+  template: `
+    <main class="col">
+      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Maya" />
+      <h1>Connect a channel and I’ll start posting.</h1>
+      <p class="lead">Your strategy is approved and I’ve planned three weeks. Nothing can go out until a channel is connected, so auto-approve is paused and nothing moves on the calendar.</p>
+      <div class="rows">
+        @for (channel of channels(); track channel.key) {
+          <div class="row">
+            <strong>{{ channel.name }}</strong>
+            <span>{{ channel.perWeek }} {{ channel.perWeek === 1 ? 'post' : 'posts' }} a week</span>
+            <button type="button" class="ms-btn ms-btn--primary ms-btn--44" [disabled]="connect.connecting() === channel.key" (click)="connect.connect(channel.key)">
+              @if (connect.connecting() === channel.key) { <span class="ms-spinner" aria-hidden="true"></span> } @else { <ms-icon name="link" [size]="14" /> }
+              {{ channel.state?.status === 'needs_reconnect' ? 'Reconnect' : 'Connect' }}
+            </button>
+          </div>
+        }
+      </div>
+      <p class="paused" role="status"><span class="bars" aria-hidden="true"><i></i><i></i></span><span><strong>Paused.</strong> Calendar posts show a Paused chip. When you connect one, I restart from today; nothing that was skipped is posted late.</span></p>
+    </main>
+  `,
+} )
+export class NoChannelsComponent {
+  private readonly state = inject( MayaSocialState );
+  readonly connect = inject( ChannelConnect );
+  readonly channels = this.state.unconnectedChannels;
 }
