@@ -58,6 +58,8 @@ export class SocialAuthService {
   private readonly pendingLoginStorageKey = 'social_hosted_login_pending';
 
   getUser (): Observable<User | null> {
+    // Prerendering (no browser): signed out, so '' builds as the doorway.
+    if ( typeof window === 'undefined' ) return of( null );
     return new Observable( ( subscriber ) => {
       const unsubscribe = onAuthStateChanged( this.auth, ( user ) => subscriber.next( user ) );
       return unsubscribe;
@@ -69,6 +71,8 @@ export class SocialAuthService {
    * signature identical means the rest of a component's logic ports
    * unchanged. */
   getUserId (): Observable<string> {
+    // Prerendering (no browser): signed out, so '' builds as the doorway.
+    if ( typeof window === 'undefined' ) return of( '' );
     if ( !this.userId$ ) {
       this.userId$ = new Observable<string>( ( subscriber ) => {
         const unsubscribe = onAuthStateChanged( this.auth, ( user ) => subscriber.next( user?.uid || '' ) );
@@ -98,6 +102,8 @@ export class SocialAuthService {
   }
 
   isLoggedIn (): Observable<boolean> {
+    // Prerendering (no browser): signed out, so '' builds as the doorway.
+    if ( typeof window === 'undefined' ) return of( false );
     return new Observable( ( subscriber ) => {
       const unsubscribe = onAuthStateChanged( this.auth, ( user ) => subscriber.next( !!user ) );
       return unsubscribe;
@@ -105,6 +111,7 @@ export class SocialAuthService {
   }
 
   getCurrentUserIdSync (): string {
+    if ( typeof window === 'undefined' ) return '';
     return this.auth.currentUser?.uid || '';
   }
 
@@ -112,6 +119,7 @@ export class SocialAuthService {
    * screen's context resolution) that need email/uid together without
    * waiting on the getUser() observable. */
   getCurrentUserSync (): User | null {
+    if ( typeof window === 'undefined' ) return null;
     return this.auth.currentUser;
   }
 

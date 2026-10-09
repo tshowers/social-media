@@ -1,10 +1,13 @@
 User-agent: *
 Allow: /
-Disallow: /command
+# Signed-in app pages and one-tap links: nothing to index.
+Disallow: /today
 Disallow: /calendar
-Disallow: /accounts
 Disallow: /strategy
-Disallow: /queue
+Disallow: /profile
+Disallow: /new
+Disallow: /welcome
+Disallow: /act
 Disallow: /login
 Disallow: /auth/
 Disallow: /not-found
