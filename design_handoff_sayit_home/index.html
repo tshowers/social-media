@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SayIt — Say what you need. Hear from people who can help.</title>
+<meta name="description" content="SayIt is a free community board for real businesses and the people who need them. Post what you're looking for or selling, and message one-on-one with people who can help. Coming soon to iPhone & iPad.">
+<link rel="canonical" href="/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SayIt — a community board for real businesses and the people who need them">
+<meta property="og:description" content="Say it, get found, talk it over. No followers, no noise. Free.">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#f5ead8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"SayIt","url":"/","applicationCategory":"SocialNetworkingApplication","operatingSystem":"Web, iOS (coming soon)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"A community board for real businesses and the people who need them.","publisher":{"@type":"Organization","name":"Taliferro","email":"info@taliferro.tech"}}
+</script>
+<style>
+:root{
+  --bg:#f5ead8;--surface:#ebddc5;--text:#201e1d;--divider:color-mix(in srgb,#201e1d 16%,transparent);
+  --n100:#f9f4ed;--n200:#eee7db;--n300:#dcd3c4;--n600:#82796a;--n700:#645c50;--n800:#474238;
+  --a:#c67139;--a100:#fff2eb;--a200:#ffe1d0;--a300:#ffc6a5;--a600:#b2622d;--a700:#8c491a;
+  --s:#7a8a5e;--s200:#e1eecc;--s300:#ccdbb2;--s400:#aebf92;--s700:#56633f;--s800:#3d472b;
+  --fh:"Caprasimo",system-ui,sans-serif;--fb:"Figtree",system-ui,sans-serif;
+  --r-md:16px;--r-lg:28px;
+  --sh-md:0 3px 10px color-mix(in srgb,#2e2b25 16%,transparent);
+  --sh-lg:0 12px 32px color-mix(in srgb,#2e2b25 22%,transparent);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 17px/1.55 var(--fb);overflow-x:hidden}
+h1,h2,h3{font-family:var(--fh);font-weight:400;line-height:1.08;letter-spacing:-.015em;margin:0;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+a{color:var(--a700);text-underline-offset:3px}
+a:hover{color:var(--a600)}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--a);outline-offset:3px;border-radius:6px}
+::selection{background:color-mix(in srgb,var(--a) 30%,transparent)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+
+/* nav */
+.nav{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 0}
+.brand{font-family:var(--fh);font-size:28px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+.brand-dot{width:14px;height:14px;border-radius:50%;background:var(--a)}
+.brand:hover{color:var(--text)}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;margin:0;padding:0}
+.nav-links a{display:inline-flex;padding:9px 14px;border-radius:999px;color:var(--text);text-decoration:none;font-weight:600;font-size:15px}
+.nav-links a:hover{background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text)}
+.nav-links a:active{background:color-mix(in srgb,var(--text) 14%,transparent)}
+.nav-links .signin{border:1px solid var(--divider)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--fh);font-size:18px;line-height:1.2;text-decoration:none;padding:16px 26px;border-radius:999px;border:1px solid transparent;cursor:pointer}
+.btn-primary{background:var(--a);color:var(--bg)}
+.btn-primary:hover{background:var(--a600);color:var(--bg)}
+.btn-primary:active{background:var(--a700)}
+.btn-secondary{border-color:var(--divider);color:var(--text)}
+.btn-secondary:hover{background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text)}
+.btn-secondary:active{background:color-mix(in srgb,var(--text) 14%,transparent)}
+.btn svg{width:18px;height:18px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:56px;align-items:center;padding:48px 0 88px}
+.hero h1{font-size:clamp(44px,6.2vw,80px)}
+.hero h1 em{font-style:normal;color:var(--a)}
+.lede{margin-top:24px;font-size:20px;line-height:1.5;color:var(--n800);max-width:34em}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+
+/* app slot: same footprint an App Store badge will take */
+.app{margin-top:40px;display:flex;flex-wrap:wrap;align-items:center;gap:16px 20px}
+.app-slot{display:inline-flex;align-items:center;gap:12px;height:56px;padding:0 22px 0 14px;border-radius:999px;background:var(--text);color:var(--n100)}
+.app-slot svg{width:28px;height:28px;flex:none}
+.app-slot span{display:flex;flex-direction:column;line-height:1.15}
+.app-slot small{font:600 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--n300)}
+.app-slot b{font:400 18px var(--fh)}
+.app-note{font-size:15px;color:var(--n700);max-width:22em}
+
+/* phone */
+.stage{position:relative;display:flex;justify-content:center}
+.blob{position:absolute;border-radius:50%}
+.blob.one{width:78%;aspect-ratio:1;background:var(--s300);top:6%;right:-6%}
+.blob.two{width:30%;aspect-ratio:1;background:var(--a300);bottom:4%;left:2%}
+.phone{position:relative;width:min(320px,100%);aspect-ratio:9/19;border-radius:48px;background:var(--text);padding:10px;box-shadow:var(--sh-lg)}
+.screen{position:relative;width:100%;height:100%;border-radius:39px;overflow:hidden;background:var(--s400)}
+.photo{position:absolute;inset:0;background:
+  radial-gradient(circle at 70% 28%,var(--s200) 0 18%,transparent 19%),
+  radial-gradient(circle at 22% 58%,var(--s300) 0 30%,transparent 31%),
+  var(--s400)}
+.ph-top{position:absolute;top:22px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;color:var(--n100)}
+.ph-top b{font:400 20px var(--fh)}
+.dots{position:absolute;top:58px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+.dots i{height:6px;width:6px;border-radius:99px;background:color-mix(in srgb,var(--n100) 55%,transparent)}
+.dots i:first-child{width:18px;background:var(--n100)}
+.sheet{position:absolute;left:10px;right:10px;bottom:10px;border-radius:26px;background:var(--bg);overflow:hidden;box-shadow:var(--sh-md)}
+.stripe{height:6px;background:var(--a)}
+.sheet-in{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.who{display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;border-radius:50%;background:var(--a200);display:grid;place-items:center;font:400 14px var(--fh);color:var(--a700);flex:none}
+.who-n{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px}
+.badge{font:700 10px var(--fb);letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--s200);color:var(--s800)}
+.who-m{font-size:12px;color:var(--n700)}
+.kind{align-self:flex-start;font:700 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--a100);color:var(--a700)}
+.ptext{font:400 19px/1.15 var(--fh)}
+.prow{display:flex;gap:8px;align-items:center}
+.pi{flex:1;height:42px;border-radius:999px;background:var(--a);color:var(--bg);display:grid;place-items:center;font:400 15px var(--fh)}
+.pc{width:42px;height:42px;border-radius:50%;border:1px solid var(--divider);display:grid;place-items:center;color:var(--text)}
+.pc svg{width:18px;height:18px}
+
+/* steps */
+.steps-sec{padding:24px 0 96px}
+.eyebrow{font:700 13px var(--fb);letter-spacing:.1em;text-transform:uppercase;color:var(--s700)}
+.steps-sec h2{font-size:clamp(32px,4vw,48px);margin-top:12px;max-width:14em}
+.steps{list-style:none;margin:48px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.step{background:var(--surface);border-radius:var(--r-lg);padding:32px 28px 34px;display:flex;flex-direction:column;gap:14px}
+.step:nth-child(2){background:var(--s200)}
+.step:nth-child(3){background:var(--a100)}
+.num{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:400 22px var(--fh);background:var(--bg);color:var(--text)}
+.step h3{font-size:28px;display:flex;align-items:center;gap:10px}
+.step h3 svg{width:22px;height:22px;color:var(--a)}
+.step p{color:var(--n800)}
+
+/* trust */
+.trust{display:flex;align-items:center;gap:20px;padding:28px 32px;border-radius:var(--r-lg);border:1px solid var(--divider);margin-bottom:96px}
+.trust-ic{width:56px;height:56px;border-radius:50%;background:var(--s200);color:var(--s800);display:grid;place-items:center;flex:none}
+.trust-ic svg{width:26px;height:26px}
+.trust p{font-size:18px}
+.trust strong{font-weight:700}
+
+/* closing */
+.close{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:28px;padding:56px;border-radius:40px;background:var(--text);color:var(--n100)}
+main{padding-bottom:64px}
+.close h2{font-size:clamp(32px,4vw,52px);max-width:12em}
+.close p{margin-top:14px;color:var(--n300);max-width:30em}
+.close .btn-secondary{color:var(--n100);border-color:color-mix(in srgb,var(--n100) 30%,transparent)}
+.close .btn-secondary:hover{background:color-mix(in srgb,var(--n100) 10%,transparent);color:var(--n100)}
+.close .btn-primary:active{background:var(--a300);color:var(--text)}
+
+/* footer */
+footer{border-top:1px solid var(--divider);padding:32px 0 48px}
+.foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px}
+.foot ul{display:flex;flex-wrap:wrap;gap:6px 22px;list-style:none;margin:0;padding:0}
+.foot a{color:var(--n800);text-decoration:none;font-weight:600;font-size:15px}
+.foot a:hover{color:var(--a700);text-decoration:underline}
+.foot small{color:var(--n700);font-size:14px}
+
+@media (max-width:880px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:56px;padding:24px 0 72px}
+  .stage{max-width:360px;margin:0 auto;width:100%}
+  .steps{grid-template-columns:minmax(0,1fr)}
+  .close{padding:36px 28px}
+}
+@media (max-width:560px){
+  .wrap{padding:0 20px}
+  .nav-links .hide-sm{display:none}
+  .actions .btn{flex:1 1 100%}
+  .trust{flex-direction:column;align-items:flex-start;padding:24px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="nav">
+    <a class="brand" href="/" aria-label="SayIt home"><span class="brand-dot"></span>SayIt</a>
+    <nav aria-label="Main">
+      <ul class="nav-links">
+        <li class="hide-sm"><a href="/about">About</a></li>
+        <li class="hide-sm"><a href="/help">Help</a></li>
+        <li><a class="signin" href="/login">Sign in</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-h">
+      <div>
+        <h1 id="hero-h">Say what you need. <em>Hear from people who can help.</em></h1>
+        <p class="lede">SayIt is a community board for real businesses and the people who need them. Post what you’re looking for or what you’re selling. People who can help tap <strong>I’m interested</strong>, and you message each other one-on-one. No followers, no noise. It’s free.</p>
+
+        <div class="app" id="app">
+          <!-- Replace .app-slot with the official App Store badge (<a href="…"><img …></a>) at launch; keep height 56px. -->
+          <div class="app-slot" role="img" aria-label="Coming soon to iPhone and iPad">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3.1.7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.5 1.3-2.6 0 0-2.5-1-2.5-3.7zM14.1 5.6c.6-.8 1.1-1.8 1-2.9-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2.1-.5 2.7-1.3z"/></svg>
+            <span><small>Coming soon to</small><b>iPhone &amp; iPad</b></span>
+          </div>
+          <p class="app-note">The native app is on its way. You can start on the web today.</p>
+        </div>
+
+        <div class="actions">
+          <a class="btn btn-primary" href="/get-started">Start on the web
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn-secondary" href="/login">Sign in</a>
+        </div>
+      </div>
+
+      <div class="stage" aria-hidden="true">
+        <span class="blob one"></span><span class="blob two"></span>
+        <div class="phone">
+          <div class="screen">
+            <div class="photo"></div>
+            <div class="ph-top"><b>SayIt</b>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="sheet">
+              <div class="stripe"></div>
+              <div class="sheet-in">
+                <div class="who"><span class="av">GR</span>
+                  <div><div class="who-n">Greenleaf Roofing <span class="badge">ORG</span></div><div class="who-m">2 mi away · 1h</div></div>
+                </div>
+                <span class="kind">Wanted</span>
+                <p class="ptext">Looking for a weekend crew lead for spring jobs.</p>
+                <div class="prow">
+                  <span class="pi">I’m interested</span>
+                  <span class="pc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/></svg></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="steps-sec" aria-labelledby="how-h">
+      <p class="eyebrow">How it works</p>
+      <h2 id="how-h">Three steps, then you’re talking.</h2>
+      <ol class="steps">
+        <li class="step">
+          <span class="num">1</span>
+          <h3>Say it</h3>
+          <p>Post what you’re looking for or what you’re selling, with a photo, a video or a few words.</p>
+        </li>
+        <li class="step">
+          <span class="num">2</span>
+          <h3>Get found</h3>
+          <p>Businesses and neighbors who can help see your post and tap I’m interested.</p>
+        </li>
+        <li class="step">
+          <span class="num">3</span>
+          <h3>Talk it over</h3>
+          <p>Message each other one-on-one and work out the details. No public threads.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="trust" aria-label="Safety">
+      <span class="trust-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.6 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <p><strong>Every post is screened automatically,</strong> and reports are reviewed within 24 hours.</p>
+    </section>
+
+    <section class="close" aria-labelledby="close-h">
+      <div>
+        <h2 id="close-h">Got something to say?</h2>
+        <p>The iPhone &amp; iPad app is coming soon. Start on the web now and your account carries over.</p>
+      </div>
+      <div class="actions" style="margin-top:0">
+        <a class="btn btn-primary" href="/get-started">Start on the web</a>
+        <a class="btn btn-secondary" href="/login">Sign in</a>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="/" style="font-size:22px"><span class="brand-dot"></span>SayIt</a>
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/help">Help</a></li>
+        <li><a href="https://taliferro.tech/privacy-policy">Privacy</a></li>
+        <li><a href="mailto:info@taliferro.tech">info@taliferro.tech</a></li>
+      </ul>
+    </nav>
+    <small>© 2026 SayIt · Free to use</small>
+  </div>
+</footer>
+</body>
+</html>

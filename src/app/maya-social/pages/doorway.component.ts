@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { SiteFooterComponent } from '../../shared/site-footer/site-footer.component';
+
 import { SocialAuthService } from '../../services/social-auth.service';
 import { MAYA_PRICING_URL } from '../header.component';
 import { MayaSocialState } from '../state';
@@ -13,10 +15,13 @@ import { MayaSocialState } from '../state';
 @Component( {
   selector: 'ms-doorway',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, SiteFooterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
+    /* app-root is a full-height column while this page shows (styles.css), so the footer sits at the bottom. */
+    :host { display: flex; flex-direction: column; flex: 1 0 auto; }
     .door {
+      box-sizing: border-box; width: 100%;
       display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center;
       max-width: 1280px; margin: 0 auto; padding: 48px 40px 64px;
     }
@@ -37,16 +42,9 @@ import { MayaSocialState } from '../state';
     .num { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; font-weight: 700; background: var(--tint); color: var(--tint-fg); }
     .step h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
     .step p { font-size: 14px; line-height: 1.5; color: var(--muted); }
-    .foot {
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-      max-width: 1280px; margin: 0 auto; padding: 24px 40px 28px; font-size: 13px; color: var(--muted);
-    }
-    .foot nav { display: flex; gap: 18px; }
-    .foot a { color: var(--text); font-weight: 600; text-decoration: none; }
     @media (max-width: 900px) {
       .door { grid-template-columns: 1fr; gap: 32px; padding: 24px 16px 40px; }
       h1 { font-size: 42px; }
-      .foot { padding: 20px 16px 28px; }
     }
   `],
   template: `
@@ -86,10 +84,7 @@ import { MayaSocialState } from '../state';
       </aside>
     </main>
 
-    <footer class="foot">
-      <nav><a routerLink="/help">Help</a><a routerLink="/about">About</a><a href="https://maya.taliferro.tech">Maya</a></nav>
-      <span>Maya Social · Taliferro Tech, LLC</span>
-    </footer>
+    <app-site-footer><a routerLink="/help">Help</a><a routerLink="/about">About</a></app-site-footer>
   `,
 } )
 export class DoorwayComponent {
