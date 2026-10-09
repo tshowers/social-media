@@ -215,6 +215,15 @@ class MockServer {
   }
 
   handle ( req: HttpRequest<unknown> ): Observable<HttpEvent<unknown>> | null {
+    if ( req.url.endsWith( '/public/maya-social/act' ) ) {
+      const token = String( ( req.body as { token?: string } )?.token || '' );
+      const [action] = token.split( ':' );
+      const result = action === 'approve' ? { result: 'approved', title: '3 signs your lead list is stale', slotLabel: 'Today at 4:00 PM', undo: 'undo:thu' }
+        : action === 'hold' ? { result: 'held', title: '3 signs your lead list is stale', slotLabel: 'Today at 4:00 PM', rewriteBy: '11:00 AM', undo: 'undo:thu' }
+        : action === 'undo' ? { result: 'undone', title: '3 signs your lead list is stale', slotLabel: 'Today at 4:00 PM' }
+        : { result: action || 'invalid' };
+      return of( new HttpResponse( { status: 200, body: { success: true, data: result } } ) ).pipe( delay( 300 ) );
+    }
     const path = req.url.replace( /^.*\/maya-social/, '' );
     if ( path === req.url ) return null;
     const body = ( req.body || {} ) as Record<string, any>;

@@ -59,6 +59,13 @@ export const routes: Routes = [
     title: 'New post · Maya Social',
   },
   {
+    // One-tap Approve / Hold from Maya's email (gaps 2t): no sign-in.
+    path: 'act',
+    data: { header: 'welcome' },
+    loadComponent: () => import( './maya-social/pages/act.component' ).then( ( m ) => m.ActComponent ),
+    title: 'Maya Social',
+  },
+  {
     path: 'help',
     data: { header: 'none', page: 'help' },
     loadComponent: () => import( './maya-social/pages/help.component' ).then( ( m ) => m.HelpPageComponent ),

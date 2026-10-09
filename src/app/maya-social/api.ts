@@ -117,6 +117,15 @@ export interface Post {
   movedBackDays: number;
 }
 
+/** A one-tap link's outcome (gaps 2t). */
+export interface OneTapResult {
+  result: 'approved' | 'held' | 'undone' | 'already_out' | 'used' | 'expired' | 'invalid' | 'error';
+  title?: string;
+  slotLabel?: string;
+  rewriteBy?: string | null;
+  undo?: string | null;
+}
+
 export interface Move { id: string; from: string; to: string; title?: string; }
 
 export interface PostCheck {
@@ -175,6 +184,8 @@ export class MayaSocialApi {
     return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/image/${ action }`, body ) );
   }
   offStrategy ( id: string, action: 'use-edit' | 'keep' ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/off-strategy/${ action }`, {} ) ); }
+  /** Public: the signed link is the permission. */
+  oneTap ( token: string ): Observable<OneTapResult> { return this.unwrap( this.http.post<Envelope<OneTapResult>>( `${ environment.backendURL }/public/maya-social/act`, { token } ) ); }
   hold ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/hold`, {} ) ); }
 
   /** Starts a channel's OAuth (the existing Social accounts flow); resolves to the provider's sign-in URL. */
