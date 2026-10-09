@@ -1,6 +1,7 @@
-<div class="auth-callback-shell">
-  <ng-container *ngIf="!errorMessage">
-    <p>Signing you in...</p>
+<main class="auth-callback">
+  <p *ngIf="!errorMessage" class="waiting"><span class="ms-spinner" aria-hidden="true"></span>Signing you in…</p>
+  <ng-container *ngIf="errorMessage">
+    <p class="error" role="alert">{{ errorMessage }}</p>
+    <a class="ms-btn ms-btn--primary" routerLink="/login">Try again</a>
   </ng-container>
-  <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
-</div>
+</main>

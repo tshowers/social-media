@@ -1,84 +1,91 @@
 import { Routes } from '@angular/router';
 
-import { environment } from '../environments/environment';
-import { authGuard } from './services/auth.guard';
-import { landingRedirectGuard } from './services/landing-redirect.guard';
+import { appGuard, entryGuard, strategyGuard, welcomeGuard } from './maya-social/guards';
 
+/**
+ * Maya Social (design_handoff_maya_social and _entry). `header` in route
+ * data picks the header (see maya-social/header.component.ts); Help and
+ * About draw their own.
+ */
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    canActivate: [landingRedirectGuard],
-    loadComponent: () =>
-      import( './features/landing/landing.component' ).then( ( m ) => m.LandingComponent ),
-    title: environment.COMPANY_NAME + ' – Social outreach, in motion',
+    canActivate: [entryGuard],
+    data: { header: 'doorway' },
+    loadComponent: () => import( './maya-social/pages/doorway.component' ).then( ( m ) => m.DoorwayComponent ),
+    title: 'Maya Social: Maya runs your social media',
   },
   {
-    path: 'command',
-    loadComponent: () =>
-      import( './features/social/command/command.component' ).then( ( m ) => m.SocialOutreachComponent ),
-    canActivate: [authGuard],
-    title: environment.COMPANY_NAME + ' – Command',
+    path: 'welcome',
+    canActivate: [welcomeGuard],
+    data: { header: 'welcome' },
+    loadComponent: () => import( './maya-social/pages/welcome.component' ).then( ( m ) => m.WelcomeComponent ),
+    title: 'Welcome to Maya Social',
   },
   {
-    path: 'ios',
-    loadComponent: () =>
-      import( './features/app-showcase/app-showcase.component' ).then( ( m ) => m.AppShowcaseComponent ),
-    title: environment.COMPANY_NAME + ' – Social for iOS',
+    path: 'today',
+    canActivate: [appGuard],
+    data: { header: 'app', pageTitle: 'Today' },
+    loadComponent: () => import( './maya-social/pages/today.component' ).then( ( m ) => m.TodayComponent ),
+    title: 'Today · Maya Social',
   },
   {
     path: 'calendar',
-    loadComponent: () =>
-      import( './features/social/calendar/calendar.component' ).then( ( m ) => m.SocialOutreachCalendarComponent ),
-    canActivate: [authGuard],
-    title: environment.COMPANY_NAME + ' – Calendar',
-  },
-  {
-    path: 'accounts',
-    loadComponent: () =>
-      import( './features/social/accounts/accounts.component' ).then( ( m ) => m.SocialOutreachAccountsComponent ),
-    canActivate: [authGuard],
-    title: environment.COMPANY_NAME + ' – Accounts',
+    canActivate: [appGuard, strategyGuard],
+    data: { header: 'app', pageTitle: 'Calendar' },
+    loadComponent: () => import( './maya-social/pages/calendar.component' ).then( ( m ) => m.CalendarComponent ),
+    title: 'Calendar · Maya Social',
   },
   {
     path: 'strategy',
-    loadComponent: () =>
-      import( './features/social/strategy/strategy.component' ).then( ( m ) => m.SocialOutreachStrategyComponent ),
-    canActivate: [authGuard],
-    title: environment.COMPANY_NAME + ' – Strategy',
+    canActivate: [appGuard],
+    data: { header: 'app', pageTitle: 'Strategy' },
+    loadComponent: () => import( './maya-social/pages/strategy.component' ).then( ( m ) => m.StrategyComponent ),
+    title: 'Strategy · Maya Social',
   },
   {
-    path: 'queue',
-    loadComponent: () =>
-      import( './features/social/queue/queue.component' ).then( ( m ) => m.SocialOutreachQueueComponent ),
-    canActivate: [authGuard],
-    title: environment.COMPANY_NAME + ' – Approved',
+    path: 'profile',
+    canActivate: [appGuard],
+    data: { header: 'app', pageTitle: 'Profile' },
+    loadComponent: () => import( './maya-social/pages/profile.component' ).then( ( m ) => m.ProfileComponent ),
+    title: 'Profile · Maya Social',
   },
   {
-    // "Browse free, create with the app" (Ty, 2026-09-28) - shared wording
-    // in @taliferro/ui/platform/get-the-app.model.ts.
-    path: 'pricing',
-    data: { product: 'social' },
-    loadComponent: () => import('./features/get-the-app/get-the-app.component').then((m) => m.GetTheAppComponent),
+    path: 'new',
+    canActivate: [appGuard, strategyGuard],
+    data: { header: 'app', pageTitle: 'New post' },
+    loadComponent: () => import( './maya-social/pages/new-post.component' ).then( ( m ) => m.NewPostComponent ),
+    title: 'New post · Maya Social',
   },
+  {
+    path: 'help',
+    data: { header: 'none', page: 'help' },
+    loadComponent: () => import( './maya-social/pages/help.component' ).then( ( m ) => m.HelpPageComponent ),
+  },
+  {
+    path: 'about',
+    data: { header: 'none', page: 'about' },
+    loadComponent: () => import( './shared/product-pages/product-pages.component' ).then( ( m ) => m.ProductPagesComponent ),
+  },
+  // Social isn't sold on its own any more: it comes with Maya.
+  { path: 'pricing', redirectTo: '' },
+  // Old Social routes, so bookmarks still land somewhere sensible.
+  { path: 'command', redirectTo: 'today' },
+  { path: 'queue', redirectTo: 'calendar' },
+  { path: 'accounts', redirectTo: 'profile' },
+  { path: 'ios', redirectTo: '' },
   {
     path: 'login',
-    loadComponent: () =>
-      import( './features/sign-in/sign-in.component' ).then( ( m ) => m.SignInComponent ),
+    loadComponent: () => import( './features/sign-in/sign-in.component' ).then( ( m ) => m.SignInComponent ),
   },
   {
     path: 'auth/callback',
-    loadComponent: () =>
-      import( './features/auth-callback/auth-callback.component' ).then( ( m ) => m.AuthCallbackComponent ),
-  },
-  {
-    path: 'not-found',
-    loadComponent: () =>
-      import( './features/not-found/not-found.component' ).then( ( m ) => m.NotFoundComponent ),
+    loadComponent: () => import( './features/auth-callback/auth-callback.component' ).then( ( m ) => m.AuthCallbackComponent ),
   },
   {
     path: '**',
-    loadComponent: () =>
-      import( './features/not-found/not-found.component' ).then( ( m ) => m.NotFoundComponent ),
+    data: { header: 'doorway' },
+    loadComponent: () => import( './features/not-found/not-found.component' ).then( ( m ) => m.NotFoundComponent ),
   },
 ];

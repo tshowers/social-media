@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MayaSocialState } from '../../maya-social/state';
 import { SocialAuthService } from '../../services/social-auth.service';
+import { WriteAccessService } from '../../services/write-access.service';
 
 /**
  * Lands here after TODD's hosted login (todd.taliferro.tech/login) hands
@@ -13,12 +15,14 @@ import { SocialAuthService } from '../../services/social-auth.service';
 @Component( {
   selector: 'app-auth-callback',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './auth-callback.component.html',
   styleUrl: './auth-callback.component.css',
 } )
 export class AuthCallbackComponent implements OnInit {
   errorMessage = '';
+  private readonly state = inject( MayaSocialState );
+  private readonly writeAccess = inject( WriteAccessService );
 
   constructor (
     private route: ActivatedRoute,
@@ -38,7 +42,10 @@ export class AuthCallbackComponent implements OnInit {
 
     try {
       await this.authService.signInWithCustomToken( token );
-      await this.router.navigateByUrl( pending.returnUrl || '/command' );
+      // Whatever was loaded while signed out is stale now.
+      this.state.reset();
+      this.writeAccess.refresh();
+      await this.router.navigateByUrl( pending.returnUrl || '/' );
     } catch ( error: any ) {
       this.errorMessage = error?.message || 'Sign-in failed. Please try again.';
     }

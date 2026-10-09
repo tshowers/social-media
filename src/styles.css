@@ -1,80 +1,377 @@
+@import "@taliferro/ui/styles/tokens.css";
 @import "@taliferro/ui/styles/controls.css";
 @import "@taliferro/ui/styles/universal-menu.css";
+@import "@taliferro/ui/styles/app-header.css";
+@import "@taliferro/ui/styles/product-pages.css";
 
-/* You can add global styles to this file, and also import other style files */
+/* Maya Social (design_handoff_maya_social, _entry). Colors, type and
+ * radii come from tokens.css (the Find theme); these are the pieces every
+ * screen shares: buttons, chips, cards, fields. Screen layouts live in
+ * each component. */
 
-/*
- * TODD's brand blue, from frontend/src/styles.css :root. Several ported
- * components' own CSS reference these by name (--tl-blue, --tl-blue-mid)
- * without redeclaring them locally - mirrors web-products/network's
- * src/styles.css, which carries the same subset for the same reason: this
- * is not a port of the full 7000+ line monorepo stylesheet, only the
- * handful of custom properties Social's ported component CSS depends on.
- */
-:root {
-  --tl-blue: #00bfff;
-  --tl-blue-mid: #0095cc;
-  --tl-amber: #de8b38;
-  --tl-amber-rgb: 194, 101, 10;
-  --tl-amber-ink: #ffffff;
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --tl-amber: #fcc168;
-    --tl-amber-rgb: 255, 181, 69;
-    --tl-amber-ink: #2b1400;
-  }
+body { min-height: 100vh; }
+
+h1, h2, h3, p { margin: 0; }
+
+a { color: var(--blue-ink); }
+
+/* ---- Page frame ---------------------------------------------------- */
+
+/* Content 1200 wide plus 40px gutters, so it lines up with the header. */
+.ms-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 40px 56px;
 }
 
-.btn-glow {
-  background: var(--tl-amber) !important;
-  color: var(--tl-amber-ink) !important;
-  border-color: transparent !important;
-  animation: btn-glow-pulse 1.8s ease-in-out infinite;
+.ms-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.btn-glow:hover,
-.btn-glow:focus {
-  background: var(--tl-amber) !important;
-  color: var(--tl-amber-ink) !important;
+.ms-h1 {
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-wrap: balance;
 }
 
-@keyframes btn-glow-pulse {
-  0%,
-  100% { box-shadow: 0 0 0 0 rgba(var(--tl-amber-rgb), 0.45); }
-  50% { box-shadow: 0 0 0 12px rgba(var(--tl-amber-rgb), 0); }
+.ms-h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ms-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ms-muted { color: var(--muted); }
+
+/* Maya speaking: avatar + a muted line. */
+.ms-maya-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.ms-avatar {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: left center;
+}
+
+.ms-avatar--22 { width: 22px; height: 22px; }
+.ms-avatar--32 { width: 32px; height: 32px; }
+.ms-avatar--36 { width: 36px; height: 36px; }
+.ms-avatar--64 { width: 64px; height: 64px; }
+
+/* ---- Buttons ------------------------------------------------------- */
+/* Exact pill sizes: controls.css pads every button, so reset it here. */
+
+.ms-btn,
+button.ms-btn,
+a.ms-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: 700 14px/1 var(--font);
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: none;
+  transform: none;
+  cursor: pointer;
+}
+
+.ms-btn:hover:not(:disabled) { background: var(--surface2); transform: none; }
+
+.ms-btn:focus-visible,
+.ms-link:focus-visible,
+.ms-tab:focus-visible {
+  outline: 2px solid var(--blue) !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+.ms-btn:disabled { cursor: not-allowed; opacity: .4; }
+
+.ms-btn.ms-btn--primary { background: var(--blue); color: #fff; }
+.ms-btn.ms-btn--primary:hover:not(:disabled) { background: var(--blue-ink); color: #fff; }
+
+.ms-btn.ms-btn--ink { background: var(--text); color: var(--bg); }
+.ms-btn.ms-btn--ink:hover:not(:disabled) { background: var(--text); color: var(--bg); opacity: .88; }
+
+.ms-btn.ms-btn--bg { background: var(--bg); }
+.ms-btn.ms-btn--bg:hover:not(:disabled) { background: var(--surface2); }
+
+.ms-btn.ms-btn--ghost { background: transparent; }
+.ms-btn.ms-btn--ghost:hover:not(:disabled) { background: var(--surface); }
+
+.ms-btn.ms-btn--outline { background: var(--bg); box-shadow: inset 0 0 0 2px var(--surface2); }
+
+.ms-btn.ms-btn--36 { height: 36px; padding: 0 16px; font-size: 13px; }
+.ms-btn.ms-btn--44 { height: 44px; }
+.ms-btn.ms-btn--46 { height: 46px; font-size: 15px; }
+.ms-btn.ms-btn--50 { height: 50px; font-size: 16px; }
+.ms-btn.ms-btn--52 { height: 52px; font-size: 16px; }
+.ms-btn.ms-btn--54 { height: 54px; padding: 0 26px; font-size: 16px; }
+.ms-btn.ms-btn--56 { height: 56px; padding: 0 28px; font-size: 17px; }
+.ms-btn.ms-btn--block { width: 100%; }
+
+.ms-btn svg,
+.ms-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* A text link styled as an action. */
+.ms-link,
+button.ms-link {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  color: var(--blue-ink);
+  font: 700 15px/1.4 var(--font);
+  text-decoration: none;
+  box-shadow: none;
+  transform: none;
+  cursor: pointer;
+}
+
+.ms-link:hover { text-decoration: underline; transform: none; }
+
+/* ---- Chips --------------------------------------------------------- */
+
+.ms-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.ms-chip--11 { font-size: 11px; padding: 3px 9px; }
+
+[data-tint="green"]  { --tint: var(--t-green);  --tint-fg: var(--t-green-fg); }
+[data-tint="blue"]   { --tint: var(--t-blue);   --tint-fg: var(--t-blue-fg); }
+[data-tint="violet"] { --tint: var(--t-violet); --tint-fg: var(--t-violet-fg); }
+[data-tint="yellow"] { --tint: var(--t-yellow); --tint-fg: var(--t-yellow-fg); }
+[data-tint="pink"]   { --tint: var(--t-pink);   --tint-fg: var(--t-pink-fg); }
+
+.ms-chip[data-tint] { background: var(--tint); color: var(--tint-fg); }
+
+/* Status chips (design "Semantic mapping"). */
+.ms-status[data-status="posted"],
+.ms-status[data-status="approved"] { background: var(--t-green); color: var(--t-green-fg); }
+.ms-status[data-status="needs_review"] { background: var(--t-blue); color: var(--t-blue-fg); }
+.ms-status[data-status="on_hold"] { background: var(--t-pink); color: var(--t-pink-fg); }
+.ms-status[data-status="drafted"] { background: var(--surface2); color: var(--text); }
+.ms-status[data-status="planned"] { background: var(--bg); color: var(--muted); }
+.ms-status[data-status="expired"] { background: var(--t-yellow); color: var(--t-yellow-fg); }
+
+/* Pillar dot. */
+.ms-dot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tint-fg, var(--muted));
+}
+
+.ms-moved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t-yellow-fg);
+}
+
+.ms-pinned {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t-violet-fg);
+}
+
+/* ---- Cards and fields --------------------------------------------- */
+
+.ms-card {
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 22px;
+}
+
+.ms-field-label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ms-field-label small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--t-pink-fg);
+}
+
+.ms-field-label small.ms-hint { font-size: 14px; font-weight: 500; color: var(--muted); }
+
+.ms-input,
+input.ms-input,
+textarea.ms-input {
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: 400 15px/1.5 var(--font);
+  box-shadow: none;
+}
+
+textarea.ms-input { border-radius: 24px; resize: vertical; }
+
+.ms-input::placeholder { color: var(--muted); }
+
+.ms-input:focus-visible {
+  outline: 2px solid var(--blue) !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+}
+
+.ms-input.ms-input--missing {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--pink) !important;
+}
+
+/* Segmented control (calendar views, auto-approve hours). */
+.ms-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.ms-seg button {
+  height: 34px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 700 14px/1 var(--font);
+  box-shadow: none;
+  transform: none;
+}
+
+.ms-seg button:hover { color: var(--text); transform: none; }
+.ms-seg button.is-on { background: var(--bg); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, .1); }
+
+.ms-seg--blue { background: var(--bg); }
+.ms-seg--blue button { height: 40px; padding: 0 18px; }
+.ms-seg--blue button.is-on { background: var(--blue); color: #fff; box-shadow: none; }
+
+/* Notices along the top of a page. */
+.ms-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--tint, var(--surface));
+  color: var(--tint-fg, var(--text));
+}
+
+.ms-notice strong { font-weight: 700; }
+.ms-notice .ms-btn { margin-left: auto; }
+
+.ms-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ms-spin .8s linear infinite;
+}
+
+@keyframes ms-spin { to { transform: rotate(360deg); } }
+
+.ms-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .ms-page { padding: 16px 16px 112px; }
+  .ms-h1 { font-size: 30px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn-glow {
-    animation: none;
-    box-shadow: 0 0 0 4px rgba(var(--tl-amber-rgb), 0.35);
-  }
-}
-
-/*
- * No component here should have to paint its own page-level background -
- * ported cockpit-style components assume a dark canvas is already behind
- * their semi-transparent dark-mode panels. Mirrors network's global rule.
- */
-html {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  min-height: 100%;
-  background: #f6f8fa;
-  color: #0d1117;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-app-root > router-outlet + *:not(app-landing) { padding-top:4.5rem; box-sizing:border-box; }
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #141a1e;
-    color: #e8edf2;
-  }
+  .ms-spinner { animation-duration: 2s; }
 }

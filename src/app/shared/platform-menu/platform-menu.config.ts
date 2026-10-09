@@ -1,18 +1,19 @@
 import { MenuAppConfig } from '@taliferro/ui/platform/universal-menu.model';
 
-/** Social's part of the universal menu: what you can do in Social. */
+/** Maya Social's part of the universal menu: what you can do here. */
 export const PLATFORM_MENU_CONFIG: MenuAppConfig = {
   app: 'social',
-  name: 'Social',
+  name: 'Maya Social',
   items: [
-    { label: 'Command', icon: 'grid', route: '/command', keywords: 'home dashboard' },
-    { label: 'Calendar', icon: 'calendar', route: '/calendar', keywords: 'schedule' },
-    { label: 'Accounts', icon: 'users', route: '/accounts', keywords: 'connections' },
-    { label: 'Strategy', icon: 'target', route: '/strategy' },
-    { label: 'Approved', icon: 'list', route: '/queue', keywords: 'queue posts' },
+    { label: 'Today', icon: 'grid', route: '/today', keywords: 'home review approve hold' },
+    { label: 'Calendar', icon: 'calendar', route: '/calendar', keywords: 'schedule week month queue' },
+    { label: 'Strategy', icon: 'target', route: '/strategy', keywords: 'pillars channels rules' },
+    { label: 'Profile', icon: 'users', route: '/profile', keywords: 'company products channels connect accounts' },
   ],
   secondaryItems: [
-    { label: 'iOS App', icon: 'phone', route: '/ios', keywords: 'iphone ipad app store' },
+    { label: 'Help', icon: 'help', route: '/help' },
+    { label: 'About', icon: 'info', route: '/about' },
   ],
   signInRoute: '/login',
+  profileRoute: '/profile',
 };

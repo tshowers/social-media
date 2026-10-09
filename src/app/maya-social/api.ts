@@ -1,0 +1,151 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+
+import { environment } from '../../environments/environment';
+import { SocialAuthService } from '../services/social-auth.service';
+
+/** The backend's Maya Social API (todd-backend/functions/mayaSocial/routes.js). */
+
+export type AutoApproveHours = 2 | 4 | 6;
+export type PostStatus = 'planned' | 'drafted' | 'needs_review' | 'approved' | 'on_hold' | 'posted' | 'expired';
+export type Tint = 'green' | 'blue' | 'violet' | 'yellow';
+export type RequiredField = 'companyName' | 'companyGoal' | 'products';
+
+export interface Product { id?: string; name: string; description: string; priceLabel?: string; }
+
+export interface Profile {
+  email: string;
+  firstName: string;
+  lastName: string;
+  companyName: string;
+  companyGoal: string;
+  companyDescription: string;
+  timezone: string;
+  products: Product[];
+  audience: string;
+  location: string;
+  website: string;
+  tones: string[];
+}
+
+export interface Pillar { key: string; name: string; share: number; description: string; maxOneIn: number; tint: Tint; }
+export interface Channel { key: string; name: string; role: string; perWeek: number; }
+
+export interface Strategy {
+  goal: string;
+  pillars: Pillar[];
+  channels: Channel[];
+  autoApproveHours: AutoApproveHours;
+  builtAt: string;
+  approvedAt?: string;
+  reason?: 'requested' | 'profile_changed';
+}
+
+export interface Overview {
+  entitled: boolean;
+  onboardedAt?: string | null;
+  autoApproveHours: AutoApproveHours;
+  timeZone: string;
+  today: string;
+  profile: Profile;
+  missing: RequiredField[];
+  strategy: Strategy | null;
+  pendingStrategy: Strategy | null;
+  plannedThrough: string | null;
+  nextPlanDate: string | null;
+  connectedChannels: string[];
+  channels: Record<string, string>;
+}
+
+export interface Post {
+  id: string;
+  pillar: string;
+  title: string;
+  body: string;
+  imageBrief: string;
+  channels: string[];
+  slotDate: string;
+  originalSlotDate: string;
+  time: string;
+  slotAt: string;
+  pinned: boolean;
+  status: PostStatus;
+  source: 'maya' | 'user';
+  autoApproveAt?: string;
+  reviewOpensAt?: string;
+  approvedBy?: 'owner' | 'auto';
+  holdCount?: number;
+  rewriteCount?: number;
+  movedBackDays: number;
+}
+
+export interface Move { id: string; from: string; to: string; title?: string; }
+
+export interface PostCheck {
+  aligned: boolean;
+  pillar: string;
+  reasons: string[];
+  version: { title: string; body: string } | null;
+  slot: { slotDate: string; time: string } | null;
+  moved: Move[];
+  placementError: string | null;
+}
+
+export interface NewPost { title?: string; body: string; channels: string[]; pinned: boolean; slotDate?: string; time?: string; }
+
+interface Envelope<T> { success: boolean; data: T; }
+
+/** An API error body: `error` is the code, plus whatever the code carries. */
+export interface ApiError { error?: string; message?: string; missing?: RequiredField[]; check?: PostCheck; }
+
+export function apiError ( response: unknown ): ApiError {
+  const body = ( response as { error?: ApiError } )?.error;
+  return body && typeof body === 'object' ? body : { message: 'Something went wrong. Try again.' };
+}
+
+@Injectable( { providedIn: 'root' } )
+export class MayaSocialApi {
+  private readonly http = inject( HttpClient );
+  private readonly auth = inject( SocialAuthService );
+  private readonly base = `${ environment.backendURL }/maya-social`;
+
+  private unwrap<T> ( request: Observable<Envelope<T>> ): Observable<T> {
+    return request.pipe( map( ( response ) => response.data ) );
+  }
+
+  overview (): Observable<Overview> { return this.unwrap( this.http.get<Envelope<Overview>>( `${ this.base }/overview` ) ); }
+  onboard ( autoApproveHours: AutoApproveHours ): Observable<Overview> { return this.unwrap( this.http.post<Envelope<Overview>>( `${ this.base }/onboard`, { autoApproveHours } ) ); }
+  setAutoApproveHours ( autoApproveHours: AutoApproveHours ): Observable<Overview> { return this.unwrap( this.http.put<Envelope<Overview>>( `${ this.base }/settings`, { autoApproveHours } ) ); }
+  saveProfile ( profile: Partial<Profile> ): Observable<Overview> { return this.unwrap( this.http.patch<Envelope<Overview>>( `${ this.base }/profile`, { profile } ) ); }
+
+  generateStrategy (): Observable<Strategy> { return this.unwrap( this.http.post<Envelope<Strategy>>( `${ this.base }/strategy/generate`, {} ) ); }
+  approveStrategy (): Observable<Overview> { return this.unwrap( this.http.post<Envelope<Overview>>( `${ this.base }/strategy/approve`, {} ) ); }
+  discardPendingStrategy (): Observable<Overview> { return this.unwrap( this.http.delete<Envelope<Overview>>( `${ this.base }/strategy/pending` ) ); }
+
+  posts ( from: string, to: string ): Observable<Post[]> { return this.unwrap( this.http.get<Envelope<Post[]>>( `${ this.base }/posts`, { params: { from, to } } ) ); }
+  check ( post: NewPost ): Observable<PostCheck> { return this.unwrap( this.http.post<Envelope<PostCheck>>( `${ this.base }/posts/check`, post ) ); }
+  create ( post: NewPost ): Observable<{ post: Post; moved: Move[] }> { return this.unwrap( this.http.post<Envelope<{ post: Post; moved: Move[] }>>( `${ this.base }/posts`, post ) ); }
+  edit ( id: string, edit: { title: string; body: string } ): Observable<Post> { return this.unwrap( this.http.put<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }`, edit ) ); }
+  approve ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/approve`, {} ) ); }
+  undoApprove ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/undo-approve`, {} ) ); }
+  hold ( id: string ): Observable<Post> { return this.unwrap( this.http.post<Envelope<Post>>( `${ this.base }/posts/${ encodeURIComponent( id ) }/hold`, {} ) ); }
+
+  /** Starts a channel's OAuth (the existing Social accounts flow); resolves to the provider's sign-in URL. */
+  connectChannel ( channel: string, returnUrl: string ): Observable<string> {
+    const provider = channel === 'google_business_profile' ? 'google' : channel;
+    const payload = channel === 'google_business_profile'
+      ? { frontendReturnUrl: returnUrl, destination: channel, destinationType: channel, youtubeEnabled: false }
+      : { frontendReturnUrl: returnUrl };
+    // This older route reads who's calling from headers (checked against the token).
+    const user = this.auth.getCurrentUserSync();
+    const headers = new HttpHeaders( {
+      'x-tenant-id': this.auth.getTenantIdSync() || user?.uid || '',
+      'x-user-id': user?.uid || '',
+      'x-user-email': user?.email || '',
+    } );
+    return this.http
+      .post<{ data?: { authorizationUrl?: string } }>( `${ environment.backendURL }/outreach/social-auth/${ encodeURIComponent( provider ) }/start`, payload, { headers } )
+      .pipe( map( ( response ) => response?.data?.authorizationUrl || '' ) );
+  }
+}

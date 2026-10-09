@@ -1,4 +1,4 @@
-<div class="app-global-actions"><app-platform-menu [isAdmin]="(isAdmin$ | async) ?? false" [isLoggedIn]="(isLoggedIn$ | async) ?? false" [userName]="(userName$ | async) ?? ''" [userEmail]="(userEmail$ | async) ?? ''" (signOut)="signOut()" /><app-theme-toggle /></div>
-<router-outlet></router-outlet>
-<app-toast></app-toast>
+<ms-header />
+<router-outlet />
+<app-toast />
 <app-write-access-prompt />
