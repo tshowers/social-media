@@ -20,6 +20,8 @@ export class MayaSocialState {
   private readonly auth = inject( SocialAuthService );
 
   readonly overview = signal<Overview | null>( null );
+  /** Lets a setup screen inside an app route (2e building) show the setup header. */
+  readonly headerOverride = signal<'welcome' | null>( null );
   readonly signedIn = signal( false );
   readonly email = signal( '' );
 
@@ -32,6 +34,12 @@ export class MayaSocialState {
     const overview = this.overview();
     if ( !overview?.strategy ) return [];
     return overview.strategy.channels.filter( ( channel ) => !overview.connectedChannels.includes( channel.key ) );
+  } );
+
+  /** 2c: with no channel connected, publishing and auto-approve pause. */
+  readonly publishingPaused = computed( () => {
+    const overview = this.overview();
+    return !!overview?.strategy && !( overview.connectedChannels ?? [] ).length;
   } );
 
   private loading: Observable<Overview | null> | null = null;

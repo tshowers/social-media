@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { NotificationService } from '../../services/notification.service';
-import { MayaSocialApi, Post, apiError } from '../api';
+import { MayaSocialApi, Post } from '../api';
 import { EditSheetComponent } from '../edit-sheet.component';
 import {
   STATUS_LABELS, addDays, channelList, clock, dayOfMonth, localDateKey, longDate, monthDay, pillarOf, plural,
@@ -11,6 +11,7 @@ import {
 import { HelpPopComponent } from '../help-pop.component';
 import { IconComponent } from '../icon.component';
 import { MayaSocialState } from '../state';
+import { ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent } from '../states.component';
 
 const PENDING = ['needs_review', 'on_hold'];
 
@@ -22,7 +23,7 @@ const PENDING = ['needs_review', 'on_hold'];
 @Component( {
   selector: 'ms-today',
   standalone: true,
-  imports: [RouterLink, HelpPopComponent, IconComponent, EditSheetComponent],
+  imports: [RouterLink, HelpPopComponent, IconComponent, EditSheetComponent, ChannelWarningComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; align-items: start; }
@@ -78,8 +79,20 @@ const PENDING = ['needs_review', 'on_hold'];
     .strategy:hover { background: var(--surface2); }
     .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); }
 
-    @media (max-width: 1000px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+    /* 4d tablet: one column, actions in a row, Going out next and Plan side by side. */
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: minmax(0, 1fr); }
+      .card { grid-template-columns: 1fr; gap: 14px; }
+      .side { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: end; }
+      .side .slot, .side .auto { grid-column: 1 / -1; }
+      .pair { display: contents; }
+      .rail { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .rail .strategy { display: none; }
+    }
     @media (max-width: 760px) {
+      .side { display: flex; flex-direction: column; }
+      .pair { display: grid; }
+      .rail { display: flex; flex-direction: column; }
       .card { grid-template-columns: 1fr; gap: 16px; padding: 20px; }
       .card .ms-btn--46 { height: 50px; }
       .card .pair .ms-btn { height: 44px; }
@@ -87,9 +100,27 @@ const PENDING = ['needs_review', 'on_hold'];
     }
   `],
   template: `
+    @if (!state.overview()?.onboardedAt) {
+      <ms-not-set-up />
+    } @else if (loadError() !== undefined) {
+      <ms-load-error [status]="loadError() ?? null" (retry)="retry()" />
+    } @else if (loading()) {
+      <ms-skeleton />
+    } @else {
     <main class="ms-page">
       <div class="grid">
         <div class="main">
+          @if (!strategy() && state.overview()?.pendingStrategy) {
+            <ms-first-strategy-banner (regenerate)="regenerate()" />
+          }
+          <ms-channel-warning />
+          @if (state.overview()?.pendingStrategy && strategy()) {
+            <div class="ms-notice" data-tint="blue" role="status">
+              <span><strong>I’m suggesting changes to your strategy.</strong> Nothing changes until you approve them.</span>
+              <a class="ms-btn ms-btn--bg ms-btn--36" routerLink="/strategy">Review</a>
+            </div>
+          }
+
           <div class="intro">
             <p class="ms-kicker">{{ longToday() }}</p>
             <h1 class="ms-h1">{{ headline() }}</h1>
@@ -98,28 +129,11 @@ const PENDING = ['needs_review', 'on_hold'];
             }
           </div>
 
-          <div class="notices">
-            @if (state.overview()?.pendingStrategy && strategy()) {
-              <div class="ms-notice" data-tint="blue" role="status">
-                <span><strong>I’m suggesting changes to your strategy.</strong> Nothing changes until you approve them.</span>
-                <a class="ms-btn ms-btn--bg ms-btn--36" routerLink="/strategy">Review</a>
-              </div>
-            }
-            @if (unconnected().length) {
-              <div class="ms-notice" data-tint="yellow" role="status">
-                <span><strong>{{ unconnected() }} {{ unconnectedCount() === 1 ? 'isn’t' : 'aren’t' }} connected.</strong> Posts for {{ unconnectedCount() === 1 ? 'it' : 'them' }} can’t go out until you connect.</span>
-                <a class="ms-btn ms-btn--bg ms-btn--36" routerLink="/profile" fragment="channels">Connect</a>
-              </div>
-            }
-          </div>
-
-          @if (!strategy()) {
+          @if (!strategy() && !state.overview()?.pendingStrategy) {
             <div class="empty">
               <p>I need a strategy before I can plan anything. I’ll build it from your profile, and nothing goes on the calendar until you’ve approved it.</p>
               <a class="ms-btn ms-btn--primary ms-btn--46" routerLink="/strategy">Set up my strategy</a>
             </div>
-          } @else if (loading()) {
-            <p class="loading"><span class="ms-spinner" aria-hidden="true"></span>Loading your posts…</p>
           }
 
           @for (post of reviewList(); track post.id) {
@@ -211,6 +225,7 @@ const PENDING = ['needs_review', 'on_hold'];
         }
       </div>
     </main>
+    }
 
     @if (editing(); as post) {
       <ms-edit-sheet [post]="post" (saved)="edited($event)" (closed)="editing.set(null)" />
@@ -221,9 +236,12 @@ export class TodayComponent implements OnInit {
   readonly state = inject( MayaSocialState );
   private readonly api = inject( MayaSocialApi );
   private readonly notifications = inject( NotificationService );
+  private readonly router = inject( Router );
 
   readonly posts = signal<Post[]>( [] );
   readonly loading = signal( true );
+  /** undefined = no error; null = network; else the HTTP status. */
+  readonly loadError = signal<number | null | undefined>( undefined );
   readonly busy = signal<string | null>( null );
   readonly justApproved = signal<Set<string>>( new Set() );
   readonly editing = signal<Post | null>( null );
@@ -300,11 +318,21 @@ export class TodayComponent implements OnInit {
         this.posts.set( posts );
         this.loading.set( false );
       },
-      error: () => {
+      error: ( response ) => {
         this.loading.set( false );
-        this.notifications.show( 'Couldn’t load your posts', 'Refresh to try again.', 'error' );
+        this.loadError.set( ( response as { status?: number } )?.status || null );
       },
     } );
+  }
+
+  retry (): void {
+    this.loadError.set( undefined );
+    this.loading.set( true );
+    this.load();
+  }
+
+  regenerate (): void {
+    void this.router.navigate( ['/strategy'], { queryParams: { regenerate: 1 } } );
   }
 
   pillar ( post: Post ) { return pillarOf( this.strategy(), post.pillar ); }
@@ -381,9 +409,10 @@ export class TodayComponent implements OnInit {
     this.posts.update( ( posts ) => posts.map( ( post ) => ( post.id === saved.id ? saved : post ) ) );
   }
 
-  private fail ( title: string, error: unknown ): void {
+  /** 2r: the card stays as it was. */
+  private fail ( _title: string, _error: unknown ): void {
     this.busy.set( null );
-    this.notifications.show( title, apiError( error ).message || 'Try again.', 'error' );
+    this.notifications.show( 'That didn’t save', 'Try again.', 'error' );
   }
 
   protected readonly plural = plural;

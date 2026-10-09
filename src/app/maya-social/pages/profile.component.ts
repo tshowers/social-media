@@ -1,26 +1,26 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { NotificationService } from '../../services/notification.service';
-import { AutoApproveHours, MayaSocialApi, Product, apiError } from '../api';
+import { AutoApproveHours, MayaSocialApi, Product } from '../api';
 import { IconComponent } from '../icon.component';
 import { MayaSocialState } from '../state';
 
 const TONES = ['Plain', 'Confident', 'Playful'];
-const CHANNEL_ORDER = ['linkedin', 'threads', 'facebook', 'instagram', 'google_business_profile'];
 
 /**
  * Profile (design 1j): the owner's Taliferro profile, edited in place. Saving
  * makes Maya re-check the strategy; any change waits for approval (rule 8).
- * Also here: the auto-approve hours (1p "You can change this later in
- * Profile") and connecting channels, which the design left out but posts
- * can't go out without.
+ * Below it, Social settings (gaps 2m): auto-approve hours and notes, which
+ * belong to Maya Social only. Channels are on Strategy (2b).
  */
 @Component( {
   selector: 'ms-profile',
   standalone: true,
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, RouterLink, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 48px; align-items: start; }
@@ -42,14 +42,21 @@ const CHANNEL_ORDER = ['linkedin', 'threads', 'facebook', 'instagram', 'google_b
     .side .ms-card { display: flex; flex-direction: column; gap: 10px; }
     .side h2 { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; }
     .side p { font-size: 14px; line-height: 1.55; color: var(--muted); }
-    hr { width: 100%; margin: 12px 0 0; border: 0; border-top: 1px solid var(--surface2); }
-    section h2 { margin-bottom: 6px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-    section > p { margin-bottom: 14px; font-size: 15px; color: var(--muted); }
-    .channel { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; min-height: 58px; padding: 8px 8px 8px 20px; border-radius: 999px; background: var(--surface); }
-    .channel + .channel { margin-top: 8px; }
-    .channel strong { font-size: 16px; }
-    .channel small { margin-left: 8px; font-size: 13px; color: var(--muted); }
-    .connected { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; font-size: 14px; font-weight: 700; color: var(--t-green-fg); }
+    .settings { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+    .settings > h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+    .settings-lead { font-size: 15px; color: var(--muted); }
+    .block { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 22px 24px; }
+    .block h3 { font-size: 16px; font-weight: 700; }
+    .hint { font-size: 14px; color: var(--muted); }
+    .toggle-row { display: grid; grid-template-columns: 18px 1fr auto; gap: 12px; align-items: center; width: 100%; cursor: pointer; }
+    .toggle-row strong { display: block; font-size: 15px; }
+    .toggle-row small { font-size: 13px; color: var(--muted); }
+    .switch { appearance: none; position: relative; width: 52px; height: 30px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 999px; background: var(--surface2); cursor: pointer; transition: background .15s; }
+    .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
+    .switch:checked { background: var(--blue); }
+    .switch:checked::after { transform: translateX(22px); }
+    .switch:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .channels-link { display: inline-flex; align-items: center; gap: 4px; }
     @media (max-width: 900px) {
       .grid { grid-template-columns: minmax(0, 1fr); }
       .side { position: static; }
@@ -126,43 +133,46 @@ const CHANNEL_ORDER = ['linkedin', 'threads', 'facebook', 'instagram', 'google_b
             </div>
           </div>
 
-          <hr />
+          <section class="settings" aria-labelledby="settings-title">
+            <h2 id="settings-title">Social settings</h2>
+            <p class="settings-lead">Only used in Maya Social. Not part of your Taliferro profile, and saving these doesn’t re-check the strategy.</p>
 
-          <section id="channels" aria-labelledby="channels-title">
-            <h2 id="channels-title">Channels</h2>
-            <p>Maya posts only to channels you connect.</p>
-            @for (channel of channels(); track channel.key) {
-              <div class="channel">
-                <span><strong>{{ channel.name }}</strong>@if (channel.inStrategy) { <small>In your strategy</small> }</span>
-                @if (channel.connected) {
-                  <span class="connected"><ms-icon name="check" [size]="14" [stroke]="3" />Connected</span>
-                } @else {
-                  <button type="button" class="ms-btn ms-btn--bg" [disabled]="connecting() === channel.key" (click)="connect(channel.key)">
-                    @if (connecting() === channel.key) { <span class="ms-spinner" aria-hidden="true"></span> } Connect
-                  </button>
+            <div class="ms-card block">
+              <h3 id="approve-title">Auto-approve after</h3>
+              <div class="ms-seg ms-seg--blue" role="radiogroup" aria-labelledby="approve-title">
+                @for (option of hourOptions; track option) {
+                  <button type="button" role="radio" [attr.aria-checked]="hours() === option" [class.is-on]="hours() === option" (click)="hours.set(option)">{{ option }} hours</button>
                 }
               </div>
-            }
-          </section>
-
-          <section aria-labelledby="approve-title">
-            <h2 id="approve-title">Auto-approve</h2>
-            <p>Posts approve themselves this long after Maya drafts them, unless you hold them.</p>
-            <div class="ms-seg ms-seg--blue" role="radiogroup" aria-labelledby="approve-title" style="background: var(--surface)">
-              @for (option of hourOptions; track option) {
-                <button type="button" role="radio" [attr.aria-checked]="hours() === option" [class.is-on]="hours() === option" (click)="setHours(option)">{{ option }} hours</button>
-              }
+              <p class="hint">Drafts approve themselves {{ hours() }} hours after I write them. Posts already waiting keep their current time.</p>
             </div>
+
+            <div class="ms-card block">
+              <h3>Notes from Maya</h3>
+              <label class="toggle-row">
+                <ms-icon name="bell" [size]="18" />
+                <span><strong>Push to the Maya app</strong><small>Approve or hold right from the notification</small></span>
+                <input type="checkbox" role="switch" class="switch" [checked]="notifyPush()" (change)="notifyPush.set($any($event.target).checked)" />
+              </label>
+              <label class="toggle-row">
+                <ms-icon name="mail" [size]="18" />
+                <span><strong>Email to {{ email() }}</strong><small>Same note, with Approve and Hold buttons</small></span>
+                <input type="checkbox" role="switch" class="switch" [checked]="notifyEmail()" (change)="notifyEmail.set($any($event.target).checked)" />
+              </label>
+              <p class="hint">I send one note per review batch, at 9:00 AM, plus one if a post fails or a pinned post is about to expire.</p>
+            </div>
+
+            <a class="ms-link channels-link" routerLink="/strategy" fragment="channels-title">Channels are on Strategy <ms-icon name="chevron-right" [size]="14" /></a>
           </section>
         </div>
 
         <aside class="side">
           <div class="ms-card">
             <h2><img class="ms-avatar" src="assets/maya-avatar.png" alt="" />When you save</h2>
-            <p>I’ll check whether the strategy still fits. If it doesn’t, I’ll suggest changes on Strategy. Nothing changes until you approve.</p>
+            <p>Profile changes: I re-check the strategy. Social settings apply right away.</p>
           </div>
           <button type="button" class="ms-btn ms-btn--primary ms-btn--52 ms-btn--block" [disabled]="!valid() || saving()" (click)="save()">
-            @if (saving()) { <span class="ms-spinner" aria-hidden="true"></span> Saving… } @else { Save profile }
+            @if (saving()) { <span class="ms-spinner" aria-hidden="true"></span> Saving… } @else { Save }
           </button>
           @if (!valid()) { <p class="ms-muted" style="font-size: 14px">Company name, goal and at least one product are required.</p> }
         </aside>
@@ -170,10 +180,10 @@ const CHANNEL_ORDER = ['linkedin', 'threads', 'facebook', 'instagram', 'google_b
     </main>
   `,
 } )
-export class ProfileComponent implements OnInit {
+export class ProfileComponent {
   private readonly api = inject( MayaSocialApi );
   private readonly state = inject( MayaSocialState );
-  private readonly route = inject( ActivatedRoute );
+  private readonly router = inject( Router );
   private readonly notifications = inject( NotificationService );
 
   readonly toneOptions = TONES;
@@ -190,35 +200,12 @@ export class ProfileComponent implements OnInit {
   readonly editingProduct = signal<number | null>( null );
   readonly dirty = signal( false );
   readonly saving = signal( false );
-  readonly connecting = signal<string | null>( null );
-  readonly hours = computed( () => this.state.overview()?.autoApproveHours ?? 6 );
+  readonly hours = signal<AutoApproveHours>( this.state.overview()?.autoApproveHours ?? 6 );
+  readonly notifyPush = signal( this.state.overview()?.notifyPush ?? true );
+  readonly notifyEmail = signal( this.state.overview()?.notifyEmail ?? true );
+  readonly email = computed( () => this.state.overview()?.profile.email || this.state.email() );
 
   readonly valid = computed( () => !!this.companyName().trim() && !!this.companyGoal().trim() && this.products().some( ( product ) => product.name.trim() ) );
-
-  readonly channels = computed( () => {
-    const overview = this.state.overview();
-    const names = overview?.channels ?? {};
-    const inStrategy = new Set( ( overview?.strategy?.channels ?? [] ).map( ( channel ) => channel.key ) );
-    return CHANNEL_ORDER.filter( ( key ) => names[key] ).map( ( key ) => ( {
-      key,
-      name: names[key],
-      inStrategy: inStrategy.has( key ),
-      connected: ( overview?.connectedChannels ?? [] ).includes( key ),
-    } ) );
-  } );
-
-  ngOnInit (): void {
-    // Back from a provider's sign-in (the social accounts flow).
-    const params = this.route.snapshot.queryParamMap;
-    const status = params.get( 'authStatus' );
-    const provider = params.get( 'authProvider' ) || '';
-    if ( status === 'success' ) {
-      void this.state.refresh();
-      this.notifications.show( 'Connected', `${ this.state.channelNames()[provider] || 'Your account' } is connected.`, 'success' );
-    } else if ( status === 'error' ) {
-      this.notifications.show( 'Couldn’t connect', 'The connection didn’t finish. Try again.', 'error' );
-    }
-  }
 
   setProduct ( index: number, field: 'name' | 'description', value: string ): void {
     this.products.update( ( list ) => list.map( ( product, i ) => ( i === index ? { ...product, [field]: value } : product ) ) );
@@ -244,7 +231,35 @@ export class ProfileComponent implements OnInit {
   save (): void {
     this.saving.set( true );
     this.editingProduct.set( null );
-    this.api.saveProfile( {
+    const overview = this.state.overview();
+    const settingsChanged = this.hours() !== overview?.autoApproveHours || this.notifyPush() !== overview?.notifyPush || this.notifyEmail() !== overview?.notifyEmail;
+    const settings$: Observable<unknown> = settingsChanged
+      ? this.api.updateSettings( { autoApproveHours: this.hours(), notifyPush: this.notifyPush(), notifyEmail: this.notifyEmail() } )
+      : of( null );
+    // Settings first (no re-check), then the profile if it changed (re-checks the strategy).
+    settings$.pipe(
+      switchMap( () => ( this.dirty() ? this.api.saveProfile( this.profilePayload() ) : this.api.overview() ) ),
+    ).subscribe( {
+      next: ( next ) => {
+        const profileSaved = this.dirty();
+        this.state.set( { ...next, entitled: true } );
+        this.saving.set( false );
+        this.dirty.set( false );
+        if ( profileSaved && next.pendingStrategy && next.strategy ) {
+          void this.router.navigate( ['/strategy'] );
+        } else {
+          this.notifications.show( 'Saved', profileSaved ? 'The strategy still fits.' : 'Your Social settings apply right away.', 'success' );
+        }
+      },
+      error: () => {
+        this.saving.set( false );
+        this.notifications.show( 'That didn’t save', 'Try again.', 'error' );
+      },
+    } );
+  }
+
+  private profilePayload () {
+    return {
       companyName: this.companyName().trim(),
       companyGoal: this.companyGoal().trim(),
       products: this.products().filter( ( product ) => product.name.trim() ),
@@ -252,46 +267,6 @@ export class ProfileComponent implements OnInit {
       location: this.location().trim(),
       website: this.website().trim(),
       tones: this.tones(),
-    } ).subscribe( {
-      next: ( overview ) => {
-        this.state.set( { ...overview, entitled: true } );
-        this.saving.set( false );
-        this.dirty.set( false );
-        this.notifications.show(
-          'Profile saved',
-          overview.pendingStrategy && overview.strategy ? 'Maya suggested strategy changes. Review them on Strategy.' : 'Your strategy still fits.',
-          'success',
-        );
-      },
-      error: ( error ) => {
-        this.saving.set( false );
-        this.notifications.show( 'Couldn’t save', apiError( error ).message || 'Try again.', 'error' );
-      },
-    } );
-  }
-
-  setHours ( hours: AutoApproveHours ): void {
-    if ( hours === this.hours() ) return;
-    this.api.setAutoApproveHours( hours ).subscribe( {
-      next: ( overview ) => this.state.set( { ...overview, entitled: true } ),
-      error: ( error ) => this.notifications.show( 'Couldn’t change it', apiError( error ).message || 'Try again.', 'error' ),
-    } );
-  }
-
-  connect ( channel: string ): void {
-    this.connecting.set( channel );
-    this.api.connectChannel( channel, `${ window.location.origin }/profile` ).subscribe( {
-      next: ( url ) => {
-        if ( url ) window.location.href = url;
-        else {
-          this.connecting.set( null );
-          this.notifications.show( 'Couldn’t connect', 'That channel isn’t available right now.', 'error' );
-        }
-      },
-      error: ( error ) => {
-        this.connecting.set( null );
-        this.notifications.show( 'Couldn’t connect', apiError( error ).message || 'Try again.', 'error' );
-      },
-    } );
+    };
   }
 }

@@ -46,6 +46,8 @@ export interface Overview {
   entitled: boolean;
   onboardedAt?: string | null;
   autoApproveHours: AutoApproveHours;
+  notifyPush: boolean;
+  notifyEmail: boolean;
   timeZone: string;
   today: string;
   profile: Profile;
@@ -57,6 +59,9 @@ export interface Overview {
   connectedChannels: string[];
   channels: Record<string, string>;
 }
+
+/** Social settings (gaps 2m): Maya Social only, not the Taliferro profile. */
+export interface SocialSettings { autoApproveHours?: AutoApproveHours; notifyPush?: boolean; notifyEmail?: boolean; }
 
 export interface Post {
   id: string;
@@ -116,7 +121,7 @@ export class MayaSocialApi {
 
   overview (): Observable<Overview> { return this.unwrap( this.http.get<Envelope<Overview>>( `${ this.base }/overview` ) ); }
   onboard ( autoApproveHours: AutoApproveHours ): Observable<Overview> { return this.unwrap( this.http.post<Envelope<Overview>>( `${ this.base }/onboard`, { autoApproveHours } ) ); }
-  setAutoApproveHours ( autoApproveHours: AutoApproveHours ): Observable<Overview> { return this.unwrap( this.http.put<Envelope<Overview>>( `${ this.base }/settings`, { autoApproveHours } ) ); }
+  updateSettings ( settings: SocialSettings ): Observable<Overview> { return this.unwrap( this.http.put<Envelope<Overview>>( `${ this.base }/settings`, settings ) ); }
   saveProfile ( profile: Partial<Profile> ): Observable<Overview> { return this.unwrap( this.http.patch<Envelope<Overview>>( `${ this.base }/profile`, { profile } ) ); }
 
   generateStrategy (): Observable<Strategy> { return this.unwrap( this.http.post<Envelope<Strategy>>( `${ this.base }/strategy/generate`, {} ) ); }

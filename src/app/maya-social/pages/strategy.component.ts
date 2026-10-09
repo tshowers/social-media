@@ -1,12 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { NotificationService } from '../../services/notification.service';
 import { MayaSocialApi, Product, RequiredField, Strategy, apiError } from '../api';
 import { monthDay } from '../format';
 import { IconComponent } from '../icon.component';
 import { MayaSocialState } from '../state';
+import { FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent } from '../states.component';
+import { StrategyChannelsComponent } from '../strategy-channels.component';
 
 const FIELD_LABELS: Record<RequiredField, string> = {
   companyName: 'Company name',
@@ -23,9 +25,18 @@ const FIELD_LABELS: Record<RequiredField, string> = {
 @Component( {
   selector: 'ms-strategy',
   standalone: true,
-  imports: [FormsModule, RouterLink, IconComponent],
+  imports: [FormsModule, RouterLink, IconComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, StrategyChannelsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
+    .avatar88 { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; object-position: left center; box-shadow: 0 0 0 6px var(--t-blue); }
+    .steps { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .steps li { display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 22px; border-radius: 999px; background: var(--surface); font-size: 16px; font-weight: 700; }
+    .steps li.is-next { background: transparent; color: var(--muted); }
+    .steps small { font-size: 14px; font-weight: 500; color: var(--muted); }
+    .step-ok { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--t-green); color: var(--t-green-fg); }
+    .step-spin { width: 22px; height: 22px; margin: 0 2px; border-radius: 50%; border: 3px solid var(--surface2); border-top-color: var(--blue); animation: ms-spin .9s linear infinite; }
+    .step-todo { width: 22px; height: 22px; margin: 0 2px; border-radius: 50%; border: 2px solid var(--surface2); }
+    .channels-section { margin-top: 48px; }
     .narrow { display: flex; flex-direction: column; gap: 24px; max-width: 880px; margin: 0 auto; padding: 56px 40px 72px; }
     .narrow h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
     .narrow .lead { font-size: 18px; line-height: 1.6; color: var(--muted); }
@@ -90,27 +101,32 @@ const FIELD_LABELS: Record<RequiredField, string> = {
     }
   `],
   template: `
-    @if (building()) {
+    @if (!state.overview()?.onboardedAt) {
+      <ms-not-set-up />
+    } @else if (buildFailed()) {
+      <ms-load-error title="I couldn’t finish the strategy." body="Your profile is saved. Try again, and I’ll start over from it." [status]="buildFailed()!.status" (retry)="generate()" />
+    } @else if (building()) {
+      <!-- 2e -->
       <main class="narrow" aria-live="polite">
-        <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="" />
-        <h1>Building your strategy.</h1>
-        <p class="building"><span class="ms-spinner" aria-hidden="true"></span>Maya is building your strategy from your profile. This takes about a minute.</p>
+        <img class="avatar88" src="assets/maya-avatar.png" alt="" />
+        <h1>Building your strategy…</h1>
+        <p class="lead">About a minute. Stay on this page, and I’ll show it to you as soon as it’s ready.</p>
+        <ol class="steps">
+          <li><span class="step-ok"><ms-icon name="check" [size]="14" [stroke]="3" /></span>Read your profile <small>{{ profile()?.companyName }} · {{ productCount() }}</small></li>
+          <li><span class="step-spin" aria-hidden="true"></span>Picking content pillars and how often to post on each channel</li>
+          <li class="is-next"><span class="step-todo" aria-hidden="true"></span>Planning three weeks of posts, once you approve</li>
+        </ol>
       </main>
     } @else {
     @if (shown(); as strategy) {
       <main class="ms-page">
-        @if (pending(); as proposal) {
-          <div class="ms-notice review" [attr.data-tint]="active() ? 'yellow' : 'blue'" role="status">
-            @if (active()) {
-              <span><strong>Your profile changed, so I’m suggesting this strategy.</strong> Nothing changes until you approve it.</span>
-              <button type="button" class="ms-btn ms-btn--bg ms-btn--36" [disabled]="busy()" (click)="discard()">Keep my current strategy</button>
-              <button type="button" class="ms-btn ms-btn--primary ms-btn--36" [disabled]="busy()" (click)="approve()">Approve changes</button>
-            } @else {
-              <span><strong>Review your strategy.</strong> Nothing goes on the calendar until you approve it.</span>
-              <button type="button" class="ms-btn ms-btn--primary" [disabled]="busy()" (click)="approve()">
-                @if (busy()) { <span class="ms-spinner" aria-hidden="true"></span> Planning your calendar… } @else { Approve and plan my calendar }
-              </button>
-            }
+        @if (pending() && !active()) {
+          <ms-first-strategy-banner class="review" (regenerate)="generate()" />
+        } @else if (pending()) {
+          <div class="ms-notice review" data-tint="yellow" role="status">
+            <span><strong>Your profile changed, so I’m suggesting this strategy.</strong> Nothing changes until you approve it.</span>
+            <button type="button" class="ms-btn ms-btn--bg ms-btn--36" [disabled]="busy()" (click)="discard()">Keep my current strategy</button>
+            <button type="button" class="ms-btn ms-btn--primary ms-btn--36" [disabled]="busy()" (click)="approve()">Approve changes</button>
           </div>
         }
 
@@ -120,10 +136,12 @@ const FIELD_LABELS: Record<RequiredField, string> = {
             <h1 class="ms-h1">{{ strategy.goal }}</h1>
             <p class="ms-maya-line"><img class="ms-avatar" src="assets/maya-avatar.png" alt="" />That goal comes from your profile. I re-check this strategy whenever your profile changes, and I won’t schedule anything that doesn’t fit it.</p>
           </div>
-          <div class="head-actions">
-            <a class="ms-btn ms-btn--44" routerLink="/profile">View profile</a>
-            <button type="button" class="ms-btn ms-btn--ink ms-btn--44" [disabled]="busy()" (click)="generate()">Regenerate</button>
-          </div>
+          @if (active()) {
+            <div class="head-actions">
+              <a class="ms-btn ms-btn--44" routerLink="/profile">View profile</a>
+              <button type="button" class="ms-btn ms-btn--ink ms-btn--44" [disabled]="busy()" (click)="generate()">Regenerate</button>
+            </div>
+          }
         </div>
 
         <section aria-labelledby="pillars-title">
@@ -139,20 +157,11 @@ const FIELD_LABELS: Record<RequiredField, string> = {
           </div>
         </section>
 
-        <div class="two lower">
-          <section aria-labelledby="channels-title">
-            <h2 id="channels-title">Channels</h2>
-            @for (channel of strategy.channels; track channel.key) {
-              <div class="channel">
-                <strong>{{ channel.name }}</strong>
-                <span class="role">
-                  {{ channel.role }}
-                  @if (!isConnected(channel.key)) { · <a routerLink="/profile" fragment="channels">Not connected</a> }
-                </span>
-                <span class="per">{{ channel.perWeek }} / week</span>
-              </div>
-            }
-          </section>
+        <section class="channels-section" aria-labelledby="channels-title">
+          <ms-strategy-channels [strategy]="strategy" />
+        </section>
+
+        <div class="lower">
           <section aria-labelledby="rules-title">
             <h2 id="rules-title">Rules Maya follows</h2>
             <ol class="rules">
@@ -235,13 +244,19 @@ const FIELD_LABELS: Record<RequiredField, string> = {
     }
   `,
 } )
-export class StrategyComponent {
+export class StrategyComponent implements OnInit, OnDestroy {
   private readonly api = inject( MayaSocialApi );
-  private readonly state = inject( MayaSocialState );
+  readonly state = inject( MayaSocialState );
   private readonly router = inject( Router );
   private readonly notifications = inject( NotificationService );
 
   readonly building = signal( false );
+  readonly buildFailed = signal<{ status: number | null } | null>( null );
+  readonly productCount = computed( () => {
+    const count = this.profile()?.products.length ?? 0;
+    return `${ count } ${ count === 1 ? 'product' : 'products' }`;
+  } );
+  private readonly route = inject( ActivatedRoute );
   readonly busy = signal( false );
 
   readonly active = this.state.strategy;
@@ -281,10 +296,6 @@ export class StrategyComponent {
     return monthDay( ( strategy.builtAt || new Date().toISOString() ).slice( 0, 10 ) ).toUpperCase();
   }
 
-  isConnected ( key: string ): boolean {
-    return ( this.state.overview()?.connectedChannels ?? [] ).includes( key );
-  }
-
   setProduct ( index: number, field: 'name' | 'description', value: string ): void {
     this.products.update( ( list ) => list.map( ( product, i ) => ( i === index ? { ...product, [field]: value } : product ) ) );
   }
@@ -310,20 +321,38 @@ export class StrategyComponent {
     } );
   }
 
+  ngOnInit (): void {
+    // "Regenerate" on Today's 2f banner lands here.
+    if ( this.route.snapshot.queryParamMap.get( 'regenerate' ) ) {
+      void this.router.navigate( [], { queryParams: {}, replaceUrl: true } );
+      this.generate();
+    }
+  }
+
+  ngOnDestroy (): void {
+    this.state.headerOverride.set( null );
+  }
+
   generate (): void {
     this.building.set( true );
+    this.buildFailed.set( null );
+    this.state.headerOverride.set( 'welcome' );
+    const done = () => {
+      this.building.set( false );
+      this.state.headerOverride.set( null );
+    };
     this.api.generateStrategy().subscribe( {
       next: () => {
-        void this.state.refresh().then( () => this.building.set( false ) );
+        void this.state.refresh().then( done );
       },
       error: ( response ) => {
-        this.building.set( false );
+        done();
         const error = apiError( response );
         if ( error.error === 'profile_incomplete' ) {
           void this.state.refresh();
           return;
         }
-        this.notifications.show( 'Maya couldn’t build a strategy', error.message || 'Try again.', 'error' );
+        this.buildFailed.set( { status: ( response as { status?: number } )?.status || null } );
       },
     } );
   }

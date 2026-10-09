@@ -6,9 +6,10 @@ import { Subject, of } from 'rxjs';
 import { catchError, debounceTime, switchMap, tap } from 'rxjs/operators';
 
 import { NotificationService } from '../../services/notification.service';
-import { MayaSocialApi, NewPost, PostCheck, apiError } from '../api';
+import { MayaSocialApi, NewPost, Post, PostCheck, apiError } from '../api';
 import { addDays, pillarOf, shortDate, slotLabel, wallClock } from '../format';
 import { IconComponent } from '../icon.component';
+import { PinPickerComponent } from '../pin-picker.component';
 import { MayaSocialState } from '../state';
 
 const MIN_CHARS = 20;
@@ -22,7 +23,7 @@ const MIN_CHARS = 20;
 @Component( {
   selector: 'ms-new-post',
   standalone: true,
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, IconComponent, PinPickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .grid { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 40px; align-items: start; }
@@ -32,8 +33,7 @@ const MIN_CHARS = 20;
     .group h2 { margin-bottom: 10px; font-size: 16px; font-weight: 700; }
     .pills { display: flex; flex-wrap: wrap; gap: 8px; }
     .pills .ms-btn[aria-pressed="true"] { background: var(--blue); color: #fff; }
-    .pin { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-    .pin .ms-input { width: auto; }
+    .pin { margin-top: 12px; }
     .right { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 24px; }
     .panel { display: flex; flex-direction: column; gap: 12px; padding: 24px; border-radius: 28px; background: var(--tint, var(--surface)); color: var(--tint-fg, var(--text)); }
     .panel h2 { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
@@ -69,21 +69,27 @@ const MIN_CHARS = 20;
             <h2 id="when-label">When</h2>
             <div class="pills" role="radiogroup" aria-labelledby="when-label">
               <button type="button" role="radio" class="ms-btn ms-btn--44" [attr.aria-pressed]="!pinned()" [attr.aria-checked]="!pinned()" (click)="setPinned(false)">Next open slot</button>
-              <button type="button" role="radio" class="ms-btn ms-btn--44" [attr.aria-pressed]="pinned()" [attr.aria-checked]="pinned()" (click)="setPinned(true)">Pick a date and pin it</button>
+              <button type="button" role="radio" class="ms-btn ms-btn--44" [attr.aria-pressed]="pinned()" [attr.aria-checked]="pinned()" (click)="setPinned(true)">@if (pinned()) { <ms-icon name="pin" [size]="14" /> }Pick a date and pin it</button>
             </div>
             @if (pinned()) {
               <div class="pin">
-                <label class="ms-sr-only" for="pin-date">Date</label>
-                <input id="pin-date" class="ms-input" type="date" [min]="tomorrow()" [ngModel]="slotDate()" (ngModelChange)="slotDate.set($event); recheck()" name="slotDate" />
-                <label class="ms-sr-only" for="pin-time">Time</label>
-                <input id="pin-time" class="ms-input" type="time" [ngModel]="time()" (ngModelChange)="time.set($event); recheck()" name="time" />
+                <ms-pin-picker [date]="slotDate()" [time]="time()" [minDate]="tomorrow()" [pinnedDates]="pinnedDates()" [timeZone]="timeZone()"
+                  (dateChange)="slotDate.set($event); recheck()" (timeChange)="time.set($event); recheck()" />
               </div>
             }
           </div>
         </div>
 
         <aside class="right" aria-live="polite">
-          @if (checking()) {
+          @if (conflict(); as taken) {
+            <div class="panel" data-tint="pink">
+              <h2><ms-icon name="alert" [size]="22" />{{ shortDate(slotDate()) }} already has a pinned post</h2>
+              <p>“{{ taken.title }}” is pinned to that day. One pinned post per day. Pick another date, or unpin that post first.</p>
+              @if (nextFree(); as free) {
+                <button type="button" class="ms-btn ms-btn--primary ms-btn--50 ms-btn--block" (click)="slotDate.set(free); recheck()">Pin to {{ shortDate(free) }} instead</button>
+              }
+            </div>
+          } @else if (checking()) {
             <div class="panel"><p class="checking"><span class="ms-spinner" aria-hidden="true"></span>Maya is checking it against your strategy…</p></div>
           } @else {
           @if (check(); as result) {
@@ -103,8 +109,12 @@ const MIN_CHARS = 20;
             } @else {
               <div class="panel" data-tint="green">
                 <h2><img class="ms-avatar ms-avatar--32" src="assets/maya-avatar.png" alt="" />Fits the strategy</h2>
-                @if (result.slot) {
-                  <p>It takes the {{ pinned() ? 'pinned date' : 'next ' + pillarName(result.pillar) + ' slot' }}: <strong>{{ slotText(result) }}</strong>.</p>
+                @if (result.slot && pinned()) {
+                  <p><span class="ms-chip" style="background: var(--bg); color: var(--text)">{{ pillarName(result.pillar) }}</span></p>
+                  <p>Pinned to <strong>{{ slotText(result) }}</strong>. It won’t move, and it expires if it isn’t approved by then.</p>
+                  @if (knockOn(result); as effect) { <p>{{ effect }}</p> }
+                } @else if (result.slot) {
+                  <p>It takes the next {{ pillarName(result.pillar) }} slot: <strong>{{ slotText(result) }}</strong>.</p>
                   @if (knockOn(result); as effect) { <p>{{ effect }}</p> }
                 } @else if (result.placementError) {
                   <p>{{ result.placementError }}</p>
@@ -144,13 +154,27 @@ export class NewPostComponent implements OnInit {
 
   readonly strategyChannels = computed( () => this.state.strategy()?.channels ?? [] );
   readonly tomorrow = computed( () => addDays( this.state.today(), 1 ) );
-  readonly canAdd = computed( () => !!this.check()?.aligned && !!this.check()?.slot && this.channels().length > 0 && !this.checking() );
+  readonly canAdd = computed( () => !this.conflict() && !!this.check()?.aligned && !!this.check()?.slot && this.channels().length > 0 && !this.checking() );
+  readonly timeZone = this.state.timeZone;
+  readonly shortDate = shortDate;
+  /** Pinned posts ahead, for the picker's dots and the one-per-day rule (2k). */
+  readonly pinnedPosts = signal<Post[]>( [] );
+  readonly pinnedDates = computed( () => new Set( this.pinnedPosts().map( ( post ) => post.slotDate ) ) );
+  readonly conflict = computed( () => ( this.pinned() ? this.pinnedPosts().find( ( post ) => post.slotDate === this.slotDate() ) ?? null : null ) );
+  readonly nextFree = computed( () => {
+    let date = addDays( this.slotDate(), 1 );
+    while ( this.pinnedDates().has( date ) ) date = addDays( date, 1 );
+    return date;
+  } );
 
   private readonly checks = new Subject<void>();
 
   ngOnInit (): void {
     this.channels.set( this.strategyChannels().map( ( channel ) => channel.key ) );
     this.slotDate.set( this.tomorrow() );
+    this.api.posts( this.tomorrow(), addDays( this.tomorrow(), 180 ) ).subscribe( {
+      next: ( posts ) => this.pinnedPosts.set( posts.filter( ( post ) => post.pinned && !['expired'].includes( post.status ) ) ),
+    } );
     this.checks.pipe(
       tap( () => this.check.set( null ) ),
       debounceTime( 1200 ),

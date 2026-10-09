@@ -109,6 +109,8 @@ function seedOverview ( name: string ): Overview {
     entitled: name !== 'nomaya',
     onboardedAt: name === 'first' ? null : '2026-10-01T15:00:00.000Z',
     autoApproveHours: 6,
+    notifyPush: true,
+    notifyEmail: true,
     timeZone: 'America/Chicago',
     today: TODAY,
     profile: {
@@ -158,7 +160,7 @@ class MockServer {
       this.overview = { ...this.overview, onboardedAt: new Date().toISOString(), autoApproveHours: body['autoApproveHours'] };
       return ok( this.overview );
     }
-    if ( path === '/settings' ) return ok( this.overview = { ...this.overview, autoApproveHours: body['autoApproveHours'] } );
+    if ( path === '/settings' ) return ok( this.overview = { ...this.overview, ...body } );
     if ( path === '/profile' ) {
       const profile = { ...this.overview.profile, ...body['profile'] };
       const missing = [!profile.companyName && 'companyName', !profile.companyGoal && 'companyGoal', !profile.products?.length && 'products'].filter( Boolean ) as Overview['missing'];

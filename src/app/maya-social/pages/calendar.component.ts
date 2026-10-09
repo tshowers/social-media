@@ -1,14 +1,15 @@
-import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { NotificationService } from '../../services/notification.service';
 import { MayaSocialApi, Post, apiError } from '../api';
 import { EditSheetComponent } from '../edit-sheet.component';
+import { PostDrawerComponent } from '../post-drawer.component';
+import { ChannelWarningComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent } from '../states.component';
 import {
   STATUS_LABELS, addDays, channelList, dayOfMonth, daysBetween, monthDay, monthYear, pillarOf, plural, slotLabel,
   wallClock, weekdayLong, weekdayShort,
 } from '../format';
-import { HelpPopComponent } from '../help-pop.component';
 import { IconComponent } from '../icon.component';
 import { MayaSocialState } from '../state';
 
@@ -31,7 +32,7 @@ interface Day {
 @Component( {
   selector: 'ms-calendar',
   standalone: true,
-  imports: [HelpPopComponent, IconComponent, EditSheetComponent],
+  imports: [IconComponent, EditSheetComponent, PostDrawerComponent, ChannelWarningComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .bar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
@@ -45,7 +46,7 @@ interface Day {
     .legend + .ms-seg { margin-left: 0; }
 
     /* Week */
-    .week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
+    .week { display: grid; grid-template-columns: repeat(var(--days, 7), minmax(0, 1fr)); gap: 10px; }
     .dhead { display: flex; align-items: baseline; gap: 6px; height: 38px; padding: 0 12px; margin-bottom: 10px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--muted); }
     .dhead b { font-size: 18px; color: var(--text); }
     .dhead.is-today { align-items: center; background: var(--text); color: var(--bg); }
@@ -114,15 +115,12 @@ interface Day {
     .qcard .right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
     .qgap { padding: 16px 20px; border-radius: 999px; background: var(--t-yellow); color: var(--t-yellow-fg); font-size: 15px; font-weight: 700; }
 
-    /* Post sheet */
-    .scrim { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(15, 17, 21, .45); }
-    .sheet { display: flex; flex-direction: column; gap: 14px; width: min(560px, 100%); padding: 28px; border-radius: 28px; background: var(--bg); box-shadow: var(--shadow); }
-    .sheet h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-    .sheet .body { font-size: 15px; line-height: 1.6; color: var(--muted); white-space: pre-line; }
-    .sheet .acts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+    /* 2j: the open card gets a blue ring. */
+    .day.is-open, .cell.is-open, .qcard.is-open { box-shadow: inset 0 0 0 3px var(--blue); }
+    .warn { display: block; margin-bottom: 20px; }
 
-    @media (max-width: 900px) {
-      .legend { display: none; }
+    @media (max-width: 1000px) { .legend { display: none; } }
+    @media (max-width: 760px) {
       .week { grid-template-columns: 1fr; gap: 0; }
       .week .dhead { margin: 14px 0 8px; }
       .day, .gap, .later { min-height: 0; }
@@ -138,17 +136,23 @@ interface Day {
       .qcard { grid-template-columns: 1fr; }
       .qcard .right { flex-direction: row; align-items: center; }
       .qgap { border-radius: 20px; }
-      .scrim { place-items: end center; padding: 0; }
-      .sheet { border-radius: 28px 28px 0 0; padding: 22px 16px calc(22px + env(safe-area-inset-bottom)); }
     }
   `],
   template: `
+    @if (!state.overview()?.onboardedAt) {
+      <ms-not-set-up />
+    } @else if (loadError() !== undefined) {
+      <ms-load-error [status]="loadError() ?? null" (retry)="load()" />
+    } @else if (loading()) {
+      <ms-skeleton [layout]="view() === 'week' ? 'week' : 'today'" />
+    } @else {
     <main class="ms-page">
+      <ms-channel-warning class="warn" />
       <div class="bar" [class.bar--queue]="view() === 'queue'">
         @switch (view()) {
           @case ('week') {
             <h1>{{ weekTitle() }}</h1>
-            <div class="nav"><button type="button" class="ms-btn ms-btn--36" aria-label="Previous week" (click)="shift(-7)"><ms-icon name="chevron-left" /></button><button type="button" class="ms-btn ms-btn--36" aria-label="Next week" (click)="shift(7)"><ms-icon name="chevron-right" /></button></div>
+            <div class="nav"><button type="button" class="ms-btn ms-btn--36" aria-label="Previous week" (click)="shift(-weekLength())"><ms-icon name="chevron-left" /></button><button type="button" class="ms-btn ms-btn--36" aria-label="Next week" (click)="shift(weekLength())"><ms-icon name="chevron-right" /></button></div>
           }
           @case ('month') {
             <h1>{{ monthTitle() }}</h1>
@@ -168,12 +172,12 @@ interface Day {
 
       @switch (view()) {
         @case ('week') {
-          <div class="week">
+          <div class="week" [style.--days]="weekLength()">
             @for (day of weekDays(); track day.date) {
               <div>
                 <div class="dhead" [class.is-today]="day.date === today()">{{ weekdayShort(day.date) }} <b>{{ dayOfMonth(day.date) }}</b>@if (day.date === today()) { <em>Today</em> }</div>
                 @if (day.post; as post) {
-                  <button type="button" class="day" [class.is-held]="post.status === 'on_hold'" [class.is-past]="day.date < today()" (click)="open(post)">
+                  <button type="button" class="day" [class.is-open]="selected()?.id === post.id" [class.is-held]="post.status === 'on_hold'" [class.is-past]="day.date < today()" (click)="open(post)">
                     <div class="chips">
                       <span class="ms-chip ms-chip--11" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>
                       @if (post.pinned) { <span class="ms-pinned"><ms-icon name="pin" [size]="12" />Pinned</span> }
@@ -205,7 +209,7 @@ interface Day {
             @for (name of weekdayNames; track name) { <div class="mhead" role="columnheader">{{ name }}</div> }
             @for (day of monthDays(); track day.date) {
               @if (day.post && day.inMonth) {
-                <button type="button" class="cell" role="gridcell" [class.is-held]="day.post!.status === 'on_hold'" [class.is-past]="day.date < today()" (click)="open(day.post!)" [attr.aria-label]="shortLabel(day.post!)">
+                <button type="button" class="cell" role="gridcell" [class.is-open]="selected()?.id === day.post!.id" [class.is-held]="day.post!.status === 'on_hold'" [class.is-past]="day.date < today()" (click)="open(day.post!)" [attr.aria-label]="shortLabel(day.post!)">
                   <span class="badge" [class.is-today]="day.date === today()">{{ dayOfMonth(day.date) }}</span>
                   <span class="t" [attr.data-tint]="pillar(day.post!).tint"><span class="ms-dot"></span><span>{{ day.post!.title }}</span></span>
                   <span class="ms-chip ms-chip--11 ms-status" [attr.data-status]="day.post!.status">{{ status(day.post!) }}</span>
@@ -231,7 +235,7 @@ interface Day {
                 <div class="label">{{ queueLabel(day.date) }}<small>{{ weekdayShort(day.date) }} {{ dayOfMonth(day.date) }}</small></div>
                 <div class="rail" [attr.data-tint]="day.post ? pillar(day.post).tint : 'yellow'"><i [class.is-held]="day.post?.status === 'on_hold'"></i></div>
                 @if (day.post; as post) {
-                  <button type="button" class="qcard" [class.is-held]="post.status === 'on_hold'" (click)="open(post)">
+                  <button type="button" class="qcard" [class.is-open]="selected()?.id === post.id" [class.is-held]="post.status === 'on_hold'" (click)="open(post)">
                     <div>
                       <div class="top">
                         <span class="ms-chip ms-chip--11" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>
@@ -257,26 +261,10 @@ interface Day {
         }
       }
     </main>
+    }
 
     @if (selected(); as post) {
-      <div class="scrim" (click)="selected.set(null)">
-        <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" (click)="$event.stopPropagation()">
-          <div class="chips">
-            <span class="ms-chip" [attr.data-tint]="pillar(post).tint">{{ pillar(post).name }}</span>
-            <span class="ms-chip ms-status" [attr.data-status]="post.status">{{ status(post) }}</span>
-            @if (post.pinned) { <span class="ms-pinned"><ms-icon name="pin" [size]="12" />Pinned</span><ms-help class="ms-help--small" topic="pinned" /> }
-          </div>
-          <h2 id="sheet-title">{{ post.title }}</h2>
-          <p class="ms-muted">{{ slotLabel(post) }} · {{ channels(post) }}</p>
-          @if (post.body) { <p class="body">{{ post.body }}</p> } @else { <p class="body">Maya writes this one {{ draftWhen(post) }}.</p> }
-          <div class="acts">
-            <button type="button" class="ms-btn" (click)="selected.set(null)">Close</button>
-            @if (canHold(post)) { <button type="button" class="ms-btn" [disabled]="busy()" (click)="hold(post)">Hold</button> }
-            @if (post.body && isActive(post)) { <button type="button" class="ms-btn" (click)="editing.set(post); selected.set(null)">Edit</button> }
-            @if (canApprove(post)) { <button type="button" class="ms-btn ms-btn--primary" [disabled]="busy()" (click)="approve(post)">Approve</button> }
-          </div>
-        </section>
-      </div>
+      <ms-post-drawer [post]="post" (closed)="selected.set(null)" (changed)="done($event)" (edit)="editing.set($event); selected.set(null)" />
     }
 
     @if (editing(); as post) {
@@ -285,8 +273,8 @@ interface Day {
   `,
 } )
 export class CalendarComponent implements OnInit {
+  readonly state = inject( MayaSocialState );
   private readonly api = inject( MayaSocialApi );
-  private readonly state = inject( MayaSocialState );
   private readonly route = inject( ActivatedRoute );
   private readonly router = inject( Router );
   private readonly notifications = inject( NotificationService );
@@ -300,6 +288,8 @@ export class CalendarComponent implements OnInit {
   readonly selected = signal<Post | null>( null );
   readonly editing = signal<Post | null>( null );
   readonly busy = signal( false );
+  readonly loading = signal( true );
+  readonly loadError = signal<number | null | undefined>( undefined );
 
   readonly today = this.state.today;
   readonly strategy = this.state.strategy;
@@ -308,12 +298,15 @@ export class CalendarComponent implements OnInit {
 
   readonly weekTitle = computed( () => {
     const start = this.anchor();
-    const end = addDays( start, 6 );
+    const end = addDays( start, this.weekLength() - 1 );
     return start.slice( 0, 7 ) === end.slice( 0, 7 ) ? `${ monthDay( start ) } – ${ dayOfMonth( end ) }` : `${ monthDay( start ) } – ${ monthDay( end ) }`;
   } );
   readonly monthTitle = computed( () => monthYear( this.anchor() ) );
 
-  readonly weekDays = computed( () => Array.from( { length: 7 }, ( _, i ) => this.day( addDays( this.anchor(), i ), true ) ) );
+  /** 4d: at tablet width the week shows 4 days, and the arrows move by 4. */
+  readonly tablet = signal( typeof window !== 'undefined' && window.matchMedia( '(min-width: 761px) and (max-width: 1000px)' ).matches );
+  readonly weekLength = computed( () => ( this.tablet() ? 4 : 7 ) );
+  readonly weekDays = computed( () => Array.from( { length: this.weekLength() }, ( _, i ) => this.day( addDays( this.anchor(), i ), true ) ) );
 
   readonly monthDays = computed( () => {
     const first = `${ this.anchor().slice( 0, 7 ) }-01`;
@@ -334,11 +327,6 @@ export class CalendarComponent implements OnInit {
     const view = this.route.snapshot.queryParamMap.get( 'view' ) as View | null;
     if ( view && ['week', 'month', 'queue'].includes( view ) ) this.view.set( view );
     this.load();
-  }
-
-  @HostListener( 'document:keydown.escape' )
-  closeSheet (): void {
-    this.selected.set( null );
   }
 
   setView ( view: View ): void {
@@ -364,9 +352,16 @@ export class CalendarComponent implements OnInit {
     // Wide enough to count what's behind a held post, whatever the view.
     const from = this.view() === 'month' ? addDays( `${ this.anchor().slice( 0, 7 ) }-01`, -7 ) : addDays( this.anchor() < this.today() ? this.anchor() : this.today(), -1 );
     const to = addDays( from, 90 );
+    this.loadError.set( undefined );
     this.api.posts( from, to ).subscribe( {
-      next: ( posts ) => this.posts.set( posts ),
-      error: () => this.notifications.show( 'Couldn’t load the calendar', 'Refresh to try again.', 'error' ),
+      next: ( posts ) => {
+        this.posts.set( posts );
+        this.loading.set( false );
+      },
+      error: ( response ) => {
+        this.loading.set( false );
+        this.loadError.set( ( response as { status?: number } )?.status || null );
+      },
     } );
   }
 
@@ -444,7 +439,7 @@ export class CalendarComponent implements OnInit {
     this.done( post );
   }
 
-  private done ( saved: Post ): void {
+  done ( saved: Post ): void {
     this.busy.set( false );
     this.selected.set( null );
     this.posts.update( ( posts ) => posts.map( ( post ) => ( post.id === saved.id ? saved : post ) ) );
