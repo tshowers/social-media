@@ -188,7 +188,7 @@ export class HeaderComponent {
   }
 
   signIn (): void {
-    this.auth.signIn( '/' );
+    this.auth.signIn( this.router.url || '/' );
   }
 
   newPost (): void {
