@@ -40,7 +40,7 @@ import { MayaSocialState } from '../state';
     <main class="col">
       <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Maya" />
       <div class="intro">
-        <span class="tag">Included with your Maya plan</span>
+        <span class="tag">Your Maya Social plan</span>
         <h1>Before I take over your calendar, here’s how I work.</h1>
       </div>
 

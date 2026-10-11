@@ -1,16 +1,21 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink } from '@angular/router';
+import { filter } from 'rxjs/operators';
+import { GET_THE_APP_PRODUCTS } from '@taliferro/ui/platform/get-the-app.model';
 
 import { SiteFooterComponent } from '../../shared/site-footer/site-footer.component';
 
 import { SocialAuthService } from '../../services/social-auth.service';
-import { MAYA_PRICING_URL } from '../header.component';
+import { WriteAccessPromptService } from '../../shared/write-access/write-access-prompt.service';
 import { MayaSocialState } from '../state';
 
 /**
  * 1o, the doorway at social.taliferro.tech: what Maya Social is, for
- * people signed out or without Maya. "Get Maya" is the only action for a
- * signed-in visitor without it.
+ * people signed out or without it. Maya Social is its own $4.99/month
+ * subscription (Ty, 2026-10-11); "Get Maya Social" opens the shared
+ * subscribe prompt (Stripe in a new tab) and steps into the app once the
+ * purchase lands.
  */
 @Component( {
   selector: 'ms-doorway',
@@ -50,17 +55,17 @@ import { MayaSocialState } from '../state';
   template: `
     <main class="door">
       <section class="left">
-        <span class="tag">Included with Maya</span>
+        <span class="tag">Maya Social · {{ price }}/month</span>
         <h1>Maya runs your social media.</h1>
         <p class="lead">She builds a posting strategy from your company profile and keeps something going out every day. You approve or hold posts. The plan and the calendar are hers.</p>
         <div class="actions">
-          <a class="ms-btn ms-btn--primary ms-btn--54" [href]="pricingUrl">Get Maya</a>
+          <button type="button" class="ms-btn ms-btn--primary ms-btn--54" (click)="getMayaSocial()" data-cy="get-maya-social">Get Maya Social</button>
           @if (!state.signedIn()) {
-            <button type="button" class="ms-btn ms-btn--54" (click)="signIn()">I have Maya. Sign in</button>
+            <button type="button" class="ms-btn ms-btn--54" (click)="signIn()">I have Maya Social. Sign in</button>
           }
         </div>
         @if (state.signedIn()) {
-          <p class="note">You're signed in as {{ state.email() }}, but this account doesn't have Maya yet. Maya Social comes with every Maya plan.</p>
+          <p class="note">You're signed in as {{ state.email() }}, but this account doesn't have Maya Social yet. One subscription works here and in the app; cancel anytime.</p>
         }
         <div class="channels" aria-label="Channels">
           @for (channel of channels; track channel) { <span>{{ channel }}</span> }
@@ -90,10 +95,26 @@ import { MayaSocialState } from '../state';
 export class DoorwayComponent {
   readonly state = inject( MayaSocialState );
   private readonly auth = inject( SocialAuthService );
+  private readonly prompts = inject( WriteAccessPromptService );
+  private readonly router = inject( Router );
 
-  readonly pricingUrl = MAYA_PRICING_URL;
+  readonly price = GET_THE_APP_PRODUCTS.social.monthlyPrice;
   readonly defaultHours = 6;
   readonly channels = ['LinkedIn', 'Instagram', 'Facebook', 'Threads', 'Google Business'];
+
+  constructor () {
+    // Once the purchase lands, reload the overview and go in.
+    this.prompts.unlocked$.pipe( filter( Boolean ), takeUntilDestroyed( inject( DestroyRef ) ) ).subscribe( async () => {
+      this.prompts.close();
+      await this.state.refresh();
+      void this.router.navigateByUrl( '/' );
+    } );
+  }
+
+  /** Signed out: the prompt offers sign-in first. Signed in: subscribe in place. */
+  getMayaSocial (): void {
+    this.prompts.open( { state: this.state.signedIn() ? 'browsing' : 'signedOut', action: 'use Maya Social' } );
+  }
 
   signIn (): void {
     this.auth.signIn( '/' );

@@ -6,7 +6,7 @@ import { MayaSocialState } from './state';
 
 /**
  * Routing from design_handoff_maya_social_entry ("Access and routing"):
- *  - signed out, or signed in without Maya → the doorway (1o) at /
+ *  - signed out, or signed in without Maya Social → the doorway (1o) at /
  *  - Maya, first visit → /welcome (1p), until set up or "Not now"
  *  - otherwise → /today (no strategy yet: Today's empty state; Strategy
  *    shows 1h/1i)
