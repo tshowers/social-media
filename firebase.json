@@ -2,6 +2,7 @@
   "hosting": {
     "site": "todd-social-media",
     "public": "dist/social-media/browser",
+    "trailingSlash": false,
     "ignore": [
       "firebase.json",
       "**/.*",

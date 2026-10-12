@@ -75,7 +75,7 @@ export const routes: Routes = [
     data: { header: 'none', page: 'about' },
     loadComponent: () => import( './shared/product-pages/product-pages.component' ).then( ( m ) => m.ProductPagesComponent ),
   },
-  // Social isn't sold on its own any more: it comes with Maya.
+  // Pricing lives on the doorway (Get Maya Social), not its own page.
   { path: 'pricing', redirectTo: '' },
   // Old Social routes, so bookmarks still land somewhere sensible.
   { path: 'command', redirectTo: 'today' },
