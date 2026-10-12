@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { GET_THE_APP_PRODUCTS } from '@taliferro/ui/platform/get-the-app.model';
 
+import { AlsoFromUsComponent } from '../../shared/also-from-us/also-from-us.component';
 import { SiteFooterComponent } from '../../shared/site-footer/site-footer.component';
 
 import { SocialAuthService } from '../../services/social-auth.service';
@@ -20,7 +21,7 @@ import { MayaSocialState } from '../state';
 @Component( {
   selector: 'ms-doorway',
   standalone: true,
-  imports: [RouterLink, SiteFooterComponent],
+  imports: [RouterLink, SiteFooterComponent, AlsoFromUsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     /* app-root is a full-height column while this page shows (styles.css), so the footer sits at the bottom. */
@@ -70,6 +71,7 @@ import { MayaSocialState } from '../state';
         <div class="channels" aria-label="Channels">
           @for (channel of channels; track channel) { <span>{{ channel }}</span> }
         </div>
+        <p class="tt-made-by"><a href="https://todd.taliferro.tech" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="assets/todd-icon.png" alt="" /></span>Powered by <strong>TODD</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
       </section>
 
       <aside class="how" aria-labelledby="how-title">
