@@ -8,7 +8,12 @@ import { WebCheckoutService } from './web-checkout.service';
 import { WRITE_ACCESS_APP } from './write-access.config';
 import { WriteAccessPrompt, WriteAccessPromptService } from './write-access-prompt.service';
 
-type Phase = 'ask' | 'starting' | 'waiting' | 'done' | 'error';
+type Phase = 'ask' | 'starting' | 'waiting' | 'unconfirmed' | 'checking' | 'done' | 'error';
+
+/** The checkout tab tells the waiting page Stripe took the payment. */
+const CHECKOUT_CHANNEL = 'write-access-checkout';
+/** How long after a paid checkout the webhook gets to unlock the product. */
+const UNLOCK_GRACE_MS = 60 * 1000;
 
 /**
  * The prompt WriteActionDirective opens: sign in, or subscribe right here
@@ -51,6 +56,16 @@ type Phase = 'ask' | 'starting' | 'waiting' | 'done' | 'error';
             <p>We’ll pick up where you left off as soon as your payment goes through.</p>
             <div class="wap__actions">
               <button type="button" class="wap__secondary" (click)="dismiss()">Cancel</button>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="phase === 'unconfirmed' || phase === 'checking'">
+            <h2 id="wap-title">Your payment went through</h2>
+            <p>We haven’t been able to switch on {{ app.name }} yet. Please don’t pay again. Check again in a few minutes, and contact us if it’s still locked.</p>
+            <div class="wap__actions">
+              <button type="button" class="wap__primary" [disabled]="phase === 'checking'" (click)="checkAgain( prompt )" data-cy="write-access-check-again">
+                {{ phase === 'checking' ? 'Checking…' : 'Check again' }}
+              </button>
+              <button type="button" class="wap__secondary" (click)="dismiss()">Close</button>
             </div>
           </ng-container>
           <ng-container *ngIf="phase === 'done'">
@@ -134,8 +149,34 @@ export class WriteAccessPromptComponent implements OnInit {
     if ( !tab ) return;
     this.phase = 'waiting';
     const id = ++this.waitId;
-    const unlocked = await this.checkout.waitForAccess( this.app.product, () => id !== this.waitId );
-    if ( unlocked && id === this.waitId ) this.finish( prompt );
+    // Once Stripe says paid, the webhook gets a minute; after that, say so
+    // rather than waiting silently.
+    let paidAt = 0;
+    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel( CHECKOUT_CHANNEL );
+    if ( channel ) channel.onmessage = ( event ) => {
+      if ( event.data?.product === this.app.product && !paidAt ) paidAt = Date.now();
+    };
+    const unlocked = await this.checkout.waitForAccess(
+      this.app.product,
+      () => id !== this.waitId || ( !!paidAt && Date.now() - paidAt > UNLOCK_GRACE_MS ),
+    );
+    channel?.close();
+    if ( id !== this.waitId ) return;
+    if ( unlocked ) this.finish( prompt );
+    else if ( paidAt ) this.phase = 'unconfirmed';
+    else {
+      this.phase = 'error';
+      this.error = 'Checkout timed out. If you finished paying, refresh this page before trying again.';
+    }
+  }
+
+  /** After a paid checkout that hasn't unlocked yet: look once more, without paying again. */
+  async checkAgain ( prompt: WriteAccessPrompt ): Promise<void> {
+    this.phase = 'checking';
+    const unlocked = await this.checkout.hasAccess( this.app.product );
+    if ( this.phase !== 'checking' ) return;
+    if ( unlocked ) this.finish( prompt );
+    else this.phase = 'unconfirmed';
   }
 
   /** Unlocks the page and presses the button that was stopped. */
@@ -157,6 +198,7 @@ export class WriteAccessPromptComponent implements OnInit {
     if ( typeof window === 'undefined' ) return;
     const params = new URLSearchParams( location.search );
     const result = params.get( 'checkout' );
+    const product = params.get( 'product' ) || this.app.product;
     if ( !result ) return;
     ['checkout', 'product', 'resume', 'session_id', 'pack'].forEach( ( key ) => params.delete( key ) );
     const rest = params.toString();
@@ -164,6 +206,11 @@ export class WriteAccessPromptComponent implements OnInit {
 
     if ( result === 'success' && window.opener ) {
       // The checkout tab: the original page is waiting for the purchase.
+      if ( typeof BroadcastChannel !== 'undefined' ) {
+        const channel = new BroadcastChannel( CHECKOUT_CHANNEL );
+        channel.postMessage( { product } );
+        channel.close();
+      }
       window.close();
       return;
     }
