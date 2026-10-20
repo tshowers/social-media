@@ -14,5 +14,17 @@
         "destination": "/index.csr.html"
       }
     ]
+  },
+  "emulators": {
+    "auth": {
+      "port": 9499
+    },
+    "firestore": {
+      "port": 8480
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4801
+    }
   }
 }

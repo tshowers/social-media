@@ -73,12 +73,11 @@ const TABS = [
       .ah-actions .ah-theme span { display: none; }
     }
 
-    /* Phone (390): avatar + tab title; tabs move to the bottom bar. */
+    /* Phone (390): logo + tab title; tabs move to the bottom bar. */
     @media (max-width: 760px) {
       .ah { grid-template-columns: 1fr auto; padding: 14px 16px 10px; }
       .ms-center { display: none; }
       .ah-brand.is-app .ah-name { display: none; }
-      .ms-avatar--36 { width: 32px; height: 32px; }
       .ms-phone-title { display: inline; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
       .ms-round, .ah-actions .ah-theme { width: 40px; height: 40px; }
       .ms-bottom {
@@ -98,7 +97,7 @@ const TABS = [
     @if (mode() !== 'none') {
       <header class="ah">
         <a class="ah-brand" [class.is-app]="mode() === 'app'" [routerLink]="mode() === 'app' ? '/today' : '/'" aria-label="Maya Social home">
-          <img class="ms-avatar ms-avatar--36" src="assets/maya-avatar.png" alt="" />
+          <img class="ah-logo" src="assets/social-logo.png" alt="" width="36" height="36" />
           <span class="ah-name ms-brand-name">Maya <small>Social</small></span>
           @if (mode() === 'app') { <span class="ms-phone-title">{{ pageTitle() }}</span> }
         </a>
