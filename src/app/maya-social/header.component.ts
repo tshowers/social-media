@@ -104,7 +104,7 @@ const TABS = [
           } @else {
             <img class="ah-logo brand-mark--light" src="assets/brand/products/svg/light/09-social.svg" alt="" width="36" height="36" /><img class="ah-logo brand-mark--dark" src="assets/brand/products/svg/dark/09-social.svg" alt="" width="36" height="36" />
           }
-          <span class="ah-name ms-brand-name">Social</span>
+          <span class="ah-name ms-brand-name">16Ahead <small>Social</small></span>
           @if (mode() === 'app') { <span class="ms-phone-title">{{ pageTitle() }}</span> }
         </a>
 
