@@ -102,7 +102,7 @@ const TABS = [
             <img class="ah-logo ms-dial brand-mark--light" src="assets/brand/products/png/light/09-social.png" alt="" width="36" height="36" />
             <img class="ah-logo ms-dial brand-mark--dark" src="assets/brand/products/png/dark/09-social.png" alt="" width="36" height="36" />
           } @else {
-            <img class="ah-logo" src="assets/social-logo.png" alt="" width="36" height="36" />
+            <img class="ah-logo brand-mark--light" src="assets/brand/products/svg/light/09-social.svg" alt="" width="36" height="36" /><img class="ah-logo brand-mark--dark" src="assets/brand/products/svg/dark/09-social.svg" alt="" width="36" height="36" />
           }
           <span class="ah-name ms-brand-name">Social</span>
           @if (mode() === 'app') { <span class="ms-phone-title">{{ pageTitle() }}</span> }

@@ -71,7 +71,7 @@ import { MayaSocialState } from '../state';
         <div class="channels" aria-label="Channels">
           @for (channel of channels; track channel) { <span>{{ channel }}</span> }
         </div>
-        <p class="tt-made-by"><a href="https://app.16ahead.com" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="assets/todd-icon.png" alt="" /></span>Powered by <strong>16Ahead</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
+        <p class="tt-made-by"><a href="https://app.16ahead.com" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img class="brand-mark--light" src="assets/brand/products/png/light/01-16ahead-64.png" alt="" /><img class="brand-mark--dark" src="assets/brand/products/png/dark/01-16ahead-64.png" alt="" /></span>Powered by <strong>16Ahead</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
       </section>
 
       <aside class="how" aria-labelledby="how-title">
