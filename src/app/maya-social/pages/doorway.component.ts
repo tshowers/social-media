@@ -56,37 +56,37 @@ import { MayaSocialState } from '../state';
   template: `
     <main class="door">
       <section class="left">
-        <span class="tag">Maya Social · {{ price }}/month</span>
-        <h1>Maya runs your social media.</h1>
-        <p class="lead">She builds a posting strategy from your company profile and keeps something going out every day. You approve or hold posts. The plan and the calendar are hers.</p>
+        <span class="tag">Social · {{ price }}/month</span>
+        <h1>Marketing Assistant runs your social media.</h1>
+        <p class="lead">It builds a posting strategy from your company profile and keeps something going out every day. You approve or hold posts. The plan and the calendar are its job.</p>
         <div class="actions">
-          <button type="button" class="ms-btn ms-btn--primary ms-btn--54" (click)="getMayaSocial()" data-cy="get-maya-social">Get Maya Social</button>
+          <button type="button" class="ms-btn ms-btn--primary ms-btn--54" (click)="getMayaSocial()" data-cy="get-maya-social">Get Social</button>
           @if (!state.signedIn()) {
-            <button type="button" class="ms-btn ms-btn--54" (click)="signIn()">I have Maya Social. Sign in</button>
+            <button type="button" class="ms-btn ms-btn--54" (click)="signIn()">I have Social. Sign in</button>
           }
         </div>
         @if (state.signedIn()) {
-          <p class="note">You're signed in as {{ state.email() }}, but this account doesn't have Maya Social yet. One subscription works here and in the app; cancel anytime.</p>
+          <p class="note">You're signed in as {{ state.email() }}, but this account doesn't have Social yet. One subscription works here and in the app; cancel anytime.</p>
         }
         <div class="channels" aria-label="Channels">
           @for (channel of channels; track channel) { <span>{{ channel }}</span> }
         </div>
-        <p class="tt-made-by"><a href="https://todd.taliferro.tech" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="assets/todd-icon.png" alt="" /></span>Powered by <strong>TODD</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
+        <p class="tt-made-by"><a href="https://app.16ahead.com" target="_blank" rel="noopener"><span class="tt-made-by__todd"><img src="assets/todd-icon.png" alt="" /></span>Powered by <strong>16Ahead</strong></a><i aria-hidden="true"></i><a appAlsoFromUs></a></p>
       </section>
 
       <aside class="how" aria-labelledby="how-title">
         <div class="how-head"><img class="ms-avatar ms-avatar--32" src="assets/maya-avatar.png" alt="" /><span id="how-title">How it works</span></div>
         <div class="step" data-tint="blue">
           <span class="num">1</span>
-          <div><h2>Maya reads your profile</h2><p>Company name, goal, and what you sell. That's all she needs to build a strategy.</p></div>
+          <div><h2>The Marketing Assistant reads your profile</h2><p>Company name, goal, and what you sell. That's all it needs to build a strategy.</p></div>
         </div>
         <div class="step" data-tint="violet">
           <span class="num">2</span>
-          <div><h2>She plans the calendar</h2><p>A post every day, about three weeks ahead, across your channels.</p></div>
+          <div><h2>It plans the calendar</h2><p>A post every day, about three weeks ahead, across your channels.</p></div>
         </div>
         <div class="step" data-tint="green">
           <span class="num">3</span>
-          <div><h2>You check in when you want</h2><p>Posts approve themselves {{ defaultHours }} hours after she drafts them, unless you hold them.</p></div>
+          <div><h2>You check in when you want</h2><p>Posts approve themselves {{ defaultHours }} hours after it drafts them, unless you hold them.</p></div>
         </div>
       </aside>
     </main>
@@ -115,7 +115,7 @@ export class DoorwayComponent {
 
   /** Signed out: the prompt offers sign-in first. Signed in: subscribe in place. */
   getMayaSocial (): void {
-    this.prompts.open( { state: this.state.signedIn() ? 'browsing' : 'signedOut', action: 'use Maya Social' } );
+    this.prompts.open( { state: this.state.signedIn() ? 'browsing' : 'signedOut', action: 'use Social' } );
   }
 
   signIn (): void {

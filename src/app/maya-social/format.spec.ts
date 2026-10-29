@@ -1,6 +1,6 @@
 import { addDays, channelList, daysBetween, plural, slotLabel, wallClock } from './format';
 
-describe( 'Maya Social format', () => {
+describe( 'Social format', () => {
   it( 'adds days across months and years', () => {
     expect( addDays( '2026-10-31', 1 ) ).toBe( '2026-11-01' );
     expect( addDays( '2026-12-31', 1 ) ).toBe( '2027-01-01' );

@@ -12,4 +12,4 @@ Disallow: /login
 Disallow: /auth/
 Disallow: /not-found
 
-Sitemap: https://social.taliferro.tech/sitemap.xml
+Sitemap: https://social.16ahead.com/sitemap.xml

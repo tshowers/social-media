@@ -54,7 +54,7 @@ const MIN_CHARS = 20;
         <div class="left">
           <h1 class="ms-h1">New post</h1>
           <label class="ms-sr-only" for="draft">Your post</label>
-          <textarea id="draft" class="draft" [ngModel]="body()" (ngModelChange)="type($event)" name="body" placeholder="Write your post. Maya checks it against your strategy as you type."></textarea>
+          <textarea id="draft" class="draft" [ngModel]="body()" (ngModelChange)="type($event)" name="body" placeholder="Write your post. The Marketing Assistant checks it against your strategy as you type."></textarea>
 
           <div class="group">
             <h2 id="channels-label">Channels</h2>
@@ -90,7 +90,7 @@ const MIN_CHARS = 20;
               }
             </div>
           } @else if (checking()) {
-            <div class="panel"><p class="checking"><span class="ms-spinner" aria-hidden="true"></span>Maya is checking it against your strategy…</p></div>
+            <div class="panel"><p class="checking"><span class="ms-spinner" aria-hidden="true"></span>The Marketing Assistant is checking it against your strategy…</p></div>
           } @else {
           @if (check(); as result) {
             @if (!result.aligned) {
@@ -102,7 +102,7 @@ const MIN_CHARS = 20;
                     <span class="ms-label">My version · {{ pillarName(result.pillar) }} pillar</span>
                     <p>{{ result.version.body }}</p>
                   </div>
-                  <button type="button" class="ms-btn ms-btn--primary ms-btn--50 ms-btn--block" (click)="useMaya()">Use Maya’s version</button>
+                  <button type="button" class="ms-btn ms-btn--primary ms-btn--50 ms-btn--block" (click)="useMaya()">Use the Marketing Assistant’s version</button>
                 }
                 <p style="font-size: 13px">Or edit yours. I’ll check it again as you type.</p>
               </div>
@@ -123,7 +123,7 @@ const MIN_CHARS = 20;
               </div>
             }
           } @else {
-            <div class="panel"><p class="idle">Write at least a sentence and Maya will check it against your strategy, then show you where it lands on the calendar.</p></div>
+            <div class="panel"><p class="idle">Write at least a sentence and the Marketing Assistant will check it against your strategy, then show you where it lands on the calendar.</p></div>
           }
           }
           <button type="button" class="ms-btn ms-btn--primary ms-btn--52 ms-btn--block add" [disabled]="!canAdd() || adding()" (click)="add()">
@@ -191,7 +191,7 @@ export class NewPostComponent implements OnInit {
         }
         this.checking.set( true );
         return this.api.check( this.draft() ).pipe( catchError( ( error ) => {
-          this.notifications.show( 'Maya couldn’t check it', apiError( error ).message || 'Try again.', 'error' );
+          this.notifications.show( 'The Marketing Assistant couldn’t check it', apiError( error ).message || 'Try again.', 'error' );
           return of( null );
         } ) );
       } ),

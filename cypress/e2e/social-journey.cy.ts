@@ -1,13 +1,13 @@
 /**
- * One new Maya Social subscriber's whole visit, sign in to sign out: locked
- * out while signed out, in through TODD's (stubbed) hosted login and
- * /auth/callback, the first-run screen, the missing profile fields, Maya
- * building the strategy, connecting all five channels, approving the
+ * One new Social subscriber's whole visit, sign in to sign out: locked
+ * out while signed out, in through the hub's (stubbed) hosted login and
+ * /auth/callback, the first-run screen, the missing profile fields, the
+ * Marketing Assistant building the strategy, connecting all five channels, approving the
  * strategy, approving the day's posts, seeing one go out on every channel,
  * then signing out and finding the app locked again.
  *
  * Sign-in is real against the Firebase Auth emulator, and every API call
- * carries that session's ID token. The Maya Social backend is the stateful
+ * carries that session's ID token. The Social backend is the stateful
  * fake in cypress/support/maya-social-api.ts; the publish step is its
  * stand-in for the 15-minute job.
  */
@@ -20,6 +20,9 @@ function tokenUid ( authorization: string ): string {
   return JSON.parse( atob( payload.replace( /-/g, '+' ).replace( /_/g, '/' ) ) ).user_id;
 }
 
+/** On localhost the hosted login is still the legacy hub (hosted-login.model.ts). */
+const HUB_LOGIN = 'https://todd.taliferro.tech/login*';
+
 /** Channel key -> the provider name the connect route takes. */
 const PROVIDERS: Record<string, string> = {
   linkedin: 'linkedin', threads: 'threads', facebook: 'facebook', instagram: 'instagram', google_business_profile: 'google',
@@ -27,27 +30,28 @@ const PROVIDERS: Record<string, string> = {
 
 const channelRow = ( name: string ) => cy.contains( 'ms-strategy-channels .row strong', new RegExp( `^${ name }$` ) ).parents( '.row' );
 
-describe( 'Maya Social journey - sign in to sign out', () => {
+describe( 'Social journey - sign in to sign out', () => {
   it( 'signs in, sets up, connects every channel, approves posts, sees one go out everywhere and signs out', () => {
     const uid = `cy-social-${ Date.now() }`;
     const api = new FakeMayaSocial();
     api.install();
-    cy.intercept( 'GET', 'https://todd.taliferro.tech/login*', { statusCode: 200, body: '<html><body>TODD login</body></html>' } ).as( 'toddLogin' );
+    cy.intercept( 'GET', HUB_LOGIN, { statusCode: 200, body: '<html><body>Hub login</body></html>' } ).as( 'hubLogin' );
     cy.intercept( 'GET', `${ PROVIDER_LOGIN }/**`, { statusCode: 200, body: '<html><body>Provider sign-in</body></html>' } ).as( 'providerLogin' );
 
     cy.log( 'Signed out: the app sends you to the doorway' );
     cy.visitWithFirebaseEmulators( '/today' );
     cy.location( 'pathname', { timeout: 40000 } ).should( 'eq', '/' );
-    cy.contains( 'h1', 'Maya runs your social media.' );
-    cy.then( () => expect( api.calls, 'no Maya Social calls while signed out' ).to.be.empty );
+    cy.contains( 'h1', 'Marketing Assistant runs your social media.' );
+    cy.then( () => expect( api.calls, 'no Social calls while signed out' ).to.be.empty );
 
-    cy.log( 'Sign in: header -> TODD hosted login -> /auth/callback' );
+    cy.log( 'Sign in: header -> hosted login -> /auth/callback' );
     cy.contains( 'header button', 'Sign in' ).click();
-    cy.wait( '@toddLogin' ).then( ( { request } ) => {
+    cy.wait( '@hubLogin' ).then( ( { request } ) => {
       const url = new URL( request.url );
       expect( url.searchParams.get( 'client' ) ).to.equal( 'social-web-local' );
       const state = url.searchParams.get( 'state' ) || '';
       expect( state ).to.have.length.greaterThan( 10 );
+      expect( url.searchParams.get( 'redirectUri' ) ).to.equal( `${ Cypress.config( 'baseUrl' ) }/auth/callback` );
       cy.visitWithFirebaseEmulators( `/auth/callback?token=${ emulatorCustomToken( uid ) }&state=${ state }` );
     } );
 
@@ -57,11 +61,11 @@ describe( 'Maya Social journey - sign in to sign out', () => {
     cy.then( () => expect( tokenUid( api.last( 'GET', '/overview' ).authorization ), 'overview carries the signed-in user’s ID token' ).to.equal( uid ) );
 
     cy.contains( '[role="radio"]', '4 hours' ).click().should( 'have.attr', 'aria-checked', 'true' );
-    cy.contains( 'button', 'Set up Maya Social' ).click();
+    cy.contains( 'button', 'Set up Social' ).click();
     cy.location( 'pathname' ).should( 'eq', '/strategy' );
     cy.then( () => expect( api.last( 'POST', '/onboard' ).body ).to.deep.equal( { autoApproveHours: 4 } ) );
 
-    cy.log( 'Profile: fill in what Maya still needs, then she builds the strategy' );
+    cy.log( 'Profile: fill in what the Marketing Assistant still needs, then it builds the strategy' );
     cy.contains( 'h2', 'I can’t build a strategy yet.' );
     cy.get( '#company-name' ).should( 'have.value', 'Hopper Signs' );
     cy.get( '#company-goal' ).type( 'Bring 30 new walk-in customers a month' );
@@ -96,7 +100,7 @@ describe( 'Maya Social journey - sign in to sign out', () => {
       channelRow( name ).should( 'contain.text', 'Connected' ).and( 'contain.text', `Hopper Signs on ${ name }` );
     } );
 
-    cy.log( 'Approve the strategy: Maya plans the calendar' );
+    cy.log( 'Approve the strategy: the Marketing Assistant plans the calendar' );
     cy.contains( 'button', 'Approve and plan my calendar' ).click();
     cy.location( 'pathname' ).should( 'eq', '/today' );
     cy.get( 'ms-no-channels' ).should( 'not.exist' );
@@ -142,7 +146,7 @@ describe( 'Maya Social journey - sign in to sign out', () => {
     cy.contains( '.um-panel button', 'Sign out' ).click();
     cy.location( 'pathname' ).should( 'eq', '/' );
     cy.contains( 'header button', 'Sign in' ).should( 'be.visible' );
-    cy.contains( 'button', 'I have Maya Social. Sign in' );
+    cy.contains( 'button', 'I have Social. Sign in' );
 
     cy.log( 'Signed out stays signed out, even after a fresh load' );
     let callsAtSignOut = 0;
@@ -153,7 +157,7 @@ describe( 'Maya Social journey - sign in to sign out', () => {
     cy.visitWithFirebaseEmulators( '/strategy' );
     cy.location( 'pathname', { timeout: 40000 } ).should( 'eq', '/' );
     cy.then( () => {
-      expect( api.calls.length, 'no Maya Social calls after signing out' ).to.equal( callsAtSignOut );
+      expect( api.calls.length, 'no Social calls after signing out' ).to.equal( callsAtSignOut );
       expect( api.unhandled, 'calls the fake doesn’t handle' ).to.be.empty;
     } );
   } );

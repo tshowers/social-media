@@ -215,7 +215,7 @@ interface Day {
             }
           </div>
           <div class="rules">
-            <span>Posts auto-approve {{ hours() }} hours after Maya drafts them.</span>
+            <span>Posts auto-approve {{ hours() }} hours after the Marketing Assistant drafts them.</span>
             <span>A held post keeps its slot; unpinned posts behind it move back a day.</span>
             <span>Pinned posts never move. If one isn’t approved by its date, it expires.</span>
           </div>
@@ -395,7 +395,7 @@ export class CalendarComponent implements OnInit {
 
   planNote (): string {
     const next = this.state.overview()?.nextPlanDate;
-    return next ? `Maya plans this on ${ monthDay( next ) }` : 'Not planned yet';
+    return next ? `Marketing Assistant plans this on ${ monthDay( next ) }` : 'Not planned yet';
   }
 
   queueLabel ( date: string ): string {
@@ -480,7 +480,7 @@ export class CalendarComponent implements OnInit {
     this.api.hold( post.id ).subscribe( {
       next: ( saved ) => {
         this.done( saved );
-        if ( saved.rewriteCount && saved.status === 'needs_review' ) this.notifications.show( 'Held', 'Maya rewrote it. The new version is on Today.', 'info' );
+        if ( saved.rewriteCount && saved.status === 'needs_review' ) this.notifications.show( 'Held', 'The Marketing Assistant rewrote it. The new version is on Today.', 'info' );
       },
       error: ( error ) => this.fail( 'Couldn’t hold', error ),
     } );

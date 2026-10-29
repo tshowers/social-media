@@ -188,10 +188,10 @@ export class FirstStrategyBannerComponent {
   `],
   template: `
     <main class="col">
-      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Maya" />
+      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
       <h1>I’m not running your social media yet.</h1>
       <p>Nothing is planned and nothing will post. Setup takes about two minutes: how I work, one setting, then your strategy.</p>
-      <a class="ms-btn ms-btn--primary ms-btn--56" routerLink="/welcome">Set up Maya Social</a>
+      <a class="ms-btn ms-btn--primary ms-btn--56" routerLink="/welcome">Set up Social</a>
     </main>
   `,
 } )
@@ -299,7 +299,7 @@ export class SkeletonComponent {
   `],
   template: `
     <main class="col">
-      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Maya" />
+      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
       <h1>Connect a channel and I’ll start posting.</h1>
       <p class="lead">Your strategy is approved and I’ve planned three weeks. Nothing can go out until a channel is connected, so auto-approve is paused and nothing moves on the calendar.</p>
       <div class="rows">

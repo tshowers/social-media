@@ -121,7 +121,7 @@ import { IconComponent } from './icon.component';
           <h3>If you approve</h3>
           @if (counts().replace || counts().rewrite) { <p>{{ planned() }}</p> }
           @if (counts().off) { <p>{{ counts().off }} of your {{ counts().off === 1 ? 'posts is' : 'posts are' }} marked Off-strategy.</p> }
-          <p>Approved Maya posts, pinned posts and dates don’t change.</p>
+          <p>Approved Marketing Assistant posts, pinned posts and dates don’t change.</p>
           @if (firstDate()) { <p>Starts with posts from {{ firstDate() }}.</p> }
         </div>
         <div class="ms-card">

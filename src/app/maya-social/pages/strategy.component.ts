@@ -169,7 +169,7 @@ const FIELD_LABELS: Record<RequiredField, string> = {
 
         <div class="lower">
           <section aria-labelledby="rules-title">
-            <h2 id="rules-title">Rules Maya follows</h2>
+            <h2 id="rules-title">Rules the Marketing Assistant follows</h2>
             <ol class="rules">
               <li><span class="n">1</span><span>At least one post goes out every day.</span></li>
               <li><span class="n">2</span><span>Every post fits a pillar. Your posts too: I block anything that doesn’t, and suggest a version that does.</span></li>
@@ -184,7 +184,7 @@ const FIELD_LABELS: Record<RequiredField, string> = {
     } @else if (missing().length === 0) {
       <!-- 1h -->
       <main class="narrow">
-        <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Maya" />
+        <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
         <h1>I don’t have a social strategy for you yet.</h1>
         <p class="lead">I’ll build one from your profile: pillars, channels, how often to post and the rules I follow. Nothing goes on the calendar until you’ve seen it.</p>
         <div class="req">
@@ -374,7 +374,7 @@ export class StrategyComponent implements OnInit, OnDestroy {
         this.state.set( { ...overview, entitled: true } );
         this.busy.set( false );
         if ( first ) void this.router.navigate( ['/today'] );
-        else this.notifications.show( 'Strategy updated', 'Maya will plan with the new strategy from here on.', 'success' );
+        else this.notifications.show( 'Strategy updated', 'The Marketing Assistant will plan with the new strategy from here on.', 'success' );
       },
       error: ( error ) => {
         this.busy.set( false );

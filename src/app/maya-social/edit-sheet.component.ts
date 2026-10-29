@@ -91,7 +91,7 @@ import { MayaSocialState } from './state';
                 <ul>@for (reason of result.reasons; track reason) { <li>{{ reason }}</li> }</ul>
                 @if (result.version) {
                   <div class="mine"><span class="ms-label">My version</span>{{ result.version.body }}</div>
-                  <button type="button" class="ms-btn ms-btn--primary ms-btn--46 ms-btn--block" (click)="useMaya()">Use Maya’s version</button>
+                  <button type="button" class="ms-btn ms-btn--primary ms-btn--46 ms-btn--block" (click)="useMaya()">Use the Marketing Assistant’s version</button>
                 }
               </div>
             }
@@ -104,7 +104,7 @@ import { MayaSocialState } from './state';
             @if (saving()) { <span class="ms-spinner" aria-hidden="true"></span> } @else if (!canSave()) { <ms-icon name="lock" /> }
             Save and approve
           </button>
-          <p class="note">Cancel keeps Maya’s draft and its auto-approve time.</p>
+          <p class="note">Cancel keeps the Marketing Assistant’s draft and its auto-approve time.</p>
         </div>
       </section>
     </div>

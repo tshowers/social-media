@@ -13,7 +13,7 @@ import { MayaSocialState } from './state';
 /** Which header a route shows (route data `header`). */
 export type HeaderMode = 'doorway' | 'welcome' | 'app' | 'none';
 
-export const MAYA_PRICING_URL = 'https://maya.taliferro.tech/pricing';
+export const MAYA_PRICING_URL = 'https://marketing.16ahead.com/pricing';
 
 const TABS = [
   { label: 'Today', route: '/today' },
@@ -96,15 +96,15 @@ const TABS = [
   template: `
     @if (mode() !== 'none') {
       <header class="ah">
-        <a class="ah-brand" [class.is-app]="mode() === 'app'" [routerLink]="mode() === 'app' ? '/today' : '/'" aria-label="Maya Social home">
+        <a class="ah-brand" [class.is-app]="mode() === 'app'" [routerLink]="mode() === 'app' ? '/today' : '/'" aria-label="Social home">
           <img class="ah-logo" src="assets/social-logo.png" alt="" width="36" height="36" />
-          <span class="ah-name ms-brand-name">Maya <small>Social</small></span>
+          <span class="ah-name ms-brand-name">Marketing Assistant <small>Social</small></span>
           @if (mode() === 'app') { <span class="ms-phone-title">{{ pageTitle() }}</span> }
         </a>
 
         <div class="ms-center">
           @if (mode() === 'app') {
-            <nav class="ms-tabs" aria-label="Maya Social">
+            <nav class="ms-tabs" aria-label="Social">
               @for (tab of tabs; track tab.route) {
                 <a class="ms-tab" [routerLink]="tab.route" routerLinkActive="is-active" ariaCurrentWhenActive="page">{{ tab.label }}</a>
               }
@@ -135,7 +135,7 @@ const TABS = [
       </header>
 
       @if (mode() === 'app') {
-        <nav class="ms-bottom" aria-label="Maya Social">
+        <nav class="ms-bottom" aria-label="Social">
           @for (tab of tabs; track tab.route) {
             <a [routerLink]="tab.route" routerLinkActive="is-active" ariaCurrentWhenActive="page">{{ tab.label }}</a>
           }

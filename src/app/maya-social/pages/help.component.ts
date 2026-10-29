@@ -24,8 +24,8 @@ import { ProductPagesComponent } from '../../shared/product-pages/product-pages.
   template: `
     <app-product-pages page="help">
       <section class="how" id="how-it-works" aria-labelledby="how-title">
-        <h2 id="how-title">How Maya runs your calendar</h2>
-        <p>Maya keeps a post going out every day. She plans about three weeks ahead, writes each post three days before its slot, and asks you only when one needs you.</p>
+        <h2 id="how-title">How Marketing Assistant runs your calendar</h2>
+        <p>The Marketing Assistant keeps a post going out every day. It plans about three weeks ahead, writes each post three days before its slot, and asks you only when one needs you.</p>
         <div class="cards">
           <article id="auto-approve" data-tint="blue">
             <h3>Auto-approve</h3>
@@ -33,7 +33,7 @@ import { ProductPagesComponent } from '../../shared/product-pages/product-pages.
           </article>
           <article id="hold" data-tint="pink">
             <h3>Hold</h3>
-            <p>A held post keeps its slot, and Maya rewrites it for you to review. If the slot arrives and it’s still held, nothing goes out that day, it moves to the next day, and every unpinned post behind it moves back a day.</p>
+            <p>A held post keeps its slot, and the Marketing Assistant rewrites it for you to review. If the slot arrives and it’s still held, nothing goes out that day, it moves to the next day, and every unpinned post behind it moves back a day.</p>
           </article>
           <article id="pinned" data-tint="violet">
             <h3>Pinned posts</h3>
@@ -41,7 +41,7 @@ import { ProductPagesComponent } from '../../shared/product-pages/product-pages.
           </article>
           <article id="off-strategy" data-tint="yellow">
             <h3>Off-strategy</h3>
-            <p>Maya checks every post against your strategy, yours included. A post that doesn’t fit a pillar, or makes a price, discount or claim that isn’t in your profile, is blocked until it fits. Maya says why and offers her version.</p>
+            <p>The Marketing Assistant checks every post against your strategy, yours included. A post that doesn’t fit a pillar, or makes a price, discount or claim that isn’t in your profile, is blocked until it fits. The Marketing Assistant says why and offers its version.</p>
           </article>
         </div>
       </section>

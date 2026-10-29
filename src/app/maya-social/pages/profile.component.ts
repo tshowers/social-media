@@ -135,7 +135,7 @@ const TONES = ['Plain', 'Confident', 'Playful'];
 
           <section class="settings" aria-labelledby="settings-title">
             <h2 id="settings-title">Social settings</h2>
-            <p class="settings-lead">Only used in Maya Social. Not part of your Taliferro profile, and saving these doesn’t re-check the strategy.</p>
+            <p class="settings-lead">Only used in Social. Not part of your Taliferro profile, and saving these doesn’t re-check the strategy.</p>
 
             <div class="ms-card block">
               <h3 id="approve-title">Auto-approve after</h3>
@@ -148,10 +148,10 @@ const TONES = ['Plain', 'Confident', 'Playful'];
             </div>
 
             <div class="ms-card block">
-              <h3>Notes from Maya</h3>
+              <h3>Notes from the Marketing Assistant</h3>
               <label class="toggle-row">
                 <ms-icon name="bell" [size]="18" />
-                <span><strong>Push to the Maya app</strong><small>Approve or hold right from the notification</small></span>
+                <span><strong>Push to the Marketing Assistant app</strong><small>Approve or hold right from the notification</small></span>
                 <input type="checkbox" role="switch" class="switch" [checked]="notifyPush()" (change)="notifyPush.set($any($event.target).checked)" />
               </label>
               <label class="toggle-row">

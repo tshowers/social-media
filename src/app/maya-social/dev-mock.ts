@@ -51,7 +51,7 @@ const STRATEGY: Strategy = {
   pillars: [
     { key: 'proof', name: 'Proof', share: 35, description: 'Customer results with real numbers.', maxOneIn: 0, tint: 'green' },
     { key: 'howto', name: 'How-to', share: 30, description: 'Practical tips on finding and qualifying leads.', maxOneIn: 0, tint: 'blue' },
-    { key: 'product', name: 'Product', share: 20, description: 'Lead Vault, Find and TODD.', maxOneIn: 4, tint: 'violet' },
+    { key: 'product', name: 'Product', share: 20, description: 'Lead Vault, Find and 16Ahead.', maxOneIn: 4, tint: 'violet' },
     { key: 'behind', name: 'Behind the scenes', share: 15, description: 'The team and how the work gets done.', maxOneIn: 0, tint: 'yellow' },
   ],
   channels: [
@@ -73,11 +73,11 @@ const PLACEHOLDER = ( tint: string ) => 'data:image/svg+xml;utf8,' + encodeURICo
 const CHANNELS = { linkedin: 'LinkedIn', threads: 'Threads', facebook: 'Facebook', instagram: 'Instagram', google_business_profile: 'Google Business' };
 
 const TITLES: [string, string, string][] = [
-  ['2026-10-01', 'howto', 'Stop buying lead lists'], ['2026-10-02', 'product', 'Our October roadmap'], ['2026-10-03', 'behind', 'How Maya plans a week'],
+  ['2026-10-01', 'howto', 'Stop buying lead lists'], ['2026-10-02', 'product', 'Our October roadmap'], ['2026-10-03', 'behind', 'How Marketing Assistant plans a week'],
   ['2026-10-04', 'proof', 'Customer story: Alder Dental'], ['2026-10-05', 'howto', 'Three LinkedIn habits that work'], ['2026-10-06', 'product', 'Lead Vault now covers Texas'],
   ['2026-10-07', 'behind', 'Office hours recap'], ['2026-10-15', 'howto', 'Five questions to qualify a lead in one call'], ['2026-10-16', 'behind', 'Meet the team behind Lead Vault data'],
   ['2026-10-17', 'product', 'Lead Vault Match: let the AI pick your best leads'], ['2026-10-18', 'howto', 'Why your follow-up email gets ignored'], ['2026-10-19', 'proof', 'Three contracts from one saved search'],
-  ['2026-10-20', 'howto', 'Certifications buyers filter by'], ['2026-10-21', 'product', 'TODD: your to-do list, sorted by revenue'], ['2026-10-22', 'behind', 'A day in Maya’s queue'],
+  ['2026-10-20', 'howto', 'Certifications buyers filter by'], ['2026-10-21', 'product', '16Ahead: your to-do list, sorted by revenue'], ['2026-10-22', 'behind', 'A day in the Marketing Assistant’s queue'],
   ['2026-10-23', 'howto', 'NAICS codes, explained in two minutes'], ['2026-10-24', 'proof', 'Q3 pipeline from Lead Vault users'], ['2026-10-25', 'howto', 'How to write a post in 10 minutes'],
   ['2026-10-26', 'product', 'New in Find: save and share searches'], ['2026-10-27', 'behind', 'Why we build small'], ['2026-10-28', 'howto', 'One post, three channels'],
 ];
@@ -123,10 +123,10 @@ function seedPosts (): Post[] {
     ],
   } );
   // Gaps 2h: the owner's approved post that stopped fitting after a strategy change.
-  posts.push( post( 'u1', '2026-10-22', 'product', 'TODD now syncs with Lead Vault', 'approved', '09:00', ['linkedin', 'facebook'], {
+  posts.push( post( 'u1', '2026-10-22', 'product', '16Ahead now syncs with Lead Vault', 'approved', '09:00', ['linkedin', 'facebook'], {
     source: 'user', approvedAt: '2026-10-06T15:00:00.000Z',
-    body: 'Your TODD list now pulls in new Lead Vault leads automatically, sorted by how much they could be worth.',
-    offStrategy: true, offStrategyNote: 'TODD isn’t in your profile anymore.',
+    body: 'Your 16Ahead list now pulls in new Lead Vault leads automatically, sorted by how much they could be worth.',
+    offStrategy: true, offStrategyNote: '16Ahead isn’t in your profile anymore.',
     offStrategyEdit: { title: 'Lead Vault Match ranks your new leads', body: 'Lead Vault Match now ranks your new leads by fit, so the best ones are at the top of your list each morning.', pillar: 'product' },
   } ) );
   const expired = posts.find( ( item ) => item.slotDate === '2026-10-06' )!;
@@ -148,10 +148,10 @@ const SAMPLE_CHANGE: StrategyChange = {
   ],
   channels: [{ key: 'google_business_profile', name: 'Google Business', from: 1, to: 2 }],
   affectedPosts: [
-    { id: 'm12', slotDate: '2026-10-19', title: 'TODD: your to-do list, sorted by revenue', pillar: 'product', source: 'maya', status: 'planned', action: 'replace', newTitle: 'Lead Vault Match: let the AI pick your best fit', note: '' },
+    { id: 'm12', slotDate: '2026-10-19', title: '16Ahead: your to-do list, sorted by revenue', pillar: 'product', source: 'maya', status: 'planned', action: 'replace', newTitle: 'Lead Vault Match: let the AI pick your best fit', note: '' },
     { id: 'm16', slotDate: '2026-10-21', title: 'Q3 pipeline from Lead Vault users', pillar: 'proof', source: 'maya', status: 'planned', action: 'replace', newTitle: 'How Match found Alder Dental 9 new leads', note: '' },
-    { id: 'm15', slotDate: '2026-10-24', title: 'A day in Maya’s queue', pillar: 'behind', source: 'maya', status: 'planned', action: 'rewrite', newTitle: '', note: 'Rewritten to drop the TODD mention' },
-    { id: 'u1', slotDate: '2026-10-22', title: 'TODD now syncs with Lead Vault', pillar: 'product', source: 'user', status: 'approved', action: 'off_strategy', newTitle: '', note: 'TODD isn’t in your profile anymore.' },
+    { id: 'm15', slotDate: '2026-10-24', title: 'A day in the Marketing Assistant’s queue', pillar: 'behind', source: 'maya', status: 'planned', action: 'rewrite', newTitle: '', note: 'Rewritten to drop the 16Ahead mention' },
+    { id: 'u1', slotDate: '2026-10-22', title: '16Ahead now syncs with Lead Vault', pillar: 'product', source: 'user', status: 'approved', action: 'off_strategy', newTitle: '', note: '16Ahead isn’t in your profile anymore.' },
   ],
 };
 
@@ -185,7 +185,7 @@ function seedOverview ( name: string ): Overview {
       products: complete ? [
         { id: 'p1', name: 'Lead Vault', description: 'Search and unlock company leads by capability and location' },
         { id: 'p2', name: 'Find', description: 'Company search across 40,000 businesses' },
-        { id: 'p3', name: 'TODD', description: 'A to-do list sorted by revenue impact' },
+        { id: 'p3', name: '16Ahead', description: 'A to-do list sorted by revenue impact' },
       ] : [],
       audience: 'Owners of 5–50 person B2B firms', location: 'Austin, TX', website: 'taliferro.com', tones: ['Plain', 'Confident'],
     },

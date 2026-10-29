@@ -70,7 +70,7 @@ type State = 'maya' | 'making' | 'user' | 'missing' | 'none';
           @default {
             <a [href]="image()!.url" target="_blank" rel="noopener" [attr.aria-label]="'Open the image full size'"><img [src]="image()!.url" [alt]="image()!.brief || 'Post image'" loading="lazy" /></a>
             @if (variant !== 'tile') {
-              <span class="chip">@if (state() === 'maya') { <ms-icon name="sparkle" [size]="12" />Made by Maya } @else { Your image }</span>
+              <span class="chip">@if (state() === 'maya') { <ms-icon name="sparkle" [size]="12" />Made by the Marketing Assistant } @else { Your image }</span>
             }
           }
         }
@@ -90,7 +90,7 @@ type State = 'maya' | 'making' | 'user' | 'missing' | 'none';
         } @else {
           <p class="text" [class.is-missing]="state() === 'missing'">
             @switch (state()) {
-              @case ('maya') { @if (variant === 'row') { <strong>Image · made by Maya</strong><br /> } <strong>Brief:</strong> {{ image()!.brief }} <button type="button" class="ms-link" style="font-size: 13px" (click)="startBrief()">Edit brief</button> }
+              @case ('maya') { @if (variant === 'row') { <strong>Image · made by the Marketing Assistant</strong><br /> } <strong>Brief:</strong> {{ image()!.brief }} <button type="button" class="ms-link" style="font-size: 13px" (click)="startBrief()">Edit brief</button> }
               @case ('making') { Usually under a minute. The post can be approved while it’s making. }
               @case ('user') { @if (variant === 'row') { <strong>Your image</strong><br /> } {{ image()!.fileName || 'Your upload' }}@if (image()!.width) { · {{ image()!.width }} × {{ image()!.height }}}. I keep my brief in case you want it back. }
               @case ('missing') { {{ missingText() }} }
@@ -112,7 +112,7 @@ type State = 'maya' | 'making' | 'user' | 'missing' | 'none';
               }
               @case ('user') {
                 <button type="button" class="ms-btn ms-btn--bg" [disabled]="busy()" (click)="file.click()">Replace</button>
-                <button type="button" class="ms-btn ms-btn--bg" [disabled]="busy()" (click)="act('maya')">Use Maya’s</button>
+                <button type="button" class="ms-btn ms-btn--bg" [disabled]="busy()" (click)="act('maya')">Use the Marketing Assistant’s</button>
               }
               @default {
                 <button type="button" class="ms-btn ms-btn--primary" [disabled]="busy()" (click)="act('remake')">Try again</button>

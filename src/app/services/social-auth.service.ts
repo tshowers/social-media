@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, getFirestore } from 'firebase/firestore';
 import { Observable, shareReplay, switchMap, of } from 'rxjs';
+import { hostedLoginUrl } from '@taliferro/ui/platform/hosted-login.model';
 
 /**
  * Auth service for the standalone Social app - line-for-line copy of
@@ -26,7 +27,7 @@ import { Observable, shareReplay, switchMap, of } from 'rxjs';
  *
  * `client=social-web` is already registered server-side in
  * todd-backend/functions/authClients.js
- * (`"social-web": { redirectUri: "https://social.taliferro.tech/auth/callback" }`)
+ * (`"social-web": { redirectUri: "https://social.16ahead.com/auth/callback" }`)
  * - no backend changes needed.
  *
  * Mirrors the exact same resolution TODD's own `AuthService` uses
@@ -135,7 +136,7 @@ export class SocialAuthService {
     const state = crypto.randomUUID();
     sessionStorage.setItem( this.pendingLoginStorageKey, JSON.stringify( { state, returnUrl } ) );
     const client = this.isLocalDevelopmentHost() ? 'social-web-local' : 'social-web';
-    window.location.href = `https://todd.taliferro.tech/login?client=${client}&state=${state}`;
+    window.location.href = hostedLoginUrl(client, state);
   }
 
   private isLocalDevelopmentHost (): boolean {

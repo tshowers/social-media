@@ -2,7 +2,7 @@
 import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { GET_THE_APP_PRODUCTS } from '@taliferro/ui/platform/get-the-app.model';
+import { GET_THE_APP_PRODUCTS, TODD_SUITE } from '@taliferro/ui/platform/get-the-app.model';
 
 import { WebCheckoutService } from './web-checkout.service';
 import { WRITE_ACCESS_APP } from './write-access.config';
@@ -20,7 +20,8 @@ const UNLOCK_GRACE_MS = 60 * 1000;
  * (Ty, 2026-10-11 - pay at the moment of intent, buy once, use everywhere).
  * Stripe opens in a new tab so the unsaved work stays on this page; once
  * the webhook unlocks the product, the stopped button is pressed again.
- * Put it once in the root component.
+ * Every prompt also offers TODD Suite (every app, Ty 2026-10-21); opened
+ * with plan 'suite' it leads with Suite. Put it once in the root component.
  */
 @Component( {
   selector: 'app-write-access-prompt',
@@ -31,24 +32,39 @@ const UNLOCK_GRACE_MS = 60 * 1000;
       <section class="wap__card" role="dialog" aria-modal="true" aria-labelledby="wap-title" (click)="$event.stopPropagation()" data-cy="write-access-prompt">
         <ng-container *ngIf="prompt.state === 'signedOut'">
           <h2 id="wap-title">Sign in to {{ prompt.action }}</h2>
-          <p>You can look around {{ app.name }} without an account. Sign in with your TODD account to make changes.</p>
+          <p>You can look around {{ app.name }} without an account. Sign in with your 16Ahead account to make changes.</p>
           <div class="wap__actions">
             <button type="button" class="wap__primary" (click)="signIn()">Sign in</button>
             <button type="button" class="wap__secondary" (click)="dismiss()">Keep browsing</button>
           </div>
         </ng-container>
 
-        <ng-container *ngIf="prompt.state === 'browsing' && price">
-          <ng-container *ngIf="phase === 'ask' || phase === 'starting' || phase === 'error'">
+        <ng-container *ngIf="prompt.state === 'browsing' && ( price || prompt.plan === 'suite' )">
+          <ng-container *ngIf="( phase === 'ask' || phase === 'starting' || phase === 'error' ) && prompt.plan === 'suite'">
+            <h2 id="wap-title">Get {{ suite.name }}</h2>
+            <p>{{ suite.summary }} for {{ suite.monthlyPrice }}/month: {{ suiteIncludes }}. Cancel anytime.</p>
+            <p *ngIf="phase === 'error'" class="wap__error" role="alert">{{ error }}</p>
+            <div class="wap__actions">
+              <button type="button" class="wap__primary" [disabled]="phase === 'starting'" (click)="subscribe( prompt, suite.key )" data-cy="write-access-subscribe-suite">
+                {{ phase === 'starting' ? 'Opening checkout…' : 'Continue · ' + suite.monthlyPrice + '/mo' }}
+              </button>
+              <button type="button" class="wap__secondary" (click)="dismiss()">Not now</button>
+            </div>
+            <p class="wap__fine">Works here and in every 16Ahead iPhone app.</p>
+          </ng-container>
+          <ng-container *ngIf="( phase === 'ask' || phase === 'starting' || phase === 'error' ) && prompt.plan !== 'suite'">
             <h2 id="wap-title">Subscribe to {{ prompt.action }}</h2>
             <p>{{ app.name }} is {{ price }}/month. Cancel anytime. Your work stays right here while you pay.</p>
             <p *ngIf="phase === 'error'" class="wap__error" role="alert">{{ error }}</p>
             <div class="wap__actions">
               <button type="button" class="wap__primary" [disabled]="phase === 'starting'" (click)="subscribe( prompt )" data-cy="write-access-subscribe">
-                {{ phase === 'starting' ? 'Opening checkout…' : 'Continue · ' + price + '/mo' }}
+                {{ phase === 'starting' && buying === app.product ? 'Opening checkout…' : 'Continue · ' + price + '/mo' }}
               </button>
               <button type="button" class="wap__secondary" (click)="dismiss()">Not now</button>
             </div>
+            <button type="button" class="wap__suite" [disabled]="phase === 'starting'" (click)="subscribe( prompt, suite.key )" data-cy="write-access-suite">
+              {{ phase === 'starting' && buying === suite.key ? 'Opening checkout…' : 'Or get every 16Ahead app with ' + suite.name + ' · ' + suite.monthlyPrice + '/mo' }}
+            </button>
             <p class="wap__fine">One subscription works here and in the {{ app.name }} iPhone app. <a routerLink="/ios" (click)="dismiss()">Get the app</a></p>
           </ng-container>
           <ng-container *ngIf="phase === 'waiting'">
@@ -60,7 +76,7 @@ const UNLOCK_GRACE_MS = 60 * 1000;
           </ng-container>
           <ng-container *ngIf="phase === 'unconfirmed' || phase === 'checking'">
             <h2 id="wap-title">Your payment went through</h2>
-            <p>We haven’t been able to switch on {{ app.name }} yet. Please don’t pay again. Check again in a few minutes, and contact us if it’s still locked.</p>
+            <p>We haven’t been able to switch on {{ buyingName }} yet. Please don’t pay again. Check again in a few minutes, and contact us if it’s still locked.</p>
             <div class="wap__actions">
               <button type="button" class="wap__primary" [disabled]="phase === 'checking'" (click)="checkAgain( prompt )" data-cy="write-access-check-again">
                 {{ phase === 'checking' ? 'Checking…' : 'Check again' }}
@@ -69,15 +85,16 @@ const UNLOCK_GRACE_MS = 60 * 1000;
             </div>
           </ng-container>
           <ng-container *ngIf="phase === 'done'">
-            <h2 id="wap-title">You’re subscribed to {{ app.name }}</h2>
-            <p>Thanks! Everything in {{ app.name }} is unlocked, here and in the iPhone app.</p>
+            <h2 id="wap-title">You’re subscribed to {{ buyingName }}</h2>
+            <p *ngIf="buying === suite.key">Thanks! Every 16Ahead app is unlocked, here and in the iPhone apps.</p>
+            <p *ngIf="buying !== suite.key">Thanks! Everything in {{ app.name }} is unlocked, here and in the iPhone app.</p>
             <div class="wap__actions">
               <button type="button" class="wap__primary" (click)="dismiss()">Continue</button>
             </div>
           </ng-container>
         </ng-container>
 
-        <ng-container *ngIf="prompt.state === 'browsing' && !price">
+        <ng-container *ngIf="prompt.state === 'browsing' && !price && prompt.plan !== 'suite'">
           <h2 id="wap-title">{{ app.name }} subscriptions are coming soon</h2>
           <p>You can look around {{ app.name }} now. Creating and changing things opens up when subscriptions launch.</p>
           <div class="wap__actions">
@@ -100,6 +117,8 @@ const UNLOCK_GRACE_MS = 60 * 1000;
     .wap__primary { background: var(--blue); color: #fff !important; }
     .wap__primary[disabled] { opacity: .6; cursor: progress; }
     .wap__secondary { background: var(--surface); color: var(--text); }
+    .wap__suite { display: block; margin-top: 12px; padding: 0; border: 0; background: none; color: var(--blue); font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+    .wap__suite[disabled] { opacity: .6; cursor: progress; }
   `]
 } )
 export class WriteAccessPromptComponent implements OnInit {
@@ -107,6 +126,11 @@ export class WriteAccessPromptComponent implements OnInit {
   readonly app = WRITE_ACCESS_APP;
   /** The monthly price, or '' while the product isn't sold yet (Social). */
   readonly price = GET_THE_APP_PRODUCTS[WRITE_ACCESS_APP.product]?.monthlyPrice || '';
+  readonly suite = TODD_SUITE;
+  readonly suiteIncludes = TODD_SUITE.includes.join( ', ' ).replace( /^./, ( first ) => first.toLowerCase() );
+  /** What's being bought: this app's product key, or 'suite'. */
+  buying: string = WRITE_ACCESS_APP.product;
+  buyingName = WRITE_ACCESS_APP.name;
   phase: Phase = 'ask';
   error = '';
   private readonly router = inject( Router );
@@ -130,12 +154,13 @@ export class WriteAccessPromptComponent implements OnInit {
     void this.router.navigate( [this.app.signInRoute], { queryParams: { returnUrl: this.router.url } } );
   }
 
-  async subscribe ( prompt: WriteAccessPrompt ): Promise<void> {
+  async subscribe ( prompt: WriteAccessPrompt, product: string = this.app.product ): Promise<void> {
     // Opened synchronously, inside the click, or the browser blocks it.
     const tab = window.open( '', '_blank' );
+    this.setBuying( product );
     this.phase = 'starting';
     try {
-      const result = await this.checkout.start( this.app.product, tab );
+      const result = await this.checkout.start( product, tab );
       if ( result === 'alreadySubscribed' ) {
         this.finish( prompt );
         return;
@@ -154,10 +179,10 @@ export class WriteAccessPromptComponent implements OnInit {
     let paidAt = 0;
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel( CHECKOUT_CHANNEL );
     if ( channel ) channel.onmessage = ( event ) => {
-      if ( event.data?.product === this.app.product && !paidAt ) paidAt = Date.now();
+      if ( event.data?.product === product && !paidAt ) paidAt = Date.now();
     };
     const unlocked = await this.checkout.waitForAccess(
-      this.app.product,
+      product,
       () => id !== this.waitId || ( !!paidAt && Date.now() - paidAt > UNLOCK_GRACE_MS ),
     );
     channel?.close();
@@ -173,10 +198,15 @@ export class WriteAccessPromptComponent implements OnInit {
   /** After a paid checkout that hasn't unlocked yet: look once more, without paying again. */
   async checkAgain ( prompt: WriteAccessPrompt ): Promise<void> {
     this.phase = 'checking';
-    const unlocked = await this.checkout.hasAccess( this.app.product );
+    const unlocked = await this.checkout.hasAccess( this.buying );
     if ( this.phase !== 'checking' ) return;
     if ( unlocked ) this.finish( prompt );
     else this.phase = 'unconfirmed';
+  }
+
+  private setBuying ( product: string ): void {
+    this.buying = product;
+    this.buyingName = product === TODD_SUITE.key ? TODD_SUITE.name : this.app.name;
   }
 
   /** Unlocks the page and presses the button that was stopped. */
@@ -216,7 +246,8 @@ export class WriteAccessPromptComponent implements OnInit {
     }
     if ( result !== 'success' ) return;
     // Same-tab checkout (pop-up was blocked): confirm, then show it's done.
-    const unlocked = await this.checkout.waitForAccess( this.app.product, () => false, 60 * 1000 );
+    this.setBuying( product );
+    const unlocked = await this.checkout.waitForAccess( product, () => false, 60 * 1000 );
     if ( !unlocked ) return;
     this.prompts.unlock();
     this.phase = 'done';

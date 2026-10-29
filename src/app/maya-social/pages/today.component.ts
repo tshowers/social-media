@@ -597,7 +597,7 @@ export class TodayComponent implements OnInit {
         this.replace( saved );
         this.busy.set( null );
         if ( saved.status === 'needs_review' && saved.rewriteCount ) {
-          this.notifications.show( 'Held', 'Maya rewrote it. The new version is ready for you to review.', 'info' );
+          this.notifications.show( 'Held', 'The Marketing Assistant rewrote it. The new version is ready for you to review.', 'info' );
         }
       },
       error: ( error ) => this.fail( 'Couldn’t hold', error ),

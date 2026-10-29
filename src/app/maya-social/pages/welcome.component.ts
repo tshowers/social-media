@@ -38,9 +38,9 @@ import { MayaSocialState } from '../state';
   `],
   template: `
     <main class="col">
-      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Maya" />
+      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
       <div class="intro">
-        <span class="tag">Your Maya Social plan</span>
+        <span class="tag">Your Social plan</span>
         <h1>Before I take over your calendar, here’s how I work.</h1>
       </div>
 
@@ -64,7 +64,7 @@ import { MayaSocialState } from '../state';
       <div class="actions">
         <button type="button" class="ms-btn ms-btn--primary ms-btn--56" [disabled]="busy()" (click)="setUp()">
           @if (busy()) { <span class="ms-spinner" aria-hidden="true"></span> }
-          Set up Maya Social
+          Set up Social
         </button>
         <button type="button" class="ms-link" (click)="notNow()">Not now</button>
       </div>

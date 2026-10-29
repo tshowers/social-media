@@ -98,7 +98,7 @@ import { ChannelConnect } from './states.component';
         </div>
       }
     }
-    <p class="foot">Cadence is Maya’s. Changing which channels are in the strategy goes through a strategy change.</p>
+    <p class="foot">Cadence is the Marketing Assistant’s. Changing which channels are in the strategy goes through a strategy change.</p>
   `,
 } )
 export class StrategyChannelsComponent {
