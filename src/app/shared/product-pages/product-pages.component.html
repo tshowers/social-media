@@ -2,7 +2,7 @@
 <div class="pp" [attr.data-tint]="content.tint" [class.pp--global-menu]="!config.ownMenu">
   <header class="pp-head">
     <a class="pp-brand" [routerLink]="config.openRoute">
-      <span class="pp-logo" [class.pp-logo--fill]="config.logoFill"><img [src]="config.logo" alt="" /></span>
+      <span class="pp-logo" [class.pp-logo--fill]="config.logoFill"><img [class.brand-mark--light]="config.logoDark" [src]="config.logo" alt="" /><img *ngIf="config.logoDark" class="brand-mark--dark" [src]="config.logoDark" alt="" /></span>
       <span class="pp-title">
         <ng-container *ngIf="content.brand"><span class="pp-title__brand">{{ content.brand }} </span><span class="pp-title__name">{{ content.name }}</span></ng-container>
         <ng-container *ngIf="!content.brand">{{ content.name }}</ng-container>
@@ -51,7 +51,8 @@
 
       <ng-template #about>
         <div class="pp-hero">
-          <span class="pp-chip" aria-hidden="true"><span class="um-glyph" [attr.data-key]="content.key"></span></span>
+          <span *ngIf="config.logoDark; else glyph" class="pp-chip pp-chip--dial" aria-hidden="true"><img class="brand-mark--light" [src]="config.logo" alt="" /><img class="brand-mark--dark" [src]="config.logoDark" alt="" /></span>
+          <ng-template #glyph><span class="pp-chip" aria-hidden="true"><span class="um-glyph" [attr.data-key]="content.key"></span></span></ng-template>
           <div>
             <h1 class="pp-h1">{{ content.name }}</h1>
             <p class="pp-sub">{{ content.tagline }}</p>

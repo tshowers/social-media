@@ -41,8 +41,9 @@ const TABS = [
     .ah-brand { justify-self: start; }
     .ah-actions { justify-self: end; gap: 8px; margin-left: 0; }
     .ms-center { display: flex; justify-content: center; }
+    /* The landing dial is its own round shape: no tile corners. */
+    .ms-dial { border-radius: 0; object-fit: contain; }
     .ms-brand-name { font-size: 22px; letter-spacing: -0.02em; }
-    .ms-brand-name small { font-weight: 700; margin-left: 4px; }
     .ms-tabs { display: flex; gap: 4px; }
     .ms-tab {
       display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 999px;
@@ -97,8 +98,13 @@ const TABS = [
     @if (mode() !== 'none') {
       <header class="ah">
         <a class="ah-brand" [class.is-app]="mode() === 'app'" [routerLink]="mode() === 'app' ? '/today' : '/'" aria-label="Social home">
-          <img class="ah-logo" src="assets/social-logo.png" alt="" width="36" height="36" />
-          <span class="ah-name ms-brand-name">Marketing Assistant <small>Social</small></span>
+          @if (mode() === 'doorway') {
+            <img class="ah-logo ms-dial brand-mark--light" src="assets/brand/products/png/light/09-social.png" alt="" width="36" height="36" />
+            <img class="ah-logo ms-dial brand-mark--dark" src="assets/brand/products/png/dark/09-social.png" alt="" width="36" height="36" />
+          } @else {
+            <img class="ah-logo" src="assets/social-logo.png" alt="" width="36" height="36" />
+          }
+          <span class="ah-name ms-brand-name">Social</span>
           @if (mode() === 'app') { <span class="ms-phone-title">{{ pageTitle() }}</span> }
         </a>
 

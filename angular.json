@@ -32,6 +32,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "../../taliferro-ui/brand/products",
+                "output": "assets/brand/products"
               }
             ],
             "styles": [

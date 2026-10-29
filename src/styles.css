@@ -12,6 +12,23 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* The 16Ahead dial (design_handoff_16ahead_logos 09) on the landing pages
+ * comes as a light/dark pair: each spot renders both and the theme hides
+ * one. The light set's black ticks vanish on dark, and inverting it turns
+ * the blue tick orange. Same theme selectors as tokens.css. */
+@media not (prefers-color-scheme: dark) {
+  :root:not(.dark):not([data-theme="dark"]) .brand-mark--dark { display: none !important; }
+}
+:root.light .brand-mark--dark, :root[data-theme="light"] .brand-mark--dark { display: none !important; }
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) .brand-mark--light { display: none !important; }
+}
+:root.dark .brand-mark--light, :root[data-theme="dark"] .brand-mark--light { display: none !important; }
+
+/* About's hero shows the dial itself, not a tinted chip behind a glyph. */
+.pp-chip--dial { background: none; }
+.pp-chip--dial img { width: 100%; height: 100%; object-fit: contain; }
+
 html, body {
   margin: 0;
   background: var(--bg);
