@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="public/assets/social-maya.png" alt="Maya shaping Social content from ideas into posts" width="100%">
+  <img src="public/assets/social-maya.png" alt="The Marketing Assistant shaping Social content from ideas into posts" width="100%">
 </div>
 
-# Maya Social
+# Social
 
-Maya Social is the web app at [social.taliferro.tech](https://social.taliferro.tech). Maya builds a posting strategy from a company profile, plans a post for every day about three weeks ahead, and writes each one. The user approves, holds or edits. It is its own subscription ($4.99/month), sold from the doorway page through the shared subscribe prompt (Stripe).
+Social is the web app at [social.16ahead.com](https://social.16ahead.com). The Marketing Assistant builds a posting strategy from a company profile, plans a post for every day about three weeks ahead, and writes each one. The user approves, holds or edits. It is its own subscription ($4.99/month), sold from the doorway page through the shared subscribe prompt (Stripe).
 
-This repo is the Angular frontend only. The API, scheduling and publishing live in the TODD backend (see [Related repos](#related-repos)). The same product ships on iOS inside the Maya app.
+This repo is the Angular frontend only. The API, scheduling and publishing live in the 16Ahead backend (see [Related repos](#related-repos)). The same product ships on iOS inside the Marketing Assistant app.
 
 ## Prerequisites
 
@@ -47,7 +47,7 @@ On localhost, add `?mock=<scenario>` to any URL and every API call is answered i
 | `first` | First visit |
 | `new` | Profile complete, no strategy yet |
 | `incomplete` | Profile missing goal and products |
-| `nomaya` | Signed in without Maya Social (doorway, buy button only) |
+| `nomaya` | Signed in without Social (doorway, buy button only) |
 | `out` | Signed out (doorway) |
 
 Start with `http://localhost:4200/today?mock=ready`. The scenarios live in [src/app/maya-social/dev-mock.ts](src/app/maya-social/dev-mock.ts). Production builds swap that file for `dev-mock.prod.ts`, so mock mode never ships.
@@ -56,7 +56,7 @@ Start with `http://localhost:4200/today?mock=ready`. The scenarios live in [src/
 
 Without `?mock`, the local app talks to **production** (`https://api.taliferro.tech/api`). There is no staging environment, so anything you approve, hold or publish is real. Use a test account.
 
-Sign-in goes through TODD's hosted login. On localhost the app uses the `social-web-local` auth client, which returns to `http://localhost:4200/auth/callback`. Both auth clients are registered in the backend's `functions/authClients.js`. Run on port 4200 or the callback will not match.
+Sign-in goes through 16Ahead's hosted login. On localhost the app uses the `social-web-local` auth client, which returns to `http://localhost:4200/auth/callback`. Both auth clients are registered in the backend's `functions/authClients.js`. Run on port 4200 or the callback will not match.
 
 ## Configuration
 
@@ -64,9 +64,9 @@ There are no `.env` files or secrets in this repo. All configuration is in [src/
 
 | Key | Purpose |
 | --- | --- |
-| `backendURL` | TODD API base. Maya Social calls `${backendURL}/maya-social/*`, plus the shared billing, checkout and `outreach/social-auth` (channel connect) endpoints |
+| `backendURL` | 16Ahead API base. Social calls `${backendURL}/maya-social/*`, plus the shared billing, checkout and `outreach/social-auth` (channel connect) endpoints |
 | `firebaseConfig` | Firebase web config for the `taliferrotech` project (public by design; used for the signed-in user and ID tokens) |
-| `apiKey` | Not used by the app today; kept for parity with the other TODD frontends |
+| `apiKey` | Not used by the app today; kept for parity with the other 16Ahead frontends |
 | `taliferroTenantId` | The Taliferro admin account; shows admin-only menu items |
 | `PLATFORM_URL` | Public site URL |
 
@@ -87,8 +87,8 @@ To point the app at a locally running backend, change `backendURL` in `environme
 
 | Route | Purpose | Access |
 | --- | --- | --- |
-| `/` | Doorway: what Maya Social is, Get Maya Social / Sign in. Sends subscribers on to the app | Public, prerendered |
-| `/help` | How to use Maya Social | Public, prerendered |
+| `/` | Doorway: what Social is, Get Social / Sign in. Sends subscribers on to the app | Public, prerendered |
+| `/help` | How to use Social | Public, prerendered |
 | `/about` | About page | Public, prerendered |
 | `/welcome` | First-run setup | Signed in |
 | `/today` | Posts to review and what's going out | Subscriber |
@@ -96,8 +96,8 @@ To point the app at a locally running backend, change `backendURL` in `environme
 | `/strategy` | Pillars, channels and posting rules | Subscriber |
 | `/profile` | Company profile and connected channels | Subscriber |
 | `/new` | Write your own post | Subscriber with a strategy |
-| `/act` | One-tap Approve / Hold from Maya's email (token in URL, no sign-in) | Public, not indexed |
-| `/login`, `/auth/callback` | Hosted TODD sign-in handoff | Public, not indexed |
+| `/act` | One-tap Approve / Hold from the Marketing Assistant's email (token in URL, no sign-in) | Public, not indexed |
+| `/login`, `/auth/callback` | Hosted 16Ahead sign-in handoff | Public, not indexed |
 
 Old Social routes (`/command`, `/queue`, `/accounts`, `/ios`, `/pricing`) redirect to their new homes. Guards are in [src/app/maya-social/guards.ts](src/app/maya-social/guards.ts).
 
@@ -134,10 +134,10 @@ Shared UI (menu, footer, About/Help content, design tokens) comes from `@talifer
 
 ## Related repos
 
-- **Backend:** `taliferrotech/todd-backend` (github.com/taliferro-tech/taliferrotech). Maya Social's API is `functions/mayaSocial/` (routes under `/api/maya-social`), with a 15-minute scheduled job that plans, drafts and auto-approves posts and hands approved posts to the publish queue.
+- **Backend:** `taliferrotech/todd-backend` (github.com/taliferro-tech/taliferrotech). Social's API is `functions/mayaSocial/` (routes under `/api/maya-social`), with a 15-minute scheduled job that plans, drafts and auto-approves posts and hands approved posts to the publish queue.
 - **Designs:** `design_handoff_maya_social`, `design_handoff_maya_social_entry` and `design_handoff_maya_social_gaps` in `corporate/`. Code comments cite their screen IDs (for example `1o` is the doorway).
-- **iOS:** Social is part of the Maya app (`apps/ios/maya-ios`, Features/Social).
+- **iOS:** Social is part of the Marketing Assistant app (`apps/ios/maya-ios`, Features/Social).
 
 ## License and attribution
 
-© 2026 TODD. Site design [Taliferro Group](https://taliferro.com/website-development). Taliferro Is Registered In The U.S. Patent And Trademark Office. All rights reserved.
+© 2026 16Ahead. Site design [Taliferro Group](https://taliferro.com/website-development). Taliferro Is Registered In The U.S. Patent And Trademark Office. All rights reserved.
