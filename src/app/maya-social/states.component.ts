@@ -17,9 +17,15 @@ import { MayaSocialState } from './state';
 export class ChannelConnect {
   private readonly api = inject( MayaSocialApi );
   private readonly notifications = inject( NotificationService );
+  private readonly router = inject( Router );
   readonly connecting = signal<string | null>( null );
 
   connect ( channel: string ): void {
+    // Bluesky signs in with an app password, not a provider page: its form is on Profile.
+    if ( channel === 'bluesky' ) {
+      void this.router.navigate( ['/profile'] );
+      return;
+    }
     this.connecting.set( channel );
     const back = `${ window.location.origin }${ window.location.pathname }`;
     this.api.connectChannel( channel, back ).subscribe( {
