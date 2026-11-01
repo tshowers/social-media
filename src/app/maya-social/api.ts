@@ -61,6 +61,8 @@ export interface Overview {
   connectedChannels: string[];
   /** Every channel and where it stands (gaps 2b). */
   channelStatus: ChannelState[];
+  /** Profile › Connected accounts: every channel plus Bluesky, with or without a strategy. */
+  accounts?: ChannelState[];
   /** No strategy channel connected: publishing and auto-approve pause (2c). */
   publishingPaused: boolean;
   channels: Record<string, string>;
@@ -69,7 +71,8 @@ export interface Overview {
 /** Social settings (gaps 2m): Maya Social only, not the Taliferro profile. */
 export interface SocialSettings { autoApproveHours?: AutoApproveHours; notifyPush?: boolean; notifyEmail?: boolean; }
 
-export interface ChannelState { key: string; name: string; status: 'connected' | 'needs_reconnect' | 'not_connected'; account: string; signedOutAt: string | null; }
+/** `available` false: the provider isn't set up on this deployment, so Connect can't work. */
+export interface ChannelState { key: string; name: string; status: 'connected' | 'needs_reconnect' | 'not_connected'; account: string; signedOutAt: string | null; available?: boolean; }
 
 export interface StrategyChange {
   at: string;
@@ -194,6 +197,15 @@ export class MayaSocialApi {
     const payload = channel === 'google_business_profile'
       ? { frontendReturnUrl: returnUrl, destination: channel, destinationType: channel, youtubeEnabled: false }
       : { frontendReturnUrl: returnUrl };
+    return this.socialAuthStart( provider, payload ).pipe( map( ( response ) => response?.data?.authorizationUrl || '' ) );
+  }
+
+  /** Bluesky has no OAuth: the same start route signs in with a handle and app password and connects right away. */
+  connectBluesky ( handle: string, appPassword: string ): Observable<void> {
+    return this.socialAuthStart( 'bluesky', { handle, appPassword } ).pipe( map( () => undefined ) );
+  }
+
+  private socialAuthStart ( provider: string, payload: Record<string, unknown> ): Observable<{ data?: { authorizationUrl?: string } }> {
     // This older route reads who's calling from headers (checked against the token).
     const user = this.auth.getCurrentUserSync();
     const headers = new HttpHeaders( {
@@ -201,8 +213,6 @@ export class MayaSocialApi {
       'x-user-id': user?.uid || '',
       'x-user-email': user?.email || '',
     } );
-    return this.http
-      .post<{ data?: { authorizationUrl?: string } }>( `${ environment.backendURL }/outreach/social-auth/${ encodeURIComponent( provider ) }/start`, payload, { headers } )
-      .pipe( map( ( response ) => response?.data?.authorizationUrl || '' ) );
+    return this.http.post<{ data?: { authorizationUrl?: string } }>( `${ environment.backendURL }/outreach/social-auth/${ encodeURIComponent( provider ) }/start`, payload, { headers } );
   }
 }

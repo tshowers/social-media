@@ -197,6 +197,7 @@ function seedOverview ( name: string ): Overview {
     nextPlanDate: ['ready', 'nochannels', 'change'].includes( name ) ? '2026-10-25' : null,
     connectedChannels: name === 'nochannels' ? [] : ['linkedin', 'threads', 'google_business_profile'],
     channelStatus: channelStatus( name ),
+    accounts: [...channelStatus( name ), { key: 'bluesky', name: 'Bluesky', status: 'not_connected', account: '', signedOutAt: null, available: true }],
     publishingPaused: name === 'nochannels',
     channels: CHANNELS,
   };
@@ -223,6 +224,12 @@ class MockServer {
         : action === 'undo' ? { result: 'undone', title: '3 signs your lead list is stale', slotLabel: 'Today at 4:00 PM' }
         : { result: action || 'invalid' };
       return of( new HttpResponse( { status: 200, body: { success: true, data: result } } ) ).pipe( delay( 300 ) );
+    }
+    if ( req.url.endsWith( '/outreach/social-auth/bluesky/start' ) ) {
+      const handle = String( ( req.body as { handle?: string } )?.handle || '' );
+      const connected = ( row: ChannelState ): ChannelState => ( row.key === 'bluesky' ? { ...row, status: 'connected', account: `@${ handle }` } : row );
+      this.overview = { ...this.overview, accounts: ( this.overview.accounts ?? [] ).map( connected ) };
+      return of( new HttpResponse( { status: 200, body: { success: true, data: { provider: 'bluesky', authorizationUrl: '' } } } ) ).pipe( delay( 600 ) );
     }
     const path = req.url.replace( /^.*\/maya-social/, '' );
     if ( path === req.url ) return null;
@@ -321,6 +328,7 @@ class MockServer {
         ...this.overview,
         connectedChannels: this.overview.connectedChannels.filter( ( item ) => item !== key ),
         channelStatus: this.overview.channelStatus.map( ( row ) => ( row.key === key ? { ...row, status: 'not_connected', account: '' } : row ) ),
+        accounts: ( this.overview.accounts ?? [] ).map( ( row ) => ( row.key === key ? { ...row, status: 'not_connected', account: '', signedOutAt: null } : row ) ),
       };
       return ok( this.overview );
     }

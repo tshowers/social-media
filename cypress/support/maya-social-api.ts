@@ -116,15 +116,18 @@ export class FakeMayaSocial {
       missing,
       pendingChange: null,
       connectedChannels: [...connected],
-      channelStatus: CHANNEL_KEYS.map( ( key ) => ( {
-        key, name: CHANNELS[key], signedOutAt: null,
-        status: connected.includes( key ) ? 'connected' : 'not_connected',
-        account: connected.includes( key ) ? `Hopper Signs on ${ CHANNELS[key] }` : '',
-      } ) ),
+      channelStatus: CHANNEL_KEYS.map( ( key ) => this.status( key, CHANNELS[key] ) ),
+      // Profile › Connected accounts: the channels plus Bluesky.
+      accounts: [...CHANNEL_KEYS.map( ( key ) => this.status( key, CHANNELS[key] ) ), this.status( 'bluesky', 'Bluesky' )],
       // 2c: with a strategy but none of its channels connected, nothing publishes.
       publishingPaused: !!rest['strategy'] && !strategyChannels.some( ( key ) => connected.includes( key ) ),
       channels: CHANNELS,
     };
+  }
+
+  private status ( key: string, name: string ): Json {
+    const connected = this.state['connected'].includes( key );
+    return { key, name, signedOutAt: null, available: true, status: connected ? 'connected' : 'not_connected', account: connected ? `Hopper Signs on ${ name }` : '' };
   }
 
   /** The most recent call to `method path`. */
@@ -189,6 +192,12 @@ export class FakeMayaSocial {
     if ( method === 'POST' && path === '/onboard' ) {
       this.state['onboardedAt'] = new Date().toISOString();
       this.state['autoApproveHours'] = body['autoApproveHours'];
+      return ok( this.overview() );
+    }
+
+    const channelOff = path.match( /^\/channels\/([^/]+)$/ );
+    if ( method === 'DELETE' && channelOff ) {
+      this.state['connected'] = this.state['connected'].filter( ( key: string ) => key !== channelOff[1] );
       return ok( this.overview() );
     }
 

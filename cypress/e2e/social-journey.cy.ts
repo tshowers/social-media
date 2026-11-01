@@ -28,6 +28,7 @@ const PROVIDERS: Record<string, string> = {
   linkedin: 'linkedin', threads: 'threads', facebook: 'facebook', instagram: 'instagram', google_business_profile: 'google',
 };
 
+const accountRow = ( key: string ) => cy.get( `ms-connected-accounts .row[data-account="${ key }"]` );
 const channelRow = ( name: string ) => cy.contains( 'ms-strategy-channels .row strong', new RegExp( `^${ name }$` ) ).parents( '.row' );
 
 describe( 'Social journey - sign in to sign out', () => {
@@ -64,6 +65,32 @@ describe( 'Social journey - sign in to sign out', () => {
     cy.contains( 'button', 'Set up Social' ).click();
     cy.location( 'pathname' ).should( 'eq', '/strategy' );
     cy.then( () => expect( api.last( 'POST', '/onboard' ).body ).to.deep.equal( { autoApproveHours: 4 } ) );
+
+    cy.log( 'No strategy yet: Calendar says why it’s empty instead of bouncing back to Strategy' );
+    cy.contains( 'nav.ms-tabs a', 'Calendar' ).click();
+    cy.location( 'pathname' ).should( 'eq', '/calendar' );
+    cy.contains( 'h1', 'Your calendar fills in once you have a strategy.' );
+    cy.contains( 'a', 'Go to Strategy' ).click();
+    cy.location( 'pathname' ).should( 'eq', '/strategy' );
+
+    cy.log( 'No strategy yet: Profile still lists every account, and connects and disconnects them' );
+    cy.contains( 'nav.ms-tabs a', 'Profile' ).click();
+    cy.contains( 'h2', 'Connected accounts' );
+    accountRow( 'bluesky' ).should( 'contain.text', 'Not connected' );
+    accountRow( 'linkedin' ).should( 'contain.text', 'Not connected' ).contains( 'button', 'Connect' ).click();
+    cy.wait( '@providerLogin' ).then( () => {
+      expect( api.last( 'POST', '/outreach/social-auth/linkedin/start' ).body['frontendReturnUrl'] ).to.equal( `${ Cypress.config( 'baseUrl' ) }/profile` );
+      api.completeConnect( 'linkedin' );
+      // The backend's callback sends the owner back with how it went.
+      cy.visitWithFirebaseEmulators( '/profile?authProvider=linkedin&authStatus=success&connectedAccountId=a1' );
+    } );
+    accountRow( 'linkedin' ).should( 'contain.text', 'Connected as Hopper Signs on LinkedIn' );
+    cy.location( 'search' ).should( 'eq', '' );
+    accountRow( 'linkedin' ).contains( 'button', 'Disconnect' ).click();
+    cy.contains( '[role="alertdialog"] button', 'Disconnect' ).click();
+    accountRow( 'linkedin' ).should( 'contain.text', 'Not connected' );
+    cy.then( () => expect( api.last( 'DELETE', '/channels/linkedin' ) ).to.exist );
+    cy.contains( 'nav.ms-tabs a', 'Strategy' ).click();
 
     cy.log( 'Profile: fill in what the Marketing Assistant still needs, then it builds the strategy' );
     cy.contains( 'h2', 'I can’t build a strategy yet.' );

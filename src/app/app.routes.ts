@@ -32,7 +32,9 @@ export const routes: Routes = [
   },
   {
     path: 'calendar',
-    canActivate: [appGuard, strategyGuard],
+    // No strategyGuard: without a strategy the Calendar says why it's empty
+    // (the guard bounced to /strategy, which from Strategy looked like a dead link).
+    canActivate: [appGuard],
     data: { header: 'app', pageTitle: 'Calendar' },
     loadComponent: () => import( './maya-social/pages/calendar.component' ).then( ( m ) => m.CalendarComponent ),
     title: 'Calendar · Social',

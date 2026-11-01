@@ -45,6 +45,13 @@ const FIELD_LABELS: Record<RequiredField, string> = {
     .req-row { display: grid; grid-template-columns: 26px 190px 1fr; gap: 14px; align-items: center; padding: 14px 20px; border-radius: 999px; background: var(--surface); }
     .req-row strong { font-size: 16px; }
     .req-row span:last-child { font-size: 15px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .next { color: var(--text); }
+    .uses { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+    .uses h2 { font-size: 15px; font-weight: 700; color: var(--muted); }
+    .uses .req { margin: 0; }
+    .req-row--use { grid-template-columns: 190px 1fr; }
+    .req-row--use dt { font-size: 15px; font-weight: 700; }
+    .req-row--use dd { margin: 0; font-size: 15px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ok { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--t-green); color: var(--t-green-fg); }
     .bad { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--t-pink); color: var(--t-pink-fg); font-size: 13px; font-weight: 800; }
     .row-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; }
@@ -94,6 +101,8 @@ const FIELD_LABELS: Record<RequiredField, string> = {
       .narrow h1 { font-size: 32px; }
       .req-row { grid-template-columns: 26px 1fr; border-radius: 22px; }
       .req-row span:last-child { grid-column: 2; white-space: normal; }
+      .req-row--use { grid-template-columns: 1fr; gap: 2px; }
+      .req-row--use dd { white-space: normal; }
       .product { grid-template-columns: 1fr; }
       .pillars { grid-template-columns: 1fr; }
       .channel { grid-template-columns: 1fr auto; border-radius: 22px; }
@@ -182,20 +191,23 @@ const FIELD_LABELS: Record<RequiredField, string> = {
         </div>
       </main>
     } @else if (missing().length === 0) {
-      <!-- 1h -->
+      <!-- 1h: the profile is complete, so the one next step is Generate. -->
       <main class="narrow">
         <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
-        <h1>I don’t have a social strategy for you yet.</h1>
-        <p class="lead">I’ll build one from your profile: pillars, channels, how often to post and the rules I follow. Nothing goes on the calendar until you’ve seen it.</p>
-        <div class="req">
-          <div class="req-row"><span class="ok"><ms-icon name="check" [size]="14" [stroke]="3" /></span><strong>Company name</strong><span>{{ profile()?.companyName }}</span></div>
-          <div class="req-row"><span class="ok"><ms-icon name="check" [size]="14" [stroke]="3" /></span><strong>Company goal</strong><span>{{ profile()?.companyGoal }}</span></div>
-          <div class="req-row"><span class="ok"><ms-icon name="check" [size]="14" [stroke]="3" /></span><strong>Products and services</strong><span>{{ productNames() }}</span></div>
-        </div>
+        <h1>Your profile has everything I need.</h1>
+        <p class="lead"><strong class="next">Next: generate your strategy.</strong> It takes about a minute, and nothing posts until you approve it.</p>
         <div class="row-actions">
-          <button type="button" class="ms-btn ms-btn--primary ms-btn--56" (click)="generate()"><ms-icon name="sparkle" [size]="18" />Generate strategy from my profile</button>
-          <a class="ms-link" routerLink="/profile">Review profile first</a>
+          <button type="button" class="ms-btn ms-btn--primary ms-btn--56" (click)="generate()"><ms-icon name="sparkle" [size]="18" />Generate my strategy</button>
         </div>
+        <section class="uses" aria-labelledby="uses-title">
+          <h2 id="uses-title">What I’ll use</h2>
+          <dl class="req">
+            <div class="req-row req-row--use"><dt>Company name</dt><dd>{{ profile()?.companyName }}</dd></div>
+            <div class="req-row req-row--use"><dt>Company goal</dt><dd>{{ profile()?.companyGoal }}</dd></div>
+            <div class="req-row req-row--use"><dt>Products and services</dt><dd>{{ productNames() }}</dd></div>
+          </dl>
+          <p class="helper">From your profile. To change any of it first, <a class="ms-link" routerLink="/profile">edit your profile</a>.</p>
+        </section>
       </main>
     } @else {
       <!-- 1i -->

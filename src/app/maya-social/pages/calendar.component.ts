@@ -6,7 +6,7 @@ import { ChannelResult, MayaSocialApi, Post, apiError } from '../api';
 import { EditSheetComponent } from '../edit-sheet.component';
 import { PostChannelsComponent } from '../post-channels.component';
 import { PostDrawerComponent } from '../post-drawer.component';
-import { ChannelWarningComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent } from '../states.component';
+import { ChannelWarningComponent, LoadErrorComponent, NoStrategyComponent, NotSetUpComponent, SkeletonComponent } from '../states.component';
 import {
   STATUS_LABELS, addDays, channelList, dayOfMonth, daysBetween, monthDay, monthYear, pillarOf, plural, slotLabel,
   wallClock, weekdayLong, weekdayShort,
@@ -33,7 +33,7 @@ interface Day {
 @Component( {
   selector: 'ms-calendar',
   standalone: true,
-  imports: [IconComponent, EditSheetComponent, PostDrawerComponent, PostChannelsComponent, ChannelWarningComponent, LoadErrorComponent, NotSetUpComponent, SkeletonComponent],
+  imports: [IconComponent, EditSheetComponent, PostDrawerComponent, PostChannelsComponent, ChannelWarningComponent, LoadErrorComponent, NoStrategyComponent, NotSetUpComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .bar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
@@ -147,6 +147,8 @@ interface Day {
   template: `
     @if (!state.overview()?.onboardedAt) {
       <ms-not-set-up />
+    } @else if (!strategy()) {
+      <ms-no-strategy />
     } @else if (loadError() !== undefined) {
       <ms-load-error [status]="loadError() ?? null" (retry)="load()" />
     } @else if (loading()) {
@@ -343,7 +345,8 @@ export class CalendarComponent implements OnInit {
   ngOnInit (): void {
     const view = this.route.snapshot.queryParamMap.get( 'view' ) as View | null;
     if ( view && ['week', 'month', 'queue'].includes( view ) ) this.view.set( view );
-    this.load();
+    // No strategy, no posts: the template shows why instead.
+    if ( this.strategy() ) this.load();
   }
 
   setView ( view: View ): void {

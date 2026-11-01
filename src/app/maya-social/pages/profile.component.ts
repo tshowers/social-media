@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { NotificationService } from '../../services/notification.service';
 import { AutoApproveHours, MayaSocialApi, Product } from '../api';
+import { ConnectedAccountsComponent } from '../connected-accounts.component';
 import { IconComponent } from '../icon.component';
 import { MayaSocialState } from '../state';
 
@@ -15,12 +16,14 @@ const TONES = ['Plain', 'Confident', 'Playful'];
  * Profile (design 1j): the owner's Taliferro profile, edited in place. Saving
  * makes Maya re-check the strategy; any change waits for approval (rule 8).
  * Below it, Social settings (gaps 2m): auto-approve hours and notes, which
- * belong to Maya Social only. Channels are on Strategy (2b).
+ * belong to Maya Social only. Then Connected accounts: every social account
+ * and where it stands, with or without a strategy (Strategy › Where I post
+ * shows the same for the strategy's channels).
  */
 @Component( {
   selector: 'ms-profile',
   standalone: true,
-  imports: [FormsModule, RouterLink, IconComponent],
+  imports: [FormsModule, IconComponent, ConnectedAccountsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 48px; align-items: start; }
@@ -56,7 +59,7 @@ const TONES = ['Plain', 'Confident', 'Playful'];
     .switch:checked { background: var(--blue); }
     .switch:checked::after { transform: translateX(22px); }
     .switch:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-    .channels-link { display: inline-flex; align-items: center; gap: 4px; }
+    .accounts { margin-top: 16px; }
     @media (max-width: 900px) {
       .grid { grid-template-columns: minmax(0, 1fr); }
       .side { position: static; }
@@ -161,15 +164,17 @@ const TONES = ['Plain', 'Confident', 'Playful'];
               </label>
               <p class="hint">I send one note per review batch, at 9:00 AM, plus one if a post fails or a pinned post is about to expire.</p>
             </div>
+          </section>
 
-            <a class="ms-link channels-link" routerLink="/strategy" fragment="channels-title">Channels are on Strategy <ms-icon name="chevron-right" [size]="14" /></a>
+          <section class="accounts" aria-labelledby="accounts-title">
+            <ms-connected-accounts />
           </section>
         </div>
 
         <aside class="side">
           <div class="ms-card">
             <h2><img class="ms-avatar" src="assets/maya-avatar.png" alt="" />When you save</h2>
-            <p>Profile changes: I re-check the strategy. Social settings apply right away.</p>
+            <p>Profile changes: I re-check the strategy. Social settings apply right away. Connected accounts change as soon as you connect or disconnect one.</p>
           </div>
           <button type="button" class="ms-btn ms-btn--primary ms-btn--52 ms-btn--block" [disabled]="!valid() || saving()" (click)="save()">
             @if (saving()) { <span class="ms-spinner" aria-hidden="true"></span> Saving… } @else { Save }

@@ -197,6 +197,29 @@ export class FirstStrategyBannerComponent {
 } )
 export class NotSetUpComponent {}
 
+/** Calendar before there's a strategy: say why it's empty and where to go. */
+@Component( {
+  selector: 'ms-no-strategy',
+  standalone: true,
+  imports: [RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    .col { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; max-width: 880px; margin: 0 auto; padding: 56px 40px 72px; }
+    h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
+    p { font-size: 18px; line-height: 1.6; color: var(--muted); }
+    @media (max-width: 760px) { .col { padding: 24px 16px 120px; } h1 { font-size: 32px; } }
+  `],
+  template: `
+    <main class="col">
+      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
+      <h1>Your calendar fills in once you have a strategy.</h1>
+      <p>I plan every post from your strategy, so there’s nothing to put here yet. Generate it on Strategy, approve it, and I’ll plan the next three weeks.</p>
+      <a class="ms-btn ms-btn--primary ms-btn--56" routerLink="/strategy">Go to Strategy</a>
+    </main>
+  `,
+} )
+export class NoStrategyComponent {}
+
 /** 2r: a page couldn't load. */
 @Component( {
   selector: 'ms-load-error',
