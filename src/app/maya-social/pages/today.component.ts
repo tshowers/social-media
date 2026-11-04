@@ -142,7 +142,7 @@ const PENDING = ['needs_review', 'on_hold'];
             <p class="ms-kicker">{{ longToday() }}</p>
             <h1 class="ms-h1">{{ headline() }}</h1>
             @if (mayaLine(); as line) {
-              <p class="ms-maya-line"><img class="ms-avatar" src="assets/maya-avatar.png" alt="" />{{ line }}</p>
+              <p class="ms-maya-line"><img class="ms-avatar brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />{{ line }}</p>
             }
           </div>
 
@@ -203,7 +203,7 @@ const PENDING = ['needs_review', 'on_hold'];
                 </div>
                 <h2 [id]="'off-' + post.id">{{ post.title }}</h2>
                 <p class="body">{{ post.body }}</p>
-                <p class="rewrite" style="margin-top: 12px"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />{{ post.offStrategyNote }} Here’s an edit that fits.</p>
+                <p class="rewrite" style="margin-top: 12px"><img class="ms-avatar ms-avatar--22 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--22 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />{{ post.offStrategyNote }} Here’s an edit that fits.</p>
                 @if (post.offStrategyEdit; as edit) {
                   <div class="my-edit">
                     <span class="ms-label">My edit · {{ pillarName(edit.pillar || post.pillar) }} pillar</span>
@@ -244,9 +244,9 @@ const PENDING = ['needs_review', 'on_hold'];
                     @else if (post.status === 'on_hold') { <span class="ms-chip ms-status" data-status="on_hold">On hold</span> }
                   </div>
                   @if (post.rewriteCount && post.status === 'needs_review') {
-                    <p class="rewrite"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />You held the first draft. This is my rewrite.</p>
+                    <p class="rewrite"><img class="ms-avatar ms-avatar--22 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--22 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />You held the first draft. This is my rewrite.</p>
                   } @else if (isHeldTwice(post)) {
-                    <p class="rewrite"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />You held my rewrite too. I’ll stop rewriting until you tell me what to change.</p>
+                    <p class="rewrite"><img class="ms-avatar ms-avatar--22 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--22 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />You held my rewrite too. I’ll stop rewriting until you tell me what to change.</p>
                   }
                   <h2 [id]="'post-' + post.id">{{ post.title }}</h2>
                   <p class="body">{{ post.body }}</p>

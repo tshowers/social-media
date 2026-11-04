@@ -29,7 +29,7 @@ const FIELD_LABELS: Record<RequiredField, string> = {
   imports: [FormsModule, RouterLink, IconComponent, FirstStrategyBannerComponent, LoadErrorComponent, NotSetUpComponent, StrategyChannelsComponent, StrategyChangeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
-    .avatar88 { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; object-position: left center; box-shadow: 0 0 0 6px var(--t-blue); }
+    .avatar88 { width: 88px; height: 88px; object-fit: contain; }
     .steps { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
     .steps li { display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 22px; border-radius: 999px; background: var(--surface); font-size: 16px; font-weight: 700; }
     .steps li.is-next { background: transparent; color: var(--muted); }
@@ -118,7 +118,7 @@ const FIELD_LABELS: Record<RequiredField, string> = {
     } @else if (building()) {
       <!-- 2e -->
       <main class="narrow" aria-live="polite">
-        <img class="avatar88" src="assets/maya-avatar.png" alt="" />
+        <img class="avatar88 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="avatar88 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />
         <h1>Building your strategy…</h1>
         <p class="lead">About a minute. Stay on this page, and I’ll show it to you as soon as it’s ready.</p>
         <ol class="steps">
@@ -149,7 +149,7 @@ const FIELD_LABELS: Record<RequiredField, string> = {
           <div>
             <p class="ms-kicker">Social strategy · Built {{ builtOn(strategy) }} from your profile</p>
             <h1 class="ms-h1">{{ strategy.goal }}</h1>
-            <p class="ms-maya-line"><img class="ms-avatar" src="assets/maya-avatar.png" alt="" />That goal comes from your profile. I re-check this strategy whenever your profile changes, and I won’t schedule anything that doesn’t fit it.</p>
+            <p class="ms-maya-line"><img class="ms-avatar brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />That goal comes from your profile. I re-check this strategy whenever your profile changes, and I won’t schedule anything that doesn’t fit it.</p>
           </div>
           @if (active()) {
             <div class="head-actions">
@@ -193,7 +193,7 @@ const FIELD_LABELS: Record<RequiredField, string> = {
     } @else if (missing().length === 0) {
       <!-- 1h: the profile is complete, so the one next step is Generate. -->
       <main class="narrow">
-        <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
+        <img class="ms-avatar ms-avatar--64 brand-mark--light"  alt="Marketing Assistant" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--64 brand-mark--dark"  alt="Marketing Assistant" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />
         <h1>Your profile has everything I need.</h1>
         <p class="lead"><strong class="next">Next: generate your strategy.</strong> It takes about a minute, and nothing posts until you approve it.</p>
         <div class="row-actions">

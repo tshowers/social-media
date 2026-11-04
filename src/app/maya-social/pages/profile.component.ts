@@ -173,7 +173,7 @@ const TONES = ['Plain', 'Confident', 'Playful'];
 
         <aside class="side">
           <div class="ms-card">
-            <h2><img class="ms-avatar" src="assets/maya-avatar.png" alt="" />When you save</h2>
+            <h2><img class="ms-avatar brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />When you save</h2>
             <p>Profile changes: I re-check the strategy. Social settings apply right away. Connected accounts change as soon as you connect or disconnect one.</p>
           </div>
           <button type="button" class="ms-btn ms-btn--primary ms-btn--52 ms-btn--block" [disabled]="!valid() || saving()" (click)="save()">

@@ -67,10 +67,10 @@ import { MayaSocialState } from './state';
       </div>
       <h2>{{ post.title }}</h2>
       @if (post.rewriteCount && post.status === 'needs_review') {
-        <p class="note"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />You held the first draft. This is my rewrite.</p>
+        <p class="note"><img class="ms-avatar ms-avatar--22 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--22 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />You held the first draft. This is my rewrite.</p>
       }
       @if (post.status === 'on_hold') {
-        <p class="note"><img class="ms-avatar ms-avatar--22" src="assets/maya-avatar.png" alt="" />{{ post.holdCount && post.holdCount > 1 ? 'Held twice. I’ve stopped rewriting it.' : 'You held this. I’m writing a new version.' }}</p>
+        <p class="note"><img class="ms-avatar ms-avatar--22 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--22 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />{{ post.holdCount && post.holdCount > 1 ? 'Held twice. I’ve stopped rewriting it.' : 'You held this. I’m writing a new version.' }}</p>
       }
       @if (post.body) { <p class="body">{{ post.body }}</p> }
       @if (post.image && post.status !== 'planned') { <ms-image-block [post]="post" variant="block" (changed)="changed.emit($event)" /> }

@@ -50,7 +50,7 @@ import { ChannelConnect } from './states.component';
     <div class="intro">
       <p class="ms-kicker">Social strategy · Channels</p>
       <h2 id="channels-title">Where I post</h2>
-      <p class="ms-maya-line"><img class="ms-avatar" src="assets/maya-avatar.png" alt="" />Each channel has a job in the strategy. I only post to the ones you connect.</p>
+      <p class="ms-maya-line"><img class="ms-avatar brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />Each channel has a job in the strategy. I only post to the ones you connect.</p>
     </div>
     @for (channel of strategy.channels; track channel.key) {
       @let info = stateOf(channel.key);

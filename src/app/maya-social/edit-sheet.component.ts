@@ -81,13 +81,13 @@ import { MayaSocialState } from './state';
           @if (check(); as result) {
             @if (result.aligned) {
               <div class="panel" data-tint="green">
-                <h3><img class="ms-avatar ms-avatar--32" src="assets/maya-avatar.png" alt="" />Fits the strategy</h3>
+                <h3><img class="ms-avatar ms-avatar--32 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--32 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />Fits the strategy</h3>
                 <p>Saving approves it for {{ slot() }}. Auto-approve no longer applies.</p>
                 @if (yours() !== null) { <button type="button" class="ms-link" style="align-self: flex-start; color: inherit; font-size: 14px" (click)="goBack()">Go back to my edit</button> }
               </div>
             } @else {
               <div class="panel" data-tint="pink">
-                <h3><img class="ms-avatar ms-avatar--32" src="assets/maya-avatar.png" alt="" />This edit doesn’t fit yet</h3>
+                <h3><img class="ms-avatar ms-avatar--32 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--32 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />This edit doesn’t fit yet</h3>
                 <ul>@for (reason of result.reasons; track reason) { <li>{{ reason }}</li> }</ul>
                 @if (result.version) {
                   <div class="mine"><span class="ms-label">My version</span>{{ result.version.body }}</div>

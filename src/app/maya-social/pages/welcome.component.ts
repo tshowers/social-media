@@ -38,7 +38,7 @@ import { MayaSocialState } from '../state';
   `],
   template: `
     <main class="col">
-      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
+      <img class="ms-avatar ms-avatar--64 brand-mark--light"  alt="Marketing Assistant" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--64 brand-mark--dark"  alt="Marketing Assistant" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />
       <div class="intro">
         <span class="tag">Your Social plan</span>
         <h1>Before I take over your calendar, here’s how I work.</h1>

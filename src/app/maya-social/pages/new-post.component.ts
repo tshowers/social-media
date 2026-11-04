@@ -95,7 +95,7 @@ const MIN_CHARS = 20;
           @if (check(); as result) {
             @if (!result.aligned) {
               <div class="panel" data-tint="pink">
-                <h2><img class="ms-avatar ms-avatar--32" src="assets/maya-avatar.png" alt="" />This doesn’t fit the strategy yet</h2>
+                <h2><img class="ms-avatar ms-avatar--32 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--32 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />This doesn’t fit the strategy yet</h2>
                 <ul>@for (reason of result.reasons; track reason) { <li>{{ reason }}</li> }</ul>
                 @if (result.version) {
                   <div class="mine">
@@ -108,7 +108,7 @@ const MIN_CHARS = 20;
               </div>
             } @else {
               <div class="panel" data-tint="green">
-                <h2><img class="ms-avatar ms-avatar--32" src="assets/maya-avatar.png" alt="" />Fits the strategy</h2>
+                <h2><img class="ms-avatar ms-avatar--32 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--32 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />Fits the strategy</h2>
                 @if (result.slot && pinned()) {
                   <p><span class="ms-chip" style="background: var(--bg); color: var(--text)">{{ pillarName(result.pillar) }}</span></p>
                   <p>Pinned to <strong>{{ slotText(result) }}</strong>. It won’t move, and it expires if it isn’t approved by then.</p>

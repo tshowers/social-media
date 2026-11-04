@@ -144,7 +144,7 @@ export class ChannelWarningComponent {
       </div>
     } @else {
       <section class="banner" aria-labelledby="first-title">
-        <img class="ms-avatar" style="width: 44px; height: 44px" src="assets/maya-avatar.png" alt="" />
+        <img class="ms-avatar brand-mark--light" style="width: 44px; height: 44px"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar brand-mark--dark" style="width: 44px; height: 44px"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />
         <div>
           <h2 id="first-title">Here’s my first strategy for you.</h2>
           <p>Nothing is scheduled until you approve it. Then I’ll plan three weeks and draft the first posts.</p>
@@ -194,7 +194,7 @@ export class FirstStrategyBannerComponent {
   `],
   template: `
     <main class="col">
-      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
+      <img class="ms-avatar ms-avatar--64 brand-mark--light"  alt="Marketing Assistant" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--64 brand-mark--dark"  alt="Marketing Assistant" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />
       <h1>I’m not running your social media yet.</h1>
       <p>Nothing is planned and nothing will post. Setup takes about two minutes: how I work, one setting, then your strategy.</p>
       <a class="ms-btn ms-btn--primary ms-btn--56" routerLink="/welcome">Set up Social</a>
@@ -217,7 +217,7 @@ export class NotSetUpComponent {}
   `],
   template: `
     <main class="col">
-      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
+      <img class="ms-avatar ms-avatar--64 brand-mark--light"  alt="Marketing Assistant" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--64 brand-mark--dark"  alt="Marketing Assistant" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />
       <h1>Your calendar fills in once you have a strategy.</h1>
       <p>I plan every post from your strategy, so there’s nothing to put here yet. Generate it on Strategy, approve it, and I’ll plan the next three weeks.</p>
       <a class="ms-btn ms-btn--primary ms-btn--56" routerLink="/strategy">Go to Strategy</a>
@@ -328,7 +328,7 @@ export class SkeletonComponent {
   `],
   template: `
     <main class="col">
-      <img class="ms-avatar ms-avatar--64" src="assets/maya-avatar.png" alt="Marketing Assistant" />
+      <img class="ms-avatar ms-avatar--64 brand-mark--light"  alt="Marketing Assistant" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--64 brand-mark--dark"  alt="Marketing Assistant" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />
       <h1>Connect a channel and I’ll start posting.</h1>
       <p class="lead">Your strategy is approved and I’ve planned three weeks. Nothing can go out until a channel is connected, so auto-approve is paused and nothing moves on the calendar.</p>
       <div class="rows">

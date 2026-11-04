@@ -59,7 +59,7 @@ import { IconComponent } from './icon.component';
       <div>
         <p class="ms-kicker kicker">Proposed change · After your profile save, {{ savedOn() }}</p>
         <h1 class="ms-h1">{{ change.headline }}</h1>
-        <p class="ms-maya-line"><img class="ms-avatar" src="assets/maya-avatar.png" alt="" />Nothing changes until you approve. Your profile is already saved either way.</p>
+        <p class="ms-maya-line"><img class="ms-avatar brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" />Nothing changes until you approve. Your profile is already saved either way.</p>
 
         @if (change.profileChanges.length) {
           <section aria-labelledby="what-changed">

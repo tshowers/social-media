@@ -75,7 +75,7 @@ import { MayaSocialState } from '../state';
       </section>
 
       <aside class="how" aria-labelledby="how-title">
-        <div class="how-head"><img class="ms-avatar ms-avatar--32" src="assets/maya-avatar.png" alt="" /><span id="how-title">How it works</span></div>
+        <div class="how-head"><img class="ms-avatar ms-avatar--32 brand-mark--light"  alt="" src="assets/brand/products/svg/light/03-marketing-assistant.svg" /><img class="ms-avatar ms-avatar--32 brand-mark--dark"  alt="" src="assets/brand/products/svg/dark/03-marketing-assistant.svg" /><span id="how-title">How it works</span></div>
         <div class="step" data-tint="blue">
           <span class="num">1</span>
           <div><h2>The Marketing Assistant reads your profile</h2><p>Company name, goal, and what you sell. That's all it needs to build a strategy.</p></div>
