@@ -98,9 +98,8 @@ a { color: var(--blue-ink); }
   flex: none;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: left center;
+  /* The Marketing Assistant's 16Ahead dial (Ty, 2026-11-03), not the old photo. */
+  object-fit: contain;
 }
 
 .ms-avatar--22 { width: 22px; height: 22px; }
